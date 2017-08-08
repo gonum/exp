@@ -70,6 +70,9 @@ func defaultSettings(s *Settings, dim int) {
 	if s.MaxIterations == 0 {
 		s.MaxIterations = 2 * dim
 	}
+	if s.PSolve == nil {
+		s.PSolve = NoPreconditioner
+	}
 }
 
 // Result holds the result of an iterative solve.
@@ -188,24 +191,23 @@ func iterate(sys System, ctx *Context, settings Settings, method Method, stats *
 		switch op {
 		case NoOperation:
 
-		case MatVec, MatTransVec:
-			if op == MatVec {
-				sys.MatVec(ctx.Dst, ctx.Src, false)
-			} else {
-				sys.MatVec(ctx.Dst, ctx.Src, true)
-			}
+		case MatVec:
+			sys.MatVec(ctx.Dst, ctx.Src, false)
 			stats.MatVec++
 
-		case PSolve, PSolveTrans:
-			if settings.PSolve == nil {
-				copy(ctx.Dst, ctx.Src)
-				continue
+		case MatTransVec:
+			sys.MatVec(ctx.Dst, ctx.Src, true)
+			stats.MatVec++
+
+		case PSolve:
+			err = settings.PSolve(ctx.Dst, ctx.Src, false)
+			if err != nil {
+				return err
 			}
-			if op == PSolve {
-				err = settings.PSolve(ctx.Dst, ctx.Src, false)
-			} else {
-				err = settings.PSolve(ctx.Dst, ctx.Src, true)
-			}
+			stats.PSolve++
+
+		case PSolveTrans:
+			err = settings.PSolve(ctx.Dst, ctx.Src, true)
 			if err != nil {
 				return err
 			}
@@ -244,4 +246,12 @@ func iterate(sys System, ctx *Context, settings Settings, method Method, stats *
 			panic("linsolve: invalid operation")
 		}
 	}
+}
+
+func NoPreconditioner(dst, rhs []float64, trans bool) error {
+	if len(dst) != len(rhs) {
+		panic("linsolve: mismatched slice length")
+	}
+	copy(dst, rhs)
+	return nil
 }
