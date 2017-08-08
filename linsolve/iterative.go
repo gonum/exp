@@ -147,8 +147,7 @@ func Iterative(sys System, x []float64, method Method, settings Settings) (*Resu
 		Residual: make([]float64, dim),
 	}
 	if x != nil {
-		ctx.X = make([]float64, dim)
-		copy(ctx.X, x)
+		ctx.X = x
 		sys.MatVec(ctx.Residual, ctx.X, false)
 		stats.MatVec++
 		floats.AddScaledTo(ctx.Residual, b, -1, ctx.Residual) // r = b - Ax
