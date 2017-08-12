@@ -47,35 +47,37 @@ type Context struct {
 	// current estimate when it commands ComputeResidual
 	// and EndIteration.
 	X []float64
+
 	// Residual is the current residual b-A*x. On the
 	// first call to Method.Iterate, Residual must
-	// contain the initial residual.
+	// contain the initial residual. Method will set it
+	// to a valid value when it commands CheckResidual.
 	// TODO(vladimir-ch): Consider whether the behavior
 	// should also include: Method will update Residual
 	// with the current value of b-A*x when it commands
 	// EndIteration. Probably not because of GMRES.
 	Residual []float64
+
 	// ResidualNorm is (an estimate of) the norm of the
-	// current residual. Method will update it when it
-	// commands CheckConvergence. It is not necessarily
-	// equal to the norm of Residual, some methods
-	// (e.g., GMRES) can estimate the residual norm
-	// without forming the residual itself.
-	// TODO(vladimir-ch): Actually the exact behavior
-	// here  is something that should be discussed.
+	// current residual. Method will set it to a valid
+	// value when it commands CheckResidualNorm.
 	ResidualNorm float64
-	// Converged indicates to Method that the
-	// ResidualNorm satisfies the stopping criterion as
-	// a result of CheckConvergence operation. If a
-	// Method commands EndIteration with Converged true,
-	// the caller must not call Method.Iterate again
-	// without calling Method.Init first.
+
+	// Converged indicates to Method whether the
+	// Residual or the ResidualNorm satisfies the
+	// stopping criterion as a result of CheckResidual
+	// or CheckResidualNorm operation. If Converged is
+	// set to true, Method will then command
+	// EndIteration with Converged set to true. After
+	// that the caller must not call Method.Iterate
+	// again without calling Method.Init first.
 	Converged bool
 
 	// Src and Dst are the source and destination
 	// vectors for various Operations. See the Operation
 	// documentation for more information.
 	Src, Dst []float64
+
 	// Trans indicates whether MulVec and PreconSolve
 	// operations must be performed with a matrix
 	// transpose.
@@ -108,12 +110,20 @@ const (
 	ComputeResidual
 
 	// Check convergence using the current approximation
+	// in Context.X and the current residual
+	// Context.Residual. The caller must set
+	// Context.Converged to indicate whether convergence
+	// has been determined, and then it must call
+	// Method.Iterate again.
+	CheckResidual
+
+	// Check convergence using the current approximation
 	// in Context.X and the residual norm in
 	// Context.ResidualNorm. The caller must set
 	// Context.Converged to indicate whether convergence
 	// has been determined, and then it must call
 	// Method.Iterate again.
-	CheckConvergence
+	CheckResidualNorm
 
 	// EndIteration indicates that Method has finished
 	// what it considers to be one iteration. If
