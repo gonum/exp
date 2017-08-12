@@ -77,11 +77,6 @@ type Context struct {
 	// vectors for various Operations. See the Operation
 	// documentation for more information.
 	Src, Dst []float64
-
-	// Trans indicates whether MulVec and PreconSolve
-	// operations must be performed with a matrix
-	// transpose.
-	Trans bool
 }
 
 // Operation specifies the type of operation.
@@ -91,19 +86,25 @@ type Operation uint
 const (
 	NoOperation Operation = 0
 
-	// Compute
-	//  A*x    if Context.Trans==false, or
-	//  A^T*x  if Context.Trans==true,
-	// where x is stored in Context.Src.
-	// The result must be placed in Context.Dst.
+	// Compute A*x where x is stored in Context.Src. The
+	// result must be placed in Context.Dst.
 	MulVec Operation = 1 << (iota - 1)
 
+	// Compute A^T*x where x is stored in Context.Src.
+	// The result must be placed in Context.Dst.
+	MulVecT
+
 	// Perform a preconditioner solve
-	//  M z = r    if Context.Trans==false, or
-	//  M^T z = r, if Context.Trans==true,
+	//  M z = r
 	// where r is stored in Context.Src. The solution z
 	// must be placed in Context.Dst.
 	PreconSolve
+
+	// Perform a preconditioner solve
+	//  M^T z = r
+	// where r is stored in Context.Src. The solution z
+	// must be placed in Context.Dst.
+	PreconSolveT
 
 	// Compute b-A*x where x is stored in Context.X. The
 	// result must be placed into Context.Residual.
