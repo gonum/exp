@@ -49,9 +49,10 @@ type Context struct {
 	X []float64
 
 	// Residual is the current residual b-A*x. On the
-	// first call to Method.Iterate, Residual must
-	// contain the initial residual. Method will set it
-	// to a valid value when it commands CheckResidual.
+	// first call to Method.Iterate Residual must
+	// contain the initial residual. Method will make
+	// sure it is set to a valid value when it commands
+	// CheckResidual.
 	// TODO(vladimir-ch): Consider whether the behavior
 	// should also include: Method will update Residual
 	// with the current value of b-A*x when it commands
@@ -90,21 +91,18 @@ const (
 	// result must be placed in Context.Dst.
 	MulVec Operation = 1 << (iota - 1)
 
-	// Compute A^T*x where x is stored in Context.Src.
-	// The result must be placed in Context.Dst.
-	MulVecT
-
 	// Perform a preconditioner solve
 	//  M z = r
 	// where r is stored in Context.Src. The solution z
 	// must be placed in Context.Dst.
 	PreconSolve
 
-	// Perform a preconditioner solve
-	//  M^T z = r
-	// where r is stored in Context.Src. The solution z
-	// must be placed in Context.Dst.
-	PreconSolveT
+	// Trans indicates that MulVec or PrecondSolve
+	// operation must be performed wih the transpose,
+	// that is, compute A^T*x or solve M^T z = r. Method
+	// will command Trans only in bitwise OR combination
+	// with MulVec and PreconSolve.
+	Trans
 
 	// Compute b-A*x where x is stored in Context.X. The
 	// result must be placed into Context.Residual.
