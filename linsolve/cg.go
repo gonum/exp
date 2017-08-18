@@ -4,7 +4,9 @@
 
 package linsolve
 
-import "gonum.org/v1/gonum/floats"
+import (
+	"gonum.org/v1/gonum/floats"
+)
 
 // CG implements the Conjugate Gradient iterative method with
 // preconditioning for solving systems of linear equations
