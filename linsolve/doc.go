@@ -2,7 +2,19 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Package linsolve provides iterative algorithms for solving linear systems.
+/*
+Package linsolve provides iterative algorithms for solving linear systems.
+
+References:
+ - Barrett, Richard et al. (1994). Templates for the Solution of Linear Systems: Building
+   Blocks for Iterative Methods (2nd ed.). Philadelphia, PA: SIAM.
+   Retrieved from http://www.netlib.org/templates/templates.pdf
+ - Saad, Yousef (2003). Iterative methods for sparse linear systems (2nd ed.).
+   Philadelphia, PA: SIAM.
+   Retrieved from http://www-users.cs.umn.edu/~saad/IterMethBook_2ndEd.pdf
+ - Greenbaum, A. (1997). Iterative methods for solving linear systems.
+   Philadelphia, PA: SIAM.
+*/
 package linsolve
 
 // TODO(vladimir-ch): Improve documentation. Write an introduction about
