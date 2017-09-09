@@ -21,6 +21,9 @@ type Method interface {
 	// linear system.
 	Init(dim int)
 
+	// Iterate performs a step in converging to the
+	// solution of a linear system.
+	//
 	// Iterate retrieves data from Context, updates it,
 	// and returns the next operation. The caller must
 	// perform the Operation using data in Context, and
