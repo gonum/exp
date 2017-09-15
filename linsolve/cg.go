@@ -26,9 +26,7 @@ import (
 type CG struct {
 	rho, rhoPrev float64
 
-	z  []float64
-	p  []float64
-	ap []float64
+	p []float64
 
 	first  bool
 	resume int
@@ -40,9 +38,7 @@ func (cg *CG) Init(dim int) {
 		panic("cg: dimension not positive")
 	}
 
-	cg.z = reuse(cg.z, dim)
 	cg.p = reuse(cg.p, dim)
-	cg.ap = reuse(cg.ap, dim)
 	cg.first = true
 	cg.resume = 1
 }
@@ -56,32 +52,29 @@ func (cg *CG) Init(dim int) {
 func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 	switch cg.resume {
 	case 1:
-		ctx.Src = ctx.Residual
-		ctx.Dst = cg.z
+		copy(ctx.Src, ctx.Residual)
 		cg.resume = 2
-		// Compute z_{i-1} = M^{-1} * r_{i-1}.
+		// Compute z_{i-1} = M^{-1} * r_{i-1}
 		return PreconSolve, nil
 	case 2:
-		cg.rho = floats.Dot(ctx.Residual, cg.z) // ρ_{i-1} = r_{i-1} · z_{i-1}
+		z := ctx.Dst
+		cg.rho = floats.Dot(ctx.Residual, z) // ρ_{i-1} = r_{i-1} · z_{i-1}
 		if cg.first {
-			copy(cg.p, cg.z) // p_1 = z_0
+			copy(cg.p, z) // p_1 = z_0
 		} else {
-			beta := cg.rho / cg.rhoPrev                // β_{i-1} = ρ_{i-1} / ρ_{i-2}
-			floats.AddScaledTo(cg.p, cg.z, beta, cg.p) // p_i = z_{i-1} + β p_{i-1}
+			beta := cg.rho / cg.rhoPrev             // β_{i-1} = ρ_{i-1} / ρ_{i-2}
+			floats.AddScaledTo(cg.p, z, beta, cg.p) // p_i = z_{i-1} + β p_{i-1}
 		}
-
-		ctx.Src = cg.p
-		ctx.Dst = cg.ap
+		copy(ctx.Src, cg.p)
 		cg.resume = 3
 		// Compute A * p_i.
 		return MulVec, nil
 	case 3:
-		alpha := cg.rho / floats.Dot(cg.p, cg.ap)     // α_i = ρ_{i-1} / (p_i · A p_i)
-		floats.AddScaled(ctx.Residual, -alpha, cg.ap) // r_i = r_{i-1} - α A p_i
-		floats.AddScaled(ctx.X, alpha, cg.p)          // x_i = x_{i-1} + α p_i
+		ap := ctx.Dst
+		alpha := cg.rho / floats.Dot(cg.p, ap)     // α_i = ρ_{i-1} / (p_i · A p_i)
+		floats.AddScaled(ctx.Residual, -alpha, ap) // r_i = r_{i-1} - α A p_i
+		floats.AddScaled(ctx.X, alpha, cg.p)       // x_i = x_{i-1} + α p_i
 
-		ctx.Src = nil
-		ctx.Dst = nil
 		ctx.Converged = false
 		cg.resume = 4
 		return CheckResidual, nil

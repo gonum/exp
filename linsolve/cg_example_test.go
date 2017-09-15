@@ -80,6 +80,8 @@ func ExampleCG() {
 	ctx := linsolve.Context{
 		X:        make([]float64, n),
 		Residual: make([]float64, n),
+		Src:      make([]float64, n),
+		Dst:      make([]float64, n),
 	}
 	copy(ctx.Residual, sys.b)
 
