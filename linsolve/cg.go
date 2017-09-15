@@ -54,7 +54,7 @@ func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 	case 1:
 		copy(ctx.Src, ctx.Residual)
 		cg.resume = 2
-		// Compute z_{i-1} = M^{-1} * r_{i-1}
+		// Compute z_{i-1} = M^{-1} * r_{i-1}.
 		return PreconSolve, nil
 	case 2:
 		z := ctx.Dst
