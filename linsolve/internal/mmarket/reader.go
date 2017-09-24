@@ -30,6 +30,7 @@ func NewReader(r io.Reader) *Reader {
 	}
 }
 
+// Read a real matrix in coordinate format and return its triplet representation.
 func (r *Reader) Read() (*triplet.Matrix, error) {
 	r.s.Scan()
 	if err := r.s.Err(); err != nil {
