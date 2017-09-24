@@ -78,7 +78,7 @@ testLoop:
 				if ctx.Converged {
 					break cgLoop
 				}
-				if itercount == 3*n {
+				if itercount == tc.iters {
 					t.Errorf("Case %v (n=%v): %v exceeded iteration limit", tc.name, n, itercount)
 				}
 			}

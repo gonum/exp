@@ -10,8 +10,7 @@ import (
 	"os"
 
 	"gonum.org/v1/exp/linsolve/internal/mmarket"
-	"gonum.org/v1/gonum/blas"
-	"gonum.org/v1/gonum/blas/blas64"
+	"gonum.org/v1/gonum/mat"
 )
 
 type testCase struct {
@@ -24,23 +23,23 @@ type testCase struct {
 
 // randomSPD returns a random symmetric positive-definite matrix of order n.
 func randomSPD(n int, rnd *rand.Rand) testCase {
-	a := make([]float64, n*n)
-	lda := n
-	for i := 0; i < n; i++ {
-		for j := i; j < n; j++ {
-			a[i*lda+j] = rnd.Float64()
-		}
+	data := make([]float64, n*n)
+	for i := range data {
+		data[i] = rnd.NormFloat64()
 	}
+	m := mat.NewDense(n, n, data)
+	var a mat.SymDense
+	a.SymOuterK(1, m)
 	for i := 0; i < n; i++ {
-		a[i*lda+i] += float64(n)
+		a.SetSym(i, i, a.At(i, i)+float64(n))
 	}
 	return testCase{
 		name:  "randomSPD",
 		n:     n,
-		iters: 2 * n,
+		iters: 10 * n,
 		mulvec: func(dst, x []float64, _ bool) {
-			bi := blas64.Implementation()
-			bi.Dsymv(blas.Upper, n, 1, a, lda, x, 1, 0, dst, 1)
+			d := mat.NewVecDense(n, dst)
+			d.MulVec(&a, mat.NewVecDense(n, x))
 		},
 	}
 }
