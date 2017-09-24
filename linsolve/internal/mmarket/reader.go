@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Package mmarket provides a type to read Matrix Market format files.
 package mmarket
 
 import (
