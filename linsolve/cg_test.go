@@ -49,9 +49,13 @@ testLoop:
 			Src:      make([]float64, n),
 			Dst:      make([]float64, n),
 		}
-		// The initial guess is the zero vector [0,0,...,0], so the initial
-		// residual b-A*x is just b.
-		copy(ctx.Residual, b)
+		// Initial guess is a random vector.
+		for i := range ctx.X {
+			ctx.X[i] = rnd.NormFloat64()
+		}
+		// Compute the initial residual.
+		tc.mulvec(ctx.Residual, ctx.X, false)
+		floats.AddScaledTo(ctx.Residual, b, -1, ctx.Residual)
 
 		var cg CG
 		var itercount int
