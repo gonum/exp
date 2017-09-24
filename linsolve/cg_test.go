@@ -53,11 +53,6 @@ testLoop:
 		// residual b-A*x is just b.
 		copy(ctx.Residual, b)
 
-		if floats.Norm(ctx.Residual, 2) < tc.tol {
-			// Initial estimate is sufficiently accurate.
-			continue
-		}
-
 		var cg CG
 		var itercount int
 		cg.Init(n)
