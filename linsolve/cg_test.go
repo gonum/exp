@@ -31,14 +31,14 @@ testLoop:
 		market("nos4", 1e-12),
 		market("nos5", 1e-12),
 		market("bcsstm20", 1e-12),
-		market("bcsstm22", 1e-11),
+		market("bcsstm22", 1e-10),
 	} {
 		n := tc.n
 		// Compute the right-hand side b so that the vector [1,1,...,1]
 		// is the solution.
 		want := make([]float64, n)
 		for i := range want {
-			want[i] = 1
+			want[i] = 2 + 0.1*float64(i)
 		}
 		b := make([]float64, n)
 		tc.mulvec(b, want, false)
