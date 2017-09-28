@@ -27,12 +27,17 @@ func (m *Matrix) Dims() (r, c int) {
 	return m.r, m.c
 }
 
+// Append appends a non-zero element to the list of matrix elements without
+// checking whether it already exists.
 func (m *Matrix) Append(i, j int, v float64) {
 	if i < 0 || m.r <= i {
 		panic("triplet: row index out of range")
 	}
 	if j < 0 || m.c <= j {
 		panic("triplet: column index out of range")
+	}
+	if v == 0 {
+		return
 	}
 	m.data = append(m.data, triplet{i, j, v})
 }
