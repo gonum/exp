@@ -62,7 +62,7 @@ func market(name string, tol float64) testCase {
 	return testCase{
 		name:   name,
 		n:      n,
-		iters:  10 * n,
+		iters:  40 * n,
 		tol:    tol,
 		mulvec: m.MulVec,
 	}
