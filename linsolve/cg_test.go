@@ -32,6 +32,7 @@ testLoop:
 		market("spd_237_nos1", 1e-10),
 		market("spd_468_nos5", 1e-11),
 		market("spd_485_bcsstm20", 1e-12),
+		market("spd_900_gr_30_30", 1e-12),
 	} {
 		n := tc.n
 		// Compute the right-hand side b so that the vector [1,1,...,1]
