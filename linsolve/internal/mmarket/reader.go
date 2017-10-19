@@ -97,7 +97,7 @@ func (r *Reader) Read() (*triplet.Matrix, error) {
 			return nil, errBadFormat
 		}
 		m.Append(i-1, j-1, v)
-		if sym {
+		if sym && i != j {
 			m.Append(j-1, i-1, v)
 		}
 	}
