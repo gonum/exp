@@ -27,11 +27,11 @@ testLoop:
 		randomSPD(100, rnd),
 		randomSPD(200, rnd),
 		randomSPD(500, rnd),
-		market("nos1", 1e-10),
-		market("nos4", 1e-12),
-		market("nos5", 1e-12),
-		market("bcsstm20", 1e-12),
-		market("bcsstm22", 1e-10),
+		market("spd_100_nos4", 1e-12),
+		market("spd_138_bcsstm22", 1e-10),
+		market("spd_237_nos1", 1e-10),
+		market("spd_468_nos5", 1e-11),
+		market("spd_485_bcsstm20", 1e-12),
 	} {
 		n := tc.n
 		// Compute the right-hand side b so that the vector [1,1,...,1]
