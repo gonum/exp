@@ -214,14 +214,14 @@ func (g *GMRES) modifiedGS(k int, vt []float64, w, hk []float64) {
 func (g *GMRES) qr(k int, givs []givens, hk, s []float64) {
 	// Apply previous Givens rotations to the k-th row of H.
 	for i := 0; i < k; i++ {
-		hk[i], hk[i+1] = drot(givs[i], hk[i], hk[i+1])
+		hk[i], hk[i+1] = applyGivens(givs[i], hk[i], hk[i+1])
 	}
 	// Compute the k-th Givens rotation that zeroes H[k+1,k].
-	givs[k] = drotg(hk[k], hk[k+1])
+	givs[k].c, givs[k].s, _, _ = blas64.Implementation().Drotg(hk[k], hk[k+1])
 	// Apply the k-th Givens rotation to (hk[k], hk[k+1]).
-	hk[k], hk[k+1] = drot(givs[k], hk[k], hk[k+1])
+	hk[k], hk[k+1] = applyGivens(givs[k], hk[k], hk[k+1])
 	// Apply the k-th Givens rotation to (s[k], s[k+1]).
-	s[k], s[k+1] = drot(givs[k], s[k], s[k+1])
+	s[k], s[k+1] = applyGivens(givs[k], s[k], s[k+1])
 }
 
 // vcol returns a view of the j-th column of V.
@@ -255,24 +255,9 @@ func (g *GMRES) updateSolution(k int, x []float64) {
 	}
 }
 
-// drotg returns Givens plane rotation.
-func drotg(a, b float64) givens {
-	if b == 0 {
-		return givens{c: 1, s: 0}
-	}
-	if math.Abs(b) > math.Abs(a) {
-		tmp := -a / b
-		s := 1 / math.Sqrt(1+tmp*tmp)
-		return givens{c: tmp * s, s: s}
-	}
-	tmp := -b / a
-	c := 1 / math.Sqrt(1+tmp*tmp)
-	return givens{c: c, s: tmp * c}
-}
-
-// drot applies Givens rotation g to the vector [x,y] and returns the result.
-func drot(g givens, x, y float64) (rx, ry float64) {
-	rx = g.c*x - g.s*y
-	ry = g.s*x + g.c*y
+// applyGivens applies Givens rotation g to the vector [x,y] and returns the result.
+func applyGivens(g givens, x, y float64) (rx, ry float64) {
+	rx = g.c*x + g.s*y
+	ry = -g.s*x + g.c*y
 	return
 }
