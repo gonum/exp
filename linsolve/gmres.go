@@ -212,16 +212,17 @@ func (g *GMRES) modifiedGS(k int, vt []float64, w, hk []float64) {
 // qr applies and computes Givens rotations to zero out (k+1)-th elements of the
 // vector hk.
 func (g *GMRES) qr(k int, givs []givens, hk, s []float64) {
+	bi := blas64.Implementation()
 	// Apply previous Givens rotations to the k-th row of H.
 	for i := 0; i < k; i++ {
-		hk[i], hk[i+1] = applyGivens(givs[i], hk[i], hk[i+1])
+		bi.Drot(1, hk[i:], 1, hk[i+1:], 1, givs[i].c, givs[i].s)
 	}
 	// Compute the k-th Givens rotation that zeroes H[k+1,k].
-	givs[k].c, givs[k].s, _, _ = blas64.Implementation().Drotg(hk[k], hk[k+1])
+	givs[k].c, givs[k].s, _, _ = bi.Drotg(hk[k], hk[k+1])
 	// Apply the k-th Givens rotation to (hk[k], hk[k+1]).
-	hk[k], hk[k+1] = applyGivens(givs[k], hk[k], hk[k+1])
+	bi.Drot(1, hk[k:], 1, hk[k+1:], 1, givs[k].c, givs[k].s)
 	// Apply the k-th Givens rotation to (s[k], s[k+1]).
-	s[k], s[k+1] = applyGivens(givs[k], s[k], s[k+1])
+	bi.Drot(1, s[k:], 1, s[k+1:], 1, givs[k].c, givs[k].s)
 }
 
 // vcol returns a view of the j-th column of V.
@@ -253,11 +254,4 @@ func (g *GMRES) updateSolution(k int, x []float64) {
 		vj := g.vcol(j)
 		floats.AddScaled(x, yj, vj) // x += y_j * v_j
 	}
-}
-
-// applyGivens applies Givens rotation g to the vector [x,y] and returns the result.
-func applyGivens(g givens, x, y float64) (rx, ry float64) {
-	rx = g.c*x + g.s*y
-	ry = -g.s*x + g.c*y
-	return
 }
