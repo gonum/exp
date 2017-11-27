@@ -31,7 +31,8 @@ type GMRES struct {
 	// Restart is the restart parameter which limits the computation and
 	// storage costs. It must hold that
 	//  1 <= Restart <= n
-	// where n is the dimension of the problem. If Restart is 0, n will be used instead. This guarantess convergence of GMRES and increases
+	// where n is the dimension of the problem. If Restart is 0, n will be
+	// used instead. This guarantess convergence of GMRES and increases
 	// robustness. Many specific problems however, particularly for large
 	// n, will benefit in efficiency by setting Restart to
 	// a problem-dependent value less than n.
