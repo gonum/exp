@@ -135,6 +135,7 @@ var OneVectorCases = []OneVectorCase{
 }
 
 // Two vectors operations -----------------------------------------------------
+
 type TwoSparseVectorsCase struct {
 	Name      string
 	Vector1   SparseVector

@@ -18,7 +18,9 @@
 
 package blas64
 
-import "math"
+import (
+	"math"
+)
 
 // SparseVector represents a sparse vector.
 type SparseVector struct {
@@ -40,16 +42,20 @@ func Dot(x, y SparseVector) float64 {
 	if x.Size != y.Size {
 		panic("X and Y must have the same length.")
 	}
+	if x.Size == 0 {
+		return 0
+	}
+
 	var dot float64
 	ity := 0
 	j := y.Ind[ity]
-	for _, i := range x.Ind {
-		for j <= i {
+	for itx, i := range x.Ind {
+		for j < i {
 			ity += 1
 			j = y.Ind[ity]
 		}
 		if i == j {
-			dot += y.Data[i] * y.Data[j]
+			dot += y.Data[itx] * y.Data[ity]
 		}
 	}
 	return dot
@@ -96,31 +102,11 @@ func Idmax(x SparseVector) int {
 // Swap exchanges the elements of the two vectors x and y
 // x[i], y[i] = y[i], x[i] for all i
 // Will panic if the vectors are not of the same length
-func Swap(x, y SparseVector) {
-	ity := 0
-	j := y.Ind[ity]
-	for itx, i := range x.Ind {
-		for j <= i {
-			copy(y.Ind[ity:], y.Ind[ity+1:])
-			y.Ind[len(y.Ind)-1] = 0 // zero value
-			y.Ind = y.Ind[:len(y.Ind)-1]
-			copy(y.Data[ity:], y.Data[ity+1:])
-			y.Data[len(y.Data)-1] = 0 // zero value
-			y.Data = y.Data[:len(y.Data)-1]
-			ity += 1
-		}
-		if i == j { // if index present in both, swap values
-			x.Data[i], y.Data[i] = y.Data[i], x.Data[i]
-		} else {
-			copy(x.Ind[itx:], x.Ind[itx+1:])
-			x.Ind[len(x.Ind)-1] = 0 // zero value
-			x.Ind = x.Ind[:len(x.Ind)-1]
-			copy(y.Data[itx:], x.Data[itx+1:])
-			x.Data[len(y.Data)-1] = 0 // zero value
-			x.Data = x.Data[:len(x.Data)-1]
-			ity += 1
-		}
+func Swap(x, y *SparseVector) {
+	if x.Size != y.Size {
+		panic("input vectors are not of the same size")
 	}
+	x, y = y, x
 }
 
 // Scal scales the vector x by \alpha:
@@ -139,7 +125,7 @@ func Scal(alpha float64, x SparseVector) SparseVector {
 // Copy copies the elements of x into the elements of y
 // y[i] = x[i] for all i
 // Will panic if x and y are not of same length
-func Copy(x, y SparseVector) {
+func Copy(x, y *SparseVector) {
 	if x.Size != y.Size {
 		panic("X and Y must have the same length.")
 	}
@@ -154,10 +140,10 @@ func Copy(x, y SparseVector) {
 // Axpy add alpha time x to y
 // y[i] += alpha * x[i] for all i
 // Current version does not keep an ordered vec
-func Axpy(x, y SparseVector, alpha float64) {
+func Axpy(x, y *SparseVector, alpha float64) {
 	ity := 0
-	j := y.Ind[ity]
 	for itx, i := range x.Ind {
+		j := y.Ind[ity]
 		for j < i {
 			y.Ind = append(y.Ind, i)
 			y.Data = append(y.Data, alpha*x.Data[itx])
@@ -165,10 +151,9 @@ func Axpy(x, y SparseVector, alpha float64) {
 			j = y.Ind[ity]
 		}
 		if i == j {
-			y.Data[j] += alpha * x.Data[i]
-			ity += 1
-			j = y.Ind[ity]
+			y.Data[ity] += alpha * x.Data[itx]
 		}
+		ity += 1
 	}
 }
 
@@ -186,7 +171,8 @@ func Gather(x DenseVector) SparseVector {
 }
 
 // Scatter builds a DenseVector from a SparseVector
-func Scatter(x DenseVector, y SparseVector) {
+func Scatter(y SparseVector) DenseVector {
+	x := DenseVector{Data: []float64{}}
 	ity := 0
 	j := y.Ind[ity]
 	for i := 0; i < y.Size; i++ {
@@ -199,6 +185,6 @@ func Scatter(x DenseVector, y SparseVector) {
 			ity += 1
 			j = y.Ind[ity]
 		}
-
 	}
+	return x
 }
