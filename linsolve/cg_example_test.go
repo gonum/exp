@@ -110,15 +110,11 @@ MainLoop:
 			dst.MulVec(sys.A, mat.NewVecDense(n, ctx.Src))
 		case linsolve.PreconSolve:
 			copy(ctx.Dst, ctx.Src)
-		case linsolve.CheckResidual:
+		case linsolve.MajorIteration:
+			numiter++
 			rnorm := floats.Norm(ctx.Residual, 2) / bnorm
 			rnorms = append(rnorms, rnorm)
 			if rnorm < tol {
-				ctx.Converged = true
-			}
-		case linsolve.EndIteration:
-			numiter++
-			if ctx.Converged {
 				break MainLoop
 			}
 		}

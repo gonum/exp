@@ -73,14 +73,10 @@ testLoop:
 				tc.mulvec(ctx.Dst, ctx.Src, false)
 			case PreconSolve:
 				copy(ctx.Dst, ctx.Src)
-			case CheckResidual:
+			case MajorIteration:
+				itercount++
 				rnorm := floats.Norm(ctx.Residual, math.Inf(1))
 				if rnorm < 1e-13 {
-					ctx.Converged = true
-				}
-			case EndIteration:
-				itercount++
-				if ctx.Converged {
 					break cgLoop
 				}
 				if itercount == tc.iters {
