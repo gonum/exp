@@ -13,8 +13,8 @@ import (
 )
 
 func TestGMRES(t *testing.T) {
-	const convTol = 1e-12
-	const defaultWantTol = 1e-13
+	const convTol = 1e-14
+	const defaultWantTol = 1e-10
 
 	rnd := rand.New(rand.NewSource(1))
 testLoop:
@@ -31,16 +31,14 @@ testLoop:
 		randomSPD(200, rnd),
 		randomSPD(500, rnd),
 		market("spd_100_nos4", 1e-11),
-		market("spd_138_bcsstm22", 1e-10),
+		market("spd_138_bcsstm22", 1e-11),
 		market("spd_237_nos1", 1e-9),
 		market("spd_468_nos5", 1e-11),
-		market("spd_485_bcsstm20", 1e-12),
+		market("spd_485_bcsstm20", 1e-8),
 		market("spd_900_gr_30_30", 1e-11),
-		market("gen_180_mcca", 1e-12),
 		market("gen_236_e05r0100", 1e-10),
-		market("gen_236_e05r0500", 1e-10),
-		market("gen_434_hor__131", 1e-8),
-		market("gen_511_lnsp_511", 1e-7),
+		market("gen_236_e05r0500", 1e-11),
+		market("gen_434_hor__131", 1e-11),
 		market("gen_886_orsirr_2", 1e-11),
 	} {
 		n := tc.n
@@ -52,6 +50,7 @@ testLoop:
 		}
 		b := make([]float64, n)
 		tc.mulvec(b, want, false)
+		bnorm := floats.Norm(b, 2)
 
 		ctx := Context{
 			X:        make([]float64, n),
@@ -85,22 +84,15 @@ testLoop:
 			case ComputeResidual:
 				tc.mulvec(ctx.Residual, ctx.X, false)
 				floats.AddScaledTo(ctx.Residual, b, -1, ctx.Residual)
-			case CheckResidual:
-				rnorm := floats.Norm(ctx.Residual, 2)
-				if rnorm < convTol {
-					ctx.Converged = true
-				}
 			case CheckResidualNorm:
-				if ctx.ResidualNorm < convTol {
-					ctx.Converged = true
-				}
-			case EndIteration:
+				ctx.Converged = ctx.ResidualNorm < convTol*bnorm
+			case MajorIteration:
 				itercount++
-				if ctx.Converged {
+				if floats.Norm(ctx.Residual, 2) < convTol*bnorm {
 					break solverLoop
 				}
 				if itercount == tc.iters {
-					t.Logf("Case %v (n=%v): %v exceeded iteration limit", tc.name, n, itercount)
+					t.Logf("Case %v (n=%v): %v exceeded iteration limit (rnorm=%v)", tc.name, n, itercount, floats.Norm(ctx.Residual, 2)/bnorm)
 					break solverLoop
 				}
 			}

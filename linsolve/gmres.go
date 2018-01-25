@@ -67,10 +67,9 @@ type givens struct {
 // operations:
 //  MulVec
 //  PreconSolve
-//  ComputeResidual
-//  CheckResidual
 //  CheckResidualNorm
-//  EndIteration
+//  ComputeResidual
+//  MajorIteration
 func (g *GMRES) Init(dim int) {
 	if dim <= 0 {
 		panic("gmres: dimension not positive")
@@ -155,39 +154,22 @@ func (g *GMRES) Iterate(ctx *Context) (Operation, error) {
 		g.resume = 6
 		return CheckResidualNorm, nil
 	case 6:
-		if ctx.Converged {
-			g.updateSolution(g.k+1, ctx.X)
-			// Calling Iterate again without Init will panic.
-			g.resume = 0
-			return EndIteration, nil
-		}
 		g.k++
-		if g.k < g.m {
+		if g.k < g.m && !ctx.Converged {
 			// Continue the inner for loop.
 			g.resume = 3
-			return EndIteration, nil
+			return NoOperation, nil
 		}
-		// End the inner for loop.
+		// Either we have preliminary convergence or we have to restart,
+		// so end the inner for loop.
 		fallthrough
 	case 7:
-		// We are going to restart, so we need to update the approximate
-		// solution vector x and the residual.
-		g.updateSolution(g.m, ctx.X)
+		g.updateSolution(g.k, ctx.X)
 		g.resume = 8
 		return ComputeResidual, nil
 	case 8:
-		ctx.Converged = false
-		g.resume = 9
-		return CheckResidual, nil
-	case 9:
-		if ctx.Converged {
-			// Calling Iterate again without Init will panic.
-			g.resume = 0
-		} else {
-			// Restart (continue the outer for loop).
-			g.resume = 1
-		}
-		return EndIteration, nil
+		g.resume = 1
+		return MajorIteration, nil
 
 	default:
 		panic("gmres: Init not called")

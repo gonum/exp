@@ -47,8 +47,7 @@ func (cg *CG) Init(dim int) {
 // operations:
 //  MulVec
 //  PreconSolve
-//  CheckResidual
-//  EndIteration
+//  MajorIteration
 func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 	switch cg.resume {
 	case 1:
@@ -75,19 +74,10 @@ func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 		floats.AddScaled(ctx.Residual, -alpha, ap) // r_i = r_{i-1} - α A p_i
 		floats.AddScaled(ctx.X, alpha, cg.p)       // x_i = x_{i-1} + α p_i
 
-		ctx.Converged = false
-		cg.resume = 4
-		return CheckResidual, nil
-	case 4:
-		if ctx.Converged {
-			// Calling Iterate again without Init will panic.
-			cg.resume = 0
-			return EndIteration, nil
-		}
 		cg.rhoPrev = cg.rho
 		cg.first = false
 		cg.resume = 1
-		return EndIteration, nil
+		return MajorIteration, nil
 
 	default:
 		panic("cg: Init not called")

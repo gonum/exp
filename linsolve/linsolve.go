@@ -44,28 +44,19 @@ type Context struct {
 
 	// Residual is the current residual b-A*x. On the
 	// first call to Method.Iterate Residual must
-	// contain the initial residual. Method will make
-	// sure it is set to a valid value when it commands
-	// CheckResidual.
-	// TODO(vladimir-ch): Consider whether the behavior
-	// should also include: Method will update Residual
-	// with the current value of b-A*x when it commands
-	// EndIteration. Probably not because of GMRES.
+	// contain the initial residual. Method will update
+	// it to the current value when it commands
+	// MajorIteration.
 	Residual []float64
 
-	// ResidualNorm is (an estimate of) the norm of the
-	// current residual. Method will set it to a valid
+	// ResidualNorm is (an estimate of) a norm of
+	// the residual. Method will set it to the current
 	// value when it commands CheckResidualNorm.
 	ResidualNorm float64
 
-	// Converged indicates to Method whether the
-	// Residual or the ResidualNorm satisfies the
-	// stopping criterion as a result of CheckResidual
-	// or CheckResidualNorm operation. If Converged is
-	// set to true, Method will then command
-	// EndIteration with Converged set to true. After
-	// that the caller must not call Method.Iterate
-	// again without calling Method.Init first.
+	// Converged indicates to Method whether ResidualNorm
+	// satisfies a stopping criterion as a result of
+	// CheckResidualNorm operation.
 	Converged bool
 
 	// Src and Dst are the source and destination
@@ -102,30 +93,23 @@ const (
 	// result must be placed into Context.Residual.
 	ComputeResidual
 
-	// Check convergence using the current approximation
-	// in Context.X and the current residual
-	// Context.Residual. The caller must set
-	// Context.Converged to indicate whether convergence
-	// has been determined, and then it must call
-	// Method.Iterate again.
-	CheckResidual
-
-	// Check convergence using the current approximation
-	// in Context.X and the residual norm in
-	// Context.ResidualNorm. The caller must set
+	// Check convergence using (an estimate of) a
+	// residual norm in Context.ResidualNorm. Context.X
+	// does not need to be valid. The caller must set
 	// Context.Converged to indicate whether convergence
 	// has been determined, and then it must call
 	// Method.Iterate again.
 	CheckResidualNorm
 
-	// EndIteration indicates that Method has finished
-	// what it considers to be one iteration. If
-	// Context.Converged is true, Context.X contains the
-	// approximate solution and the caller must
-	// terminate the iterative process. If the caller
-	// performs a new iterative run, it must call
-	// Method.Init before calling Method.Iterate.
-	EndIteration
+	// MajorIteration indicates that Method has finished
+	// what it considers to be one iteration. Method
+	// will make sure that Context.X and
+	// Context.Residual are updated. The caller should
+	// check convergence and other stopping criteria,
+	// and it may call Method.Iterate again if
+	// necessary. Otherwise it can terminate the
+	// iterative process.
+	MajorIteration
 )
 
 func reuse(v []float64, n int) []float64 {
