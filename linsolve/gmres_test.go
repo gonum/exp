@@ -17,30 +17,11 @@ func TestGMRES(t *testing.T) {
 	const defaultWantTol = 1e-10
 
 	rnd := rand.New(rand.NewSource(1))
+	testCases := spdTestCases(rnd)
+	testCases = append(testCases, unsymTestCases()...)
+
 testLoop:
-	for _, tc := range []testCase{
-		randomSPD(1, rnd),
-		randomSPD(2, rnd),
-		randomSPD(3, rnd),
-		randomSPD(4, rnd),
-		randomSPD(5, rnd),
-		randomSPD(10, rnd),
-		randomSPD(20, rnd),
-		randomSPD(50, rnd),
-		randomSPD(100, rnd),
-		randomSPD(200, rnd),
-		randomSPD(500, rnd),
-		market("spd_100_nos4", 1e-11),
-		market("spd_138_bcsstm22", 1e-11),
-		market("spd_237_nos1", 1e-9),
-		market("spd_468_nos5", 1e-11),
-		market("spd_485_bcsstm20", 1e-8),
-		market("spd_900_gr_30_30", 1e-11),
-		market("gen_236_e05r0100", 1e-10),
-		market("gen_236_e05r0500", 1e-11),
-		market("gen_434_hor__131", 1e-11),
-		market("gen_886_orsirr_2", 1e-11),
-	} {
+	for _, tc := range testCases {
 		n := tc.n
 		// Compute the right-hand side b so that a predetermined vector
 		// is the solution.
@@ -98,12 +79,12 @@ testLoop:
 			}
 		}
 
-		tol := tc.tol
-		if tol == 0 {
-			tol = defaultWantTol
+		wantTol := tc.tol
+		if wantTol == 0 {
+			wantTol = defaultWantTol
 		}
 		dist := floats.Distance(ctx.X, want, math.Inf(1))
-		if dist > tol {
+		if dist > wantTol {
 			t.Errorf("Case %v (n=%v): unexpected solution, |want-got|=%v", tc.name, n, dist)
 		}
 	}
