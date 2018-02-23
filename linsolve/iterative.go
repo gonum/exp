@@ -6,7 +6,6 @@ package linsolve
 
 import (
 	"errors"
-	"time"
 
 	"gonum.org/v1/gonum/floats"
 )
@@ -101,12 +100,6 @@ type Stats struct {
 
 	// PreconSolve is the number of PreconSolve operations commanded by Method.
 	PreconSolve int
-
-	// StartTime is an approximate time when the solve was started.
-	StartTime time.Time
-
-	// Runtime is an approximate duration of the solve.
-	Runtime time.Duration
 }
 
 // Iterative solves the system of n linear equations
@@ -125,8 +118,6 @@ type Stats struct {
 // settings provide means for adjusting parameters of the iterative process.
 // See the Settings documentation for more information.
 func Iterative(dst []float64, sys System, method Method, settings Settings) (*Result, error) {
-	stats := Stats{StartTime: time.Now()}
-
 	if sys.MulVec == nil {
 		panic("linsolve: nil matrix-vector multiplication")
 	}
@@ -142,6 +133,7 @@ func Iterative(dst []float64, sys System, method Method, settings Settings) (*Re
 		panic("linsolve: mismatched length of dst")
 	}
 
+	var stats Stats
 	ctx := &Context{
 		X:        dst,
 		Residual: make([]float64, dim),
@@ -174,7 +166,6 @@ func Iterative(dst []float64, sys System, method Method, settings Settings) (*Re
 		err = iterate(sys, ctx, settings, method, &stats)
 	}
 
-	stats.Runtime = time.Since(stats.StartTime)
 	return &Result{
 		X:            ctx.X,
 		ResidualNorm: ctx.ResidualNorm,
