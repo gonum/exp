@@ -31,6 +31,11 @@ type System struct {
 
 // Settings holds various settings for solving a linear system.
 type Settings struct {
+	// InitX holds the initial guess. If it is nil, the zero vector will be
+	// used, otherwise its length must be equal to the dimension of the
+	// system.
+	InitX []float64
+
 	// Tolerance specifies error tolerance for the final approximate
 	// solution produced by the iterative method. Tolerance must be smaller
 	// than one and greater than the machine epsilon. If it is zero,
@@ -118,7 +123,7 @@ type Stats struct {
 //
 // settings provide means for adjusting parameters of the iterative process.
 // Zero values of the fields mean default values.
-func Iterative(sys System, x []float64, method Method, settings Settings) (*Result, error) {
+func Iterative(dst []float64, sys System, method Method, settings Settings) (*Result, error) {
 	stats := Stats{StartTime: time.Now()}
 
 	if sys.MulVec == nil {
@@ -129,20 +134,30 @@ func Iterative(sys System, x []float64, method Method, settings Settings) (*Resu
 		return nil, errors.New("linsolve: dimension not positive")
 	}
 
+	if dst == nil {
+		dst = make([]float64, dim)
+	}
+	if len(dst) != dim {
+		panic("linsolve: mismatched length of dst")
+	}
+
 	ctx := &Context{
+		X:        dst,
 		Residual: make([]float64, dim),
 		Src:      make([]float64, dim),
 		Dst:      make([]float64, dim),
 	}
-	if x != nil {
-		if len(x) != dim {
+	if settings.InitX != nil {
+		if len(settings.InitX) != dim {
 			panic("linsolve: mismatched length of initial guess")
 		}
-		ctx.X = x
+		copy(ctx.X, settings.InitX)
 		computeResidual(ctx.Residual, sys, ctx.X, &stats)
 	} else {
 		// Initial x is the zero vector.
-		ctx.X = make([]float64, dim)
+		for i := range ctx.X {
+			ctx.X[i] = 0
+		}
 		// Residual b-A*x is then equal to b.
 		copy(ctx.Residual, sys.B)
 	}
