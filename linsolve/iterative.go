@@ -29,20 +29,21 @@ type System struct {
 	B []float64
 }
 
-// Settings holds various settings for solving a linear system.
+// Settings holds settings for solving a linear system.
 type Settings struct {
 	// InitX holds the initial guess. If it is nil, the zero vector will be
 	// used, otherwise its length must be equal to the dimension of the
 	// system.
 	InitX []float64
 
-	// Tolerance specifies error tolerance for the final approximate
-	// solution produced by the iterative method. Tolerance must be positive
-	// and smaller than 1. If it is zero, a default value of 1e-8 will be
-	// used.
+	// Tolerance specifies error tolerance for the final (approximate)
+	// solution produced by the iterative method. If Tolerance is zero, a
+	// default value of 1e-8 will be used, otherwise it must be positive and
+	// less than 1.
 	//
 	// If NormA is not zero, the stopping criterion used will be
 	//  |r_i| < Tolerance * (|A|*|x_i| + |b|),
+	// where r_i is the residual at i-th iteration.
 	// If NormA is zero (not available), the stopping criterion will be
 	//  |r_i| < Tolerance * |b|.
 	Tolerance float64
@@ -59,8 +60,9 @@ type Settings struct {
 
 	// PreconSolve describes a preconditioner solve that stores into dst the
 	// solution of the system
-	//  M dst = rhs, or M^T dst = rhs.
-	// If it is nil, no preconditioning will be used (M is the identity).
+	//  M dst = rhs, or M^T dst = rhs,
+	// where M is the preconditioning matrix. If PreconSolve is nil, no
+	// preconditioning will be used (M is the identity).
 	PreconSolve func(dst, rhs []float64, trans bool) error
 }
 
@@ -82,8 +84,7 @@ type Result struct {
 	// X is the approximate solution.
 	X []float64
 
-	// ResidualNorm is the norm of the final residual. It may not be equal
-	// to the actual residual b-A*x.
+	// ResidualNorm is an approximation to the norm of the final residual.
 	ResidualNorm float64
 
 	// Stats holds statistics about the iterative solve.
@@ -92,7 +93,7 @@ type Result struct {
 
 // Stats holds statistics about an iterative solve.
 type Stats struct {
-	// Iterations is the number of iterations done by Method.
+	// Iterations is the number of iterations performed by Method.
 	Iterations int
 
 	// MulVec is the number of MulVec operations commanded by Method.
@@ -122,7 +123,7 @@ type Stats struct {
 // linear system. It must not be nil.
 //
 // settings provide means for adjusting parameters of the iterative process.
-// Zero values of the fields mean default values.
+// See the Settings documentation for more information.
 func Iterative(dst []float64, sys System, method Method, settings Settings) (*Result, error) {
 	stats := Stats{StartTime: time.Now()}
 
@@ -182,9 +183,9 @@ func Iterative(dst []float64, sys System, method Method, settings Settings) (*Re
 }
 
 func iterate(sys System, ctx *Context, settings Settings, method Method, stats *Stats) error {
-	bnorm := floats.Norm(sys.B, 2)
-	if bnorm == 0 {
-		bnorm = 1
+	bNorm := floats.Norm(sys.B, 2)
+	if bNorm == 0 {
+		bNorm = 1
 	}
 
 	dim := len(ctx.X)
@@ -198,11 +199,9 @@ func iterate(sys System, ctx *Context, settings Settings, method Method, stats *
 
 		switch op {
 		case NoOperation:
-
 		case MulVec:
 			stats.MulVec++
 			sys.MulVec(ctx.Dst, ctx.Src, op&Trans == Trans)
-
 		case PreconSolve:
 			stats.PreconSolve++
 			err = settings.PreconSolve(ctx.Dst, ctx.Src, op&Trans == Trans)
@@ -210,20 +209,18 @@ func iterate(sys System, ctx *Context, settings Settings, method Method, stats *
 				return err
 			}
 		case CheckResidualNorm:
-			ctx.Converged = ctx.ResidualNorm < settings.Tolerance*bnorm
-
+			ctx.Converged = ctx.ResidualNorm < settings.Tolerance*bNorm
 		case ComputeResidual:
 			computeResidual(ctx.Residual, sys, ctx.X, stats)
-
 		case MajorIteration:
 			stats.Iterations++
 			rnorm := floats.Norm(ctx.Residual, 2)
 			var converged bool
 			if settings.NormA != 0 {
 				xnorm := floats.Norm(ctx.X, 2)
-				converged = rnorm < settings.Tolerance*(settings.NormA*xnorm+bnorm)
+				converged = rnorm < settings.Tolerance*(settings.NormA*xnorm+bNorm)
 			} else {
-				converged = rnorm < settings.Tolerance*bnorm
+				converged = rnorm < settings.Tolerance*bNorm
 			}
 			if converged {
 				ctx.ResidualNorm = rnorm
@@ -232,7 +229,6 @@ func iterate(sys System, ctx *Context, settings Settings, method Method, stats *
 			if stats.Iterations == settings.MaxIterations {
 				return ErrIterationLimit
 			}
-
 		default:
 			panic("linsolve: invalid operation")
 		}
