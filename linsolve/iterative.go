@@ -37,9 +37,9 @@ type Settings struct {
 	InitX []float64
 
 	// Tolerance specifies error tolerance for the final approximate
-	// solution produced by the iterative method. Tolerance must be smaller
-	// than one and greater than the machine epsilon. If it is zero,
-	// a default value of 1e-8 will be used.
+	// solution produced by the iterative method. Tolerance must be positive
+	// and smaller than 1. If it is zero, a default value of 1e-8 will be
+	// used.
 	//
 	// If NormA is not zero, the stopping criterion used will be
 	//  |r_i| < Tolerance * (|A|*|x_i| + |b|),
@@ -163,7 +163,7 @@ func Iterative(dst []float64, sys System, method Method, settings Settings) (*Re
 	}
 
 	defaultSettings(&settings, dim)
-	if settings.Tolerance < eps || 1 <= settings.Tolerance {
+	if settings.Tolerance <= 0 || 1 <= settings.Tolerance {
 		panic("linsolve: invalid tolerance")
 	}
 
