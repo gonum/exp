@@ -11,7 +11,7 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-const DefaultTolerance = 1e-8
+const defaultTolerance = 1e-8
 
 // ErrIterationLimit is returned when a maximum number of iterations were done
 // without converging to a solution.
@@ -39,7 +39,7 @@ type Settings struct {
 	// Tolerance specifies error tolerance for the final approximate
 	// solution produced by the iterative method. Tolerance must be smaller
 	// than one and greater than the machine epsilon. If it is zero,
-	// DefaultTolerance will be used.
+	// a default value of 1e-8 will be used.
 	//
 	// If NormA is not zero, the stopping criterion used will be
 	//  |r_i| < Tolerance * (|A|*|x_i| + |b|),
@@ -67,7 +67,7 @@ type Settings struct {
 // defaultSettings fills zero fields of s with default values.
 func defaultSettings(s *Settings, dim int) {
 	if s.Tolerance == 0 {
-		s.Tolerance = DefaultTolerance
+		s.Tolerance = defaultTolerance
 	}
 	if s.MaxIterations == 0 {
 		s.MaxIterations = 2 * dim
