@@ -18,15 +18,15 @@ type testCase struct {
 	n      int
 	iters  int
 	tol    float64
-	mulvec func(dst, x []float64, trans bool)
+	mulvec func(dst []float64, trans bool, x []float64)
 }
 
 func (tc testCase) Order() int {
 	return tc.n
 }
 
-func (tc testCase) MulVec(dst, x []float64, trans bool) {
-	tc.mulvec(dst, x, trans)
+func (tc testCase) MulVec(dst []float64, trans bool, x []float64) {
+	tc.mulvec(dst, trans, x)
 }
 
 func spdTestCases(rnd *rand.Rand) []testCase {
@@ -76,7 +76,7 @@ func randomSPD(n int, rnd *rand.Rand) testCase {
 		name:  "randomSPD",
 		n:     n,
 		iters: 40 * n,
-		mulvec: func(dst, x []float64, _ bool) {
+		mulvec: func(dst []float64, _ bool, x []float64) {
 			d := mat.NewVecDense(n, dst)
 			d.MulVec(&a, mat.NewVecDense(n, x))
 		},

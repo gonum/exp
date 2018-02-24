@@ -24,7 +24,7 @@ type MulVecer interface {
 
 	// MulVec computes A*x or A^T*x and stores the result into dst.
 	// x and dst will have length equal to Order.
-	MulVec(dst, x []float64, trans bool)
+	MulVec(dst []float64, trans bool, x []float64)
 }
 
 // Settings holds settings for solving a linear system.
@@ -185,7 +185,7 @@ func iterate(a MulVecer, b []float64, ctx *Context, settings Settings, method Me
 		case NoOperation:
 		case MulVec:
 			stats.MulVec++
-			a.MulVec(ctx.Dst, ctx.Src, op&Trans == Trans)
+			a.MulVec(ctx.Dst, op&Trans == Trans, ctx.Src)
 		case PreconSolve:
 			stats.PreconSolve++
 			err = settings.PreconSolve(ctx.Dst, ctx.Src, op&Trans == Trans)
@@ -230,6 +230,6 @@ func NoPreconditioner(dst, rhs []float64, trans bool) error {
 
 func computeResidual(dst []float64, a MulVecer, b, x []float64, stats *Stats) {
 	stats.MulVec++
-	a.MulVec(dst, x, false)
+	a.MulVec(dst, false, x)
 	floats.AddScaledTo(dst, b, -1, dst)
 }

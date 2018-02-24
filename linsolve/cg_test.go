@@ -26,7 +26,7 @@ testLoop:
 			want[i] = 2 + 0.1*float64(i)
 		}
 		b := make([]float64, n)
-		tc.mulvec(b, want, false)
+		tc.mulvec(b, false, want)
 		bnorm := floats.Norm(b, 2)
 
 		ctx := Context{
@@ -40,7 +40,7 @@ testLoop:
 			ctx.X[i] = rnd.NormFloat64()
 		}
 		// Compute the initial residual.
-		tc.mulvec(ctx.Residual, ctx.X, false)
+		tc.mulvec(ctx.Residual, false, ctx.X)
 		floats.AddScaledTo(ctx.Residual, b, -1, ctx.Residual)
 
 		var cg CG
@@ -55,7 +55,7 @@ testLoop:
 			}
 			switch op {
 			case MulVec:
-				tc.mulvec(ctx.Dst, ctx.Src, false)
+				tc.mulvec(ctx.Dst, false, ctx.Src)
 			case PreconSolve:
 				copy(ctx.Dst, ctx.Src)
 			case MajorIteration:
