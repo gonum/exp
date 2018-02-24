@@ -21,6 +21,14 @@ type testCase struct {
 	mulvec func(dst, x []float64, trans bool)
 }
 
+func (tc testCase) Order() int {
+	return tc.n
+}
+
+func (tc testCase) MulVec(dst, x []float64, trans bool) {
+	tc.mulvec(dst, x, trans)
+}
+
 func spdTestCases(rnd *rand.Rand) []testCase {
 	return []testCase{
 		randomSPD(1, rnd),
