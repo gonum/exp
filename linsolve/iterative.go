@@ -101,20 +101,22 @@ type Stats struct {
 	PreconSolve int
 }
 
-// Iterative solves the system of n linear equations
+// Iterative finds an approximate solution of the system of n linear equations
 //  A*x = b,
-// where A is an n×n matrix and b is the right-hand side vector of order n,
+// where A is a square matrix of order n and b is the right-hand side vector,
 // using an iterative method m.
 //
-// If x is not nil, its length must be equal to n, and it will be used as an
-// initial guess. On return it will contain the approximate solution. If it is
-// nil, the zero vector will be used as an initial guess, and the solution will
-// be returned in Result.X.
+// If dst is not nil, its length must be equal to n and the result will be
+// stored into dst, otherwise a new slice will be allocated and returned in
+// Result.
 //
 // settings provide means for adjusting parameters of the iterative process.
 // See the Settings documentation for more information.
 func Iterative(dst []float64, a MulVecer, b []float64, m Method, settings Settings) (*Result, error) {
 	n := a.Order()
+	if n <= 0 {
+		panic("linsolve: dimension not positive")
+	}
 	if len(b) != n {
 		panic("linsolve: mismatched length of b")
 	}
@@ -198,16 +200,16 @@ func iterate(a MulVecer, b []float64, ctx *Context, settings Settings, method Me
 			computeResidual(ctx.Residual, a, b, ctx.X, stats)
 		case MajorIteration:
 			stats.Iterations++
-			rnorm := floats.Norm(ctx.Residual, 2)
+			rNorm := floats.Norm(ctx.Residual, 2)
 			var converged bool
 			if settings.NormA != 0 {
-				xnorm := floats.Norm(ctx.X, 2)
-				converged = rnorm < settings.Tolerance*(settings.NormA*xnorm+bNorm)
+				xNorm := floats.Norm(ctx.X, 2)
+				converged = rNorm < settings.Tolerance*(settings.NormA*xNorm+bNorm)
 			} else {
-				converged = rnorm < settings.Tolerance*bNorm
+				converged = rNorm < settings.Tolerance*bNorm
 			}
 			if converged {
-				ctx.ResidualNorm = rnorm
+				ctx.ResidualNorm = rNorm
 				return nil
 			}
 			if stats.Iterations == settings.MaxIterations {
