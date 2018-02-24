@@ -42,7 +42,7 @@ func (m *Matrix) Append(i, j int, v float64) {
 	m.data = append(m.data, triplet{i, j, v})
 }
 
-func (m *Matrix) MulVec(dst, x []float64, trans bool) {
+func (m *Matrix) MulVec(dst []float64, trans bool, x []float64) {
 	for i := range dst {
 		dst[i] = 0
 	}
