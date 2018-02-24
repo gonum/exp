@@ -16,16 +16,15 @@ const defaultTolerance = 1e-8
 // without converging to a solution.
 var ErrIterationLimit = errors.New("linsolve: iteration limit reached")
 
-// System describes a linear system in terms of A*x and A^T*x operations, and
-// the right-hand side.
-type System struct {
-	// MulVec computes A*x or A^T*x and stores the result into dst.
-	// MulVec must not be nil.
-	MulVec func(dst, x []float64, trans bool)
+// MulVecer represents a square matrix A of order n by means of a matrix-vector
+// multiplication.
+type MulVecer interface {
+	// Order returns the order n of the matrix A.
+	Order() int
 
-	// B is the right-hand side vector. Its length determines the dimension
-	// of the system.
-	B []float64
+	// MulVec computes A*x or A^T*x and stores the result into dst.
+	// x and dst will have length equal to Order.
+	MulVec(dst, x []float64, trans bool)
 }
 
 // Settings holds settings for solving a linear system.
@@ -104,58 +103,52 @@ type Stats struct {
 
 // Iterative solves the system of n linear equations
 //  A*x = b,
-// where the n×n matrix A and the right-hand side b are represented by sys. The
-// dimension n of the system is determined by the length of sys.B.
+// where A is an n×n matrix and b is the right-hand side vector of order n,
+// using an iterative method m.
 //
 // If x is not nil, its length must be equal to n, and it will be used as an
 // initial guess. On return it will contain the approximate solution. If it is
 // nil, the zero vector will be used as an initial guess, and the solution will
 // be returned in Result.X.
 //
-// method is an iterative method used for finding an approximate solution of the
-// linear system. It must not be nil.
-//
 // settings provide means for adjusting parameters of the iterative process.
 // See the Settings documentation for more information.
-func Iterative(dst []float64, sys System, method Method, settings Settings) (*Result, error) {
-	if sys.MulVec == nil {
-		panic("linsolve: nil matrix-vector multiplication")
-	}
-	dim := len(sys.B)
-	if dim == 0 {
-		return nil, errors.New("linsolve: dimension not positive")
+func Iterative(dst []float64, a MulVecer, b []float64, m Method, settings Settings) (*Result, error) {
+	n := a.Order()
+	if len(b) != n {
+		panic("linsolve: mismatched length of b")
 	}
 
 	if dst == nil {
-		dst = make([]float64, dim)
+		dst = make([]float64, n)
 	}
-	if len(dst) != dim {
+	if len(dst) != n {
 		panic("linsolve: mismatched length of dst")
 	}
 
 	var stats Stats
 	ctx := &Context{
 		X:        dst,
-		Residual: make([]float64, dim),
-		Src:      make([]float64, dim),
-		Dst:      make([]float64, dim),
+		Residual: make([]float64, n),
+		Src:      make([]float64, n),
+		Dst:      make([]float64, n),
 	}
 	if settings.InitX != nil {
-		if len(settings.InitX) != dim {
+		if len(settings.InitX) != n {
 			panic("linsolve: mismatched length of initial guess")
 		}
 		copy(ctx.X, settings.InitX)
-		computeResidual(ctx.Residual, sys, ctx.X, &stats)
+		computeResidual(ctx.Residual, a, b, ctx.X, &stats)
 	} else {
 		// Initial x is the zero vector.
 		for i := range ctx.X {
 			ctx.X[i] = 0
 		}
 		// Residual b-A*x is then equal to b.
-		copy(ctx.Residual, sys.B)
+		copy(ctx.Residual, b)
 	}
 
-	defaultSettings(&settings, dim)
+	defaultSettings(&settings, n)
 	if settings.Tolerance <= 0 || 1 <= settings.Tolerance {
 		panic("linsolve: invalid tolerance")
 	}
@@ -163,7 +156,7 @@ func Iterative(dst []float64, sys System, method Method, settings Settings) (*Re
 	var err error
 	ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 	if ctx.ResidualNorm >= settings.Tolerance {
-		err = iterate(sys, ctx, settings, method, &stats)
+		err = iterate(a, b, ctx, settings, m, &stats)
 	}
 
 	return &Result{
@@ -173,14 +166,14 @@ func Iterative(dst []float64, sys System, method Method, settings Settings) (*Re
 	}, err
 }
 
-func iterate(sys System, ctx *Context, settings Settings, method Method, stats *Stats) error {
-	bNorm := floats.Norm(sys.B, 2)
+func iterate(a MulVecer, b []float64, ctx *Context, settings Settings, method Method, stats *Stats) error {
+	bNorm := floats.Norm(b, 2)
 	if bNorm == 0 {
 		bNorm = 1
 	}
 
-	dim := len(ctx.X)
-	method.Init(dim)
+	n := a.Order()
+	method.Init(n)
 
 	for {
 		op, err := method.Iterate(ctx)
@@ -192,7 +185,7 @@ func iterate(sys System, ctx *Context, settings Settings, method Method, stats *
 		case NoOperation:
 		case MulVec:
 			stats.MulVec++
-			sys.MulVec(ctx.Dst, ctx.Src, op&Trans == Trans)
+			a.MulVec(ctx.Dst, ctx.Src, op&Trans == Trans)
 		case PreconSolve:
 			stats.PreconSolve++
 			err = settings.PreconSolve(ctx.Dst, ctx.Src, op&Trans == Trans)
@@ -202,7 +195,7 @@ func iterate(sys System, ctx *Context, settings Settings, method Method, stats *
 		case CheckResidualNorm:
 			ctx.Converged = ctx.ResidualNorm < settings.Tolerance*bNorm
 		case ComputeResidual:
-			computeResidual(ctx.Residual, sys, ctx.X, stats)
+			computeResidual(ctx.Residual, a, b, ctx.X, stats)
 		case MajorIteration:
 			stats.Iterations++
 			rnorm := floats.Norm(ctx.Residual, 2)
@@ -235,8 +228,8 @@ func NoPreconditioner(dst, rhs []float64, trans bool) error {
 	return nil
 }
 
-func computeResidual(dst []float64, sys System, x []float64, stats *Stats) {
+func computeResidual(dst []float64, a MulVecer, b, x []float64, stats *Stats) {
 	stats.MulVec++
-	sys.MulVec(dst, x, false)
-	floats.AddScaledTo(dst, sys.B, -1, dst)
+	a.MulVec(dst, x, false)
+	floats.AddScaledTo(dst, b, -1, dst)
 }

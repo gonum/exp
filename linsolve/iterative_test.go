@@ -38,7 +38,7 @@ func testIterative(t *testing.T, m Method, testCases []testCase) {
 			want[i] = 2 + 0.1*float64(i%10)
 		}
 		b := make([]float64, n)
-		tc.mulvec(b, want, false)
+		tc.MulVec(b, want, false)
 
 		// Initial guess is a random vector.
 		x := make([]float64, n)
@@ -46,7 +46,7 @@ func testIterative(t *testing.T, m Method, testCases []testCase) {
 			x[i] = rnd.NormFloat64()
 		}
 
-		_, err := Iterative(x, System{tc.mulvec, b}, m, Settings{
+		_, err := Iterative(x, tc, b, m, Settings{
 			InitX:         x,
 			Tolerance:     convTol,
 			MaxIterations: 40 * n,
