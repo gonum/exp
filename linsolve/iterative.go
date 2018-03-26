@@ -16,14 +16,10 @@ const defaultTolerance = 1e-8
 // without converging to a solution.
 var ErrIterationLimit = errors.New("linsolve: iteration limit reached")
 
-// MulVecer represents a square matrix A of order n by means of a matrix-vector
+// MulVecer represents a square matrix A by means of a matrix-vector
 // multiplication.
 type MulVecer interface {
-	// Order returns the order n of the matrix A.
-	Order() int
-
 	// MulVecTo computes A*x or A^T*x and stores the result into dst.
-	// x and dst will have length equal to Order.
 	MulVecTo(dst []float64, trans bool, x []float64)
 }
 
@@ -113,12 +109,9 @@ type Stats struct {
 // settings provide means for adjusting parameters of the iterative process.
 // See the Settings documentation for more information.
 func Iterative(dst []float64, a MulVecer, b []float64, m Method, settings Settings) (*Result, error) {
-	n := a.Order()
-	if n <= 0 {
-		panic("linsolve: dimension not positive")
-	}
-	if len(b) != n {
-		panic("linsolve: mismatched length of b")
+	n := len(b)
+	if n == 0 {
+		panic("linsolve: dimension is zero")
 	}
 
 	if dst == nil {
@@ -174,7 +167,7 @@ func iterate(a MulVecer, b []float64, ctx *Context, settings Settings, method Me
 		bNorm = 1
 	}
 
-	n := a.Order()
+	n := len(b)
 	method.Init(n)
 
 	for {
