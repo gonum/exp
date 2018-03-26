@@ -30,7 +30,7 @@ testLoop:
 			want[i] = 2 + 0.1*float64(i%10)
 		}
 		b := make([]float64, n)
-		tc.mulvec(b, false, want)
+		tc.MulVecTo(b, false, want)
 		bnorm := floats.Norm(b, 2)
 
 		ctx := Context{
@@ -44,7 +44,7 @@ testLoop:
 			ctx.X[i] = rnd.NormFloat64()
 		}
 		// Compute the initial residual.
-		tc.mulvec(ctx.Residual, false, ctx.X)
+		tc.MulVecTo(ctx.Residual, false, ctx.X)
 		floats.AddScaledTo(ctx.Residual, b, -1, ctx.Residual)
 
 		var itercount int
@@ -59,11 +59,11 @@ testLoop:
 			}
 			switch op {
 			case MulVec:
-				tc.mulvec(ctx.Dst, false, ctx.Src)
+				tc.MulVecTo(ctx.Dst, false, ctx.Src)
 			case PreconSolve:
 				copy(ctx.Dst, ctx.Src)
 			case ComputeResidual:
-				tc.mulvec(ctx.Residual, false, ctx.X)
+				tc.MulVecTo(ctx.Residual, false, ctx.X)
 				floats.AddScaledTo(ctx.Residual, b, -1, ctx.Residual)
 			case CheckResidualNorm:
 				ctx.Converged = ctx.ResidualNorm < convTol*bnorm
