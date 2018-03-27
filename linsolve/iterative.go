@@ -100,7 +100,8 @@ type Stats struct {
 // Iterative finds an approximate solution of the system of n linear equations
 //  A*x = b,
 // where A is a nonsingular square matrix of order n and b is the right-hand
-// side vector, using an iterative method m.
+// side vector, using an iterative method m. If m is nil, default GMRES will be
+// used.
 //
 // If dst is not nil, its length must be equal to n and the result will be
 // stored into dst, otherwise a new slice will be allocated. In both cases
@@ -157,6 +158,10 @@ func Iterative(dst []float64, a MulVecer, b []float64, m Method, settings Settin
 	defaultSettings(&settings, n)
 	if settings.Tolerance <= 0 || 1 <= settings.Tolerance {
 		panic("linsolve: invalid tolerance")
+	}
+
+	if m == nil {
+		m = &GMRES{}
 	}
 
 	var err error

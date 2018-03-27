@@ -12,6 +12,13 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
+func TestIterativeWithDefault(t *testing.T) {
+	rnd := rand.New(rand.NewSource(1))
+	testCases := spdTestCases(rnd)
+	testCases = append(testCases, unsymTestCases()...)
+	testIterative(t, nil, testCases)
+}
+
 func TestIterativeWithCG(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 	testCases := spdTestCases(rnd)
