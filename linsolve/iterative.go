@@ -99,15 +99,26 @@ type Stats struct {
 
 // Iterative finds an approximate solution of the system of n linear equations
 //  A*x = b,
-// where A is a square matrix of order n and b is the right-hand side vector,
-// using an iterative method m.
+// where A is a nonsingular square matrix of order n and b is the right-hand
+// side vector, using an iterative method m.
 //
 // If dst is not nil, its length must be equal to n and the result will be
-// stored into dst, otherwise a new slice will be allocated and returned in
-// Result.
+// stored into dst, otherwise a new slice will be allocated. In both cases
+// the slice will also be returned in Result.
 //
-// settings provide means for adjusting parameters of the iterative process.
-// See the Settings documentation for more information.
+// settings provide means for adjusting parameters of the iterative process. The
+// zero value of settings can be used for the default settings. See the Settings
+// documentation for more information.
+//
+// Note that the default choices of Method and Settings were chosen to provide
+// accuracy and robustness, rather than speed. There are many algorithms for
+// iterative linear solutions that have different tradeoffs, and can exploit
+// special structure in the A matrix. Similarly, in many cases the number of
+// iterations can be significantly reduced by using an appropriate
+// preconditioner or increasing the error tolerance. Combined, these choices can
+// significantly reduce computation time. Thus, while Iterative has supplied
+// defaults, users are strongly encouraged to adjust these defaults for their
+// problem.
 func Iterative(dst []float64, a MulVecer, b []float64, m Method, settings Settings) (*Result, error) {
 	n := len(b)
 	if n == 0 {
