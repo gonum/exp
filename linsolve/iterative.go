@@ -16,9 +16,9 @@ const defaultTolerance = 1e-8
 // without converging to a solution.
 var ErrIterationLimit = errors.New("linsolve: iteration limit reached")
 
-// MulVecer represents a square matrix A by means of a matrix-vector
+// MulVecToer represents a square matrix A by means of a matrix-vector
 // multiplication.
-type MulVecer interface {
+type MulVecToer interface {
 	// MulVecTo computes A*x or A^T*x and stores the result into dst.
 	MulVecTo(dst []float64, trans bool, x []float64)
 }
@@ -120,7 +120,7 @@ type Stats struct {
 // significantly reduce computation time. Thus, while Iterative has supplied
 // defaults, users are strongly encouraged to adjust these defaults for their
 // problem.
-func Iterative(dst []float64, a MulVecer, b []float64, m Method, settings Settings) (*Result, error) {
+func Iterative(dst []float64, a MulVecToer, b []float64, m Method, settings Settings) (*Result, error) {
 	n := len(b)
 	if n == 0 {
 		panic("linsolve: dimension is zero")
@@ -177,7 +177,7 @@ func Iterative(dst []float64, a MulVecer, b []float64, m Method, settings Settin
 	}, err
 }
 
-func iterate(a MulVecer, b []float64, ctx *Context, settings Settings, method Method, stats *Stats) error {
+func iterate(a MulVecToer, b []float64, ctx *Context, settings Settings, method Method, stats *Stats) error {
 	bNorm := floats.Norm(b, 2)
 	if bNorm == 0 {
 		bNorm = 1
@@ -239,7 +239,7 @@ func NoPreconditioner(dst, rhs []float64, trans bool) error {
 	return nil
 }
 
-func computeResidual(dst []float64, a MulVecer, b, x []float64, stats *Stats) {
+func computeResidual(dst []float64, a MulVecToer, b, x []float64, stats *Stats) {
 	stats.MulVec++
 	a.MulVecTo(dst, false, x)
 	floats.AddScaledTo(dst, b, -1, dst)
