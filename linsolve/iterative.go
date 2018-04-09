@@ -60,6 +60,14 @@ type Settings struct {
 	PreconSolve func(dst, rhs []float64, trans bool) error
 }
 
+// DefaultSettings returns default settings for solving a general linear system
+// of dimension dim.
+func DefaultSettings(dim int) *Settings {
+	var s Settings
+	defaultSettings(&s, dim)
+	return &s
+}
+
 // defaultSettings fills zero fields of s with default values.
 func defaultSettings(s *Settings, dim int) {
 	if s.Tolerance == 0 {
@@ -70,6 +78,18 @@ func defaultSettings(s *Settings, dim int) {
 	}
 	if s.PreconSolve == nil {
 		s.PreconSolve = NoPreconditioner
+	}
+}
+
+func checkSettings(s *Settings, dim int) {
+	if s.InitX != nil && len(s.InitX) != dim {
+		panic("linsolve: mismatched length of initial guess")
+	}
+	if s.Tolerance <= 0 || 1 <= s.Tolerance {
+		panic("linsolve: invalid tolerance")
+	}
+	if s.MaxIterations <= 0 {
+		panic("linsolve: negative iteration limit")
 	}
 }
 
@@ -108,7 +128,7 @@ type Stats struct {
 // the slice will also be returned in Result.
 //
 // settings provide means for adjusting parameters of the iterative process. The
-// zero value of settings can be used for the default settings. See the Settings
+// nil value of settings is equivalent to using DefaultSettings. See the Settings
 // documentation for more information.
 //
 // Note that the default choices of Method and Settings were chosen to provide
@@ -120,7 +140,7 @@ type Stats struct {
 // significantly reduce computation time. Thus, while Iterative has supplied
 // defaults, users are strongly encouraged to adjust these defaults for their
 // problem.
-func Iterative(dst []float64, a MulVecToer, b []float64, m Method, settings Settings) (*Result, error) {
+func Iterative(dst []float64, a MulVecToer, b []float64, m Method, settings *Settings) (*Result, error) {
 	n := len(b)
 	if n == 0 {
 		panic("linsolve: dimension is zero")
@@ -133,6 +153,13 @@ func Iterative(dst []float64, a MulVecToer, b []float64, m Method, settings Sett
 		panic("linsolve: mismatched length of dst")
 	}
 
+	var s Settings
+	if settings != nil {
+		s = *settings
+	}
+	defaultSettings(&s, n)
+	checkSettings(&s, n)
+
 	var stats Stats
 	ctx := &Context{
 		X:        dst,
@@ -140,11 +167,8 @@ func Iterative(dst []float64, a MulVecToer, b []float64, m Method, settings Sett
 		Src:      make([]float64, n),
 		Dst:      make([]float64, n),
 	}
-	if settings.InitX != nil {
-		if len(settings.InitX) != n {
-			panic("linsolve: mismatched length of initial guess")
-		}
-		copy(ctx.X, settings.InitX)
+	if s.InitX != nil {
+		copy(ctx.X, s.InitX)
 		computeResidual(ctx.Residual, a, b, ctx.X, &stats)
 	} else {
 		// Initial x is the zero vector.
@@ -155,19 +179,14 @@ func Iterative(dst []float64, a MulVecToer, b []float64, m Method, settings Sett
 		copy(ctx.Residual, b)
 	}
 
-	defaultSettings(&settings, n)
-	if settings.Tolerance <= 0 || 1 <= settings.Tolerance {
-		panic("linsolve: invalid tolerance")
-	}
-
 	if m == nil {
 		m = &GMRES{}
 	}
 
 	var err error
 	ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
-	if ctx.ResidualNorm >= settings.Tolerance {
-		err = iterate(a, b, ctx, settings, m, &stats)
+	if ctx.ResidualNorm >= s.Tolerance {
+		err = iterate(a, b, ctx, s, m, &stats)
 	}
 
 	return &Result{
