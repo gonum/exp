@@ -30,6 +30,12 @@ type Settings struct {
 	// system.
 	InitX []float64
 
+	// Dst, if not nil, will be used for storing the approximate solution,
+	// otherwise a new slice will be allocated. In both cases the slice will
+	// also be returned in Result. If Dst is not nil, its length must be
+	// equal to the dimension of the system.
+	Dst []float64
+
 	// Tolerance specifies error tolerance for the final (approximate)
 	// solution produced by the iterative method. If Tolerance is zero, a
 	// default value of 1e-8 will be used, otherwise it must be positive and
@@ -61,7 +67,7 @@ type Settings struct {
 }
 
 // DefaultSettings returns default settings for solving a general linear system
-// of dimension dim.
+// of dimension dim. It will not allocate fields like InitX or Dst.
 func DefaultSettings(dim int) *Settings {
 	var s Settings
 	defaultSettings(&s, dim)
@@ -84,6 +90,9 @@ func defaultSettings(s *Settings, dim int) {
 func checkSettings(s *Settings, dim int) {
 	if s.InitX != nil && len(s.InitX) != dim {
 		panic("linsolve: mismatched length of initial guess")
+	}
+	if s.Dst != nil && len(s.Dst) != dim {
+		panic("linsolve: mismatched destination length")
 	}
 	if s.Tolerance <= 0 || 1 <= s.Tolerance {
 		panic("linsolve: invalid tolerance")
@@ -123,10 +132,6 @@ type Stats struct {
 // side vector, using an iterative method m. If m is nil, default GMRES will be
 // used.
 //
-// If dst is not nil, its length must be equal to n and the result will be
-// stored into dst, otherwise a new slice will be allocated. In both cases
-// the slice will also be returned in Result.
-//
 // settings provide means for adjusting parameters of the iterative process. The
 // nil value of settings is equivalent to using DefaultSettings. See the Settings
 // documentation for more information.
@@ -140,17 +145,10 @@ type Stats struct {
 // significantly reduce computation time. Thus, while Iterative has supplied
 // defaults, users are strongly encouraged to adjust these defaults for their
 // problem.
-func Iterative(dst []float64, a MulVecToer, b []float64, m Method, settings *Settings) (*Result, error) {
+func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result, error) {
 	n := len(b)
 	if n == 0 {
 		panic("linsolve: dimension is zero")
-	}
-
-	if dst == nil {
-		dst = make([]float64, n)
-	}
-	if len(dst) != n {
-		panic("linsolve: mismatched length of dst")
 	}
 
 	var s Settings
@@ -159,6 +157,11 @@ func Iterative(dst []float64, a MulVecToer, b []float64, m Method, settings *Set
 	}
 	defaultSettings(&s, n)
 	checkSettings(&s, n)
+
+	dst := s.Dst
+	if dst == nil {
+		dst = make([]float64, n)
+	}
 
 	var stats Stats
 	ctx := &Context{
