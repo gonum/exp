@@ -156,28 +156,18 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 		s = *settings
 	}
 	defaultSettings(&s, n)
+	if s.Dst == nil {
+		s.Dst = make([]float64, n)
+	}
 	checkSettings(&s, n)
 
-	dst := s.Dst
-	if dst == nil {
-		dst = make([]float64, n)
-	}
-
 	var stats Stats
-	ctx := &Context{
-		X:        dst,
-		Residual: make([]float64, n),
-		Src:      make([]float64, n),
-		Dst:      make([]float64, n),
-	}
+	ctx := newContext(n)
 	if s.InitX != nil {
 		copy(ctx.X, s.InitX)
 		computeResidual(ctx.Residual, a, b, ctx.X, &stats)
 	} else {
 		// Initial x is the zero vector.
-		for i := range ctx.X {
-			ctx.X[i] = 0
-		}
 		// Residual b-A*x is then equal to b.
 		copy(ctx.Residual, b)
 	}
@@ -193,7 +183,7 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	}
 
 	return &Result{
-		X:            ctx.X,
+		X:            s.Dst,
 		ResidualNorm: ctx.ResidualNorm,
 		Stats:        stats,
 	}, err
@@ -231,6 +221,7 @@ func iterate(a MulVecToer, b []float64, ctx *Context, settings Settings, method 
 			computeResidual(ctx.Residual, a, b, ctx.X, stats)
 		case MajorIteration:
 			stats.Iterations++
+			copy(settings.Dst, ctx.X)
 			rNorm := floats.Norm(ctx.Residual, 2)
 			var converged bool
 			if settings.NormA != 0 {
@@ -265,4 +256,13 @@ func computeResidual(dst []float64, a MulVecToer, b, x []float64, stats *Stats) 
 	stats.MulVec++
 	a.MulVecTo(dst, false, x)
 	floats.AddScaledTo(dst, b, -1, dst)
+}
+
+func newContext(dim int) *Context {
+	return &Context{
+		X:        make([]float64, dim),
+		Residual: make([]float64, dim),
+		Src:      make([]float64, dim),
+		Dst:      make([]float64, dim),
+	}
 }
