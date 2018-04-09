@@ -53,7 +53,7 @@ func testIterative(t *testing.T, m Method, testCases []testCase) {
 			x[i] = rnd.NormFloat64()
 		}
 
-		_, err := Iterative(x, tc, b, m, Settings{
+		_, err := Iterative(x, tc, b, m, &Settings{
 			InitX:         x,
 			Tolerance:     convTol,
 			MaxIterations: 40 * n,
