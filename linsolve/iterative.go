@@ -70,10 +70,14 @@ type Settings struct {
 	// where M is the preconditioning matrix. If PreconSolve is nil, no
 	// preconditioning will be used (M is the identity).
 	PreconSolve func(dst, rhs []float64, trans bool) error
+
+	// Work context can be provided to reduce memory allocation when solving
+	// multiple linear systems.
+	Work *Context
 }
 
 // DefaultSettings returns default settings for solving a general linear system
-// of dimension dim. It will not allocate fields like InitX or Dst.
+// of dimension dim. It will not allocate fields like InitX, Dst, or Work.
 func DefaultSettings(dim int) *Settings {
 	var s Settings
 	defaultSettings(&s, dim)
@@ -140,7 +144,8 @@ type Stats struct {
 //
 // settings provide means for adjusting parameters of the iterative process. The
 // nil value of settings is equivalent to using DefaultSettings. See the Settings
-// documentation for more information.
+// documentation for more information. Iterative will not modify the fields of
+// Settings.
 //
 // Note that the default choices of Method and Settings were chosen to provide
 // accuracy and robustness, rather than speed. There are many algorithms for
@@ -168,7 +173,7 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	checkSettings(&s, n)
 
 	var stats Stats
-	ctx := newContext(n)
+	ctx := reuseContext(s.Work, n)
 	if s.InitX != nil {
 		copy(ctx.X, s.InitX)
 		computeResidual(ctx.Residual, a, b, ctx.X, &stats)
@@ -267,13 +272,4 @@ func computeResidual(dst []float64, a MulVecToer, b, x []float64, stats *Stats) 
 	stats.MulVec++
 	a.MulVecTo(dst, false, x)
 	floats.AddScaledTo(dst, b, -1, dst)
-}
-
-func newContext(dim int) *Context {
-	return &Context{
-		X:        make([]float64, dim),
-		Residual: make([]float64, dim),
-		Src:      make([]float64, dim),
-		Dst:      make([]float64, dim),
-	}
 }
