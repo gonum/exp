@@ -65,6 +65,30 @@ type Context struct {
 	Src, Dst []float64
 }
 
+// NewContext allocates and returns a Context for solving n-dimensional problems.
+func NewContext(n int) *Context {
+	if n <= 0 {
+		panic("linsolve: context size is not positive")
+	}
+	return &Context{
+		X:        make([]float64, n),
+		Residual: make([]float64, n),
+		Src:      make([]float64, n),
+		Dst:      make([]float64, n),
+	}
+}
+
+func reuseContext(ctx *Context, n int) *Context {
+	if ctx == nil {
+		return NewContext(n)
+	}
+	ctx.X = reuse(ctx.X, n)
+	ctx.Residual = reuse(ctx.Residual, n)
+	ctx.Src = reuse(ctx.Src, n)
+	ctx.Dst = reuse(ctx.Dst, n)
+	return ctx
+}
+
 // Operation specifies the type of operation.
 type Operation uint
 
