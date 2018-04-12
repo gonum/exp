@@ -94,7 +94,7 @@ func checkSettings(s *Settings, dim int) {
 	if s.InitX != nil && len(s.InitX) != dim {
 		panic("linsolve: mismatched length of initial guess")
 	}
-	if s.Dst != nil && len(s.Dst) != dim {
+	if len(s.Dst) != dim {
 		panic("linsolve: mismatched destination length")
 	}
 	if s.Tolerance <= 0 || 1 <= s.Tolerance {
@@ -103,7 +103,7 @@ func checkSettings(s *Settings, dim int) {
 	if s.MaxIterations <= 0 {
 		panic("linsolve: negative iteration limit")
 	}
-	if s.Work != nil && !checkContext(s.Work, dim) {
+	if !checkContext(s.Work, dim) {
 		panic("linsolve: mismatched size of work context")
 	}
 }
