@@ -71,16 +71,11 @@ type Settings struct {
 	Work *Context
 }
 
-// DefaultSettings returns default settings for solving a general linear system
-// of dimension dim. It will not allocate fields like InitX, Dst, or Work.
-func DefaultSettings(dim int) *Settings {
-	var s Settings
-	defaultSettings(&s, dim)
-	return &s
-}
-
 // defaultSettings fills zero fields of s with default values.
 func defaultSettings(s *Settings, dim int) {
+	if s.Dst == nil {
+		s.Dst = make([]float64, dim)
+	}
 	if s.Tolerance == 0 {
 		s.Tolerance = defaultTolerance
 	}
@@ -89,6 +84,9 @@ func defaultSettings(s *Settings, dim int) {
 	}
 	if s.PreconSolve == nil {
 		s.PreconSolve = NoPreconditioner
+	}
+	if s.Work == nil {
+		s.Work = NewContext(dim)
 	}
 }
 
@@ -156,10 +154,9 @@ type Stats struct {
 // side vector, using an iterative method m. If m is nil, default GMRES will be
 // used.
 //
-// settings provide means for adjusting parameters of the iterative process. The
-// nil value of settings is equivalent to using DefaultSettings. See the Settings
-// documentation for more information. Iterative will not modify the fields of
-// Settings.
+// settings provide means for adjusting parameters of the iterative process. See
+// the Settings documentation for more information. Iterative will not modify
+// the fields of Settings.
 //
 // Note that the default choices of Method and Settings were chosen to provide
 // accuracy and robustness, rather than speed. There are many algorithms for
@@ -181,17 +178,10 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 		s = *settings
 	}
 	defaultSettings(&s, n)
-	if s.Dst == nil {
-		s.Dst = make([]float64, n)
-	}
 	checkSettings(&s, n)
 
-	ctx := s.Work
-	if ctx == nil {
-		ctx = NewContext(n)
-	}
-
 	var stats Stats
+	ctx := s.Work
 	if s.InitX != nil {
 		copy(ctx.X, s.InitX)
 		computeResidual(ctx.Residual, a, b, ctx.X, &stats)
@@ -208,7 +198,7 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	var err error
 	ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 	if ctx.ResidualNorm >= s.Tolerance {
-		err = iterate(a, b, ctx, s, m, &stats)
+		err = iterate(a, b, s, m, &stats)
 	}
 
 	return &Result{
@@ -218,11 +208,13 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	}, err
 }
 
-func iterate(a MulVecToer, b []float64, ctx *Context, settings Settings, method Method, stats *Stats) error {
+func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats *Stats) error {
 	bNorm := floats.Norm(b, 2)
 	if bNorm == 0 {
 		bNorm = 1
 	}
+
+	ctx := settings.Work
 	copy(settings.Dst, ctx.X)
 
 	n := len(b)
