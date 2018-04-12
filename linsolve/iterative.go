@@ -66,7 +66,8 @@ type Settings struct {
 	PreconSolve func(dst, rhs []float64, trans bool) error
 
 	// Work context can be provided to reduce memory allocation when solving
-	// multiple linear systems.
+	// multiple linear systems. If Work is not nil, the length of its slice
+	// fields must be equal to the dimension of the system.
 	Work *Context
 }
 
@@ -104,6 +105,25 @@ func checkSettings(s *Settings, dim int) {
 	if s.MaxIterations <= 0 {
 		panic("linsolve: negative iteration limit")
 	}
+	if s.Work != nil && !checkContext(s.Work, dim) {
+		panic("linsolve: mismatched size of work context")
+	}
+}
+
+func checkContext(ctx *Context, dim int) bool {
+	if len(ctx.X) != dim {
+		return false
+	}
+	if len(ctx.Residual) != dim {
+		return false
+	}
+	if len(ctx.Src) != dim {
+		return false
+	}
+	if len(ctx.Dst) != dim {
+		return false
+	}
+	return true
 }
 
 // Result holds the result of an iterative solve.
@@ -166,8 +186,12 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	}
 	checkSettings(&s, n)
 
+	ctx := s.Work
+	if ctx == nil {
+		ctx = NewContext(n)
+	}
+
 	var stats Stats
-	ctx := reuseContext(s.Work, n)
 	if s.InitX != nil {
 		copy(ctx.X, s.InitX)
 		computeResidual(ctx.Residual, a, b, ctx.X, &stats)

@@ -78,15 +78,11 @@ func NewContext(n int) *Context {
 	}
 }
 
-func reuseContext(ctx *Context, n int) *Context {
-	if ctx == nil {
-		return NewContext(n)
-	}
+func (ctx *Context) Reset(n int) {
 	ctx.X = reuse(ctx.X, n)
 	ctx.Residual = reuse(ctx.Residual, n)
 	ctx.Src = reuse(ctx.Src, n)
 	ctx.Dst = reuse(ctx.Dst, n)
-	return ctx
 }
 
 // Operation specifies the type of operation.
