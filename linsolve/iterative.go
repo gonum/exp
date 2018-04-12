@@ -199,6 +199,8 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 	if ctx.ResidualNorm >= s.Tolerance {
 		err = iterate(a, b, s, m, &stats)
+	} else {
+		copy(s.Dst, ctx.X)
 	}
 
 	return &Result{
