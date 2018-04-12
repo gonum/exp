@@ -187,6 +187,9 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 		computeResidual(ctx.Residual, a, b, ctx.X, &stats)
 	} else {
 		// Initial x is the zero vector.
+		for i := range ctx.X {
+			ctx.X[i] = 0
+		}
 		// Residual b-A*x is then equal to b.
 		copy(ctx.Residual, b)
 	}
