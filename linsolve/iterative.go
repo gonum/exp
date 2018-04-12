@@ -12,15 +12,9 @@ import (
 
 const defaultTolerance = 1e-8
 
-var (
-	// ErrIterationLimit is returned when a maximum number of iterations were done
-	// without converging to a solution.
-	ErrIterationLimit = errors.New("linsolve: iteration limit reached")
-
-	// ErrNoProgress is returned when a Method stagnates, that is, when the
-	// difference between two consecutive iterates is too small.
-	ErrNoProgress = errors.New("linsolve: no progress")
-)
+// ErrIterationLimit is returned when a maximum number of iterations were done
+// without converging to a solution.
+var ErrIterationLimit = errors.New("linsolve: iteration limit reached")
 
 // MulVecToer represents a square matrix A by means of a matrix-vector
 // multiplication.
@@ -233,6 +227,7 @@ func iterate(a MulVecToer, b []float64, ctx *Context, settings Settings, method 
 			computeResidual(ctx.Residual, a, b, ctx.X, stats)
 		case MajorIteration:
 			stats.Iterations++
+			copy(settings.Dst, ctx.X)
 			rNorm := floats.Norm(ctx.Residual, 2)
 			var converged bool
 			if settings.NormA != 0 {
@@ -242,15 +237,11 @@ func iterate(a MulVecToer, b []float64, ctx *Context, settings Settings, method 
 				converged = rNorm < settings.Tolerance*bNorm
 			}
 			if converged {
-				copy(settings.Dst, ctx.X)
 				ctx.ResidualNorm = rNorm
 				return nil
 			}
-			if floats.Distance(settings.Dst, ctx.X, 2) <= eps*floats.Norm(ctx.X, 2) {
-				return ErrNoProgress
-			}
-			copy(settings.Dst, ctx.X)
 			if stats.Iterations == settings.MaxIterations {
+				ctx.ResidualNorm = rNorm
 				return ErrIterationLimit
 			}
 		default:
