@@ -63,7 +63,7 @@ type Settings struct {
 	//  M dst = rhs, or M^T dst = rhs,
 	// where M is the preconditioning matrix. If PreconSolve is nil, no
 	// preconditioning will be used (M is the identity).
-	PreconSolve func(dst, rhs []float64, trans bool) error
+	PreconSolve func(dst []float64, trans bool, rhs []float64) error
 
 	// Work context can be provided to reduce memory allocation when solving
 	// multiple linear systems. If Work is not nil, the length of its slice
@@ -238,7 +238,7 @@ func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats 
 			a.MulVecTo(ctx.Dst, op&Trans == Trans, ctx.Src)
 		case PreconSolve:
 			stats.PreconSolve++
-			err = settings.PreconSolve(ctx.Dst, ctx.Src, op&Trans == Trans)
+			err = settings.PreconSolve(ctx.Dst, op&Trans == Trans, ctx.Src)
 			if err != nil {
 				return err
 			}
@@ -273,7 +273,7 @@ func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats 
 }
 
 // NoPreconditioner implements the identity preconditioner.
-func NoPreconditioner(dst, rhs []float64, trans bool) error {
+func NoPreconditioner(dst []float64, trans bool, rhs []float64) error {
 	if len(dst) != len(rhs) {
 		panic("linsolve: mismatched slice length")
 	}
