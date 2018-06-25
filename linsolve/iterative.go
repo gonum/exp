@@ -246,23 +246,24 @@ func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats 
 			ctx.Converged = ctx.ResidualNorm < settings.Tolerance*bNorm
 		case ComputeResidual:
 			computeResidual(ctx.Residual, a, b, ctx.X, stats)
-		case MajorIteration:
-			stats.Iterations++
-			copy(settings.Dst, ctx.X)
+		case CheckResidual:
 			rNorm := floats.Norm(ctx.Residual, 2)
-			var converged bool
 			if settings.NormA != 0 {
 				xNorm := floats.Norm(ctx.X, 2)
-				converged = rNorm < settings.Tolerance*(settings.NormA*xNorm+bNorm)
+				ctx.Converged = rNorm < settings.Tolerance*(settings.NormA*xNorm+bNorm)
 			} else {
-				converged = rNorm < settings.Tolerance*bNorm
+				ctx.Converged = rNorm < settings.Tolerance*bNorm
 			}
-			if converged {
-				ctx.ResidualNorm = rNorm
+		case MajorIteration:
+			stats.Iterations++
+			if ctx.Converged {
+				copy(settings.Dst, ctx.X)
+				ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 				return nil
 			}
 			if stats.Iterations == settings.MaxIterations {
-				ctx.ResidualNorm = rNorm
+				copy(settings.Dst, ctx.X)
+				ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 				return ErrIterationLimit
 			}
 		default:
