@@ -65,7 +65,8 @@ type Context struct {
 	Src, Dst []float64
 }
 
-// NewContext allocates and returns a Context for solving n-dimensional problems.
+// NewContext returns a new Context for work on problems of dimension n.
+// NewContext will panic is n is not positive.
 func NewContext(n int) *Context {
 	if n <= 0 {
 		panic("linsolve: context size is not positive")
@@ -78,7 +79,12 @@ func NewContext(n int) *Context {
 	}
 }
 
+// Reset reinitializes the Context for work on problems of dimension n.
+// Reset will panic is n is not positive.
 func (ctx *Context) Reset(n int) {
+	if n <= 0 {
+		panic("linsolve: context size is not positive")
+	}
 	ctx.X = reuse(ctx.X, n)
 	ctx.Residual = reuse(ctx.Residual, n)
 	ctx.Src = reuse(ctx.Src, n)
