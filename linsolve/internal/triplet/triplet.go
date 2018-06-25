@@ -5,6 +5,8 @@
 // Package triplet provides triplet representation for sparse matrices.
 package triplet
 
+import "gonum.org/v1/gonum/mat"
+
 type triplet struct {
 	i, j int
 	v    float64
@@ -60,4 +62,12 @@ func (m *Matrix) MulVecTo(dst []float64, trans bool, x []float64) {
 	for _, aij := range m.data {
 		dst[aij.i] += aij.v * x[aij.j]
 	}
+}
+
+func (m *Matrix) DenseCopy() *mat.Dense {
+	d := mat.NewDense(m.r, m.c, nil)
+	for _, aij := range m.data {
+		d.Set(aij.i, aij.j, aij.v)
+	}
+	return d
 }
