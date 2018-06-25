@@ -160,14 +160,12 @@ func (g *GMRES) Iterate(ctx *Context) (Operation, error) {
 			g.resume = 3
 			return NoOperation, nil
 		}
-		// Either we have preliminary convergence or we have to restart,
-		// so end the inner for loop.
-		fallthrough
-	case 7:
+		// Either we have convergence or we have to restart,
+		// so end the inner for-loop.
 		g.updateSolution(g.k, ctx.X)
-		g.resume = 8
+		g.resume = 7
 		return ComputeResidual, nil
-	case 8:
+	case 7:
 		g.resume = 1
 		return MajorIteration, nil
 

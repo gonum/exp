@@ -121,14 +121,19 @@ const (
 	// Method.Iterate again.
 	CheckResidualNorm
 
+	// Check convergence using the residual in Context.Residual.
+	// Context.X must be valid. The caller must set
+	// Context.Converged to indicate whether convergence
+	// has been determined, and then it must call
+	// Method.Iterate again.
+	CheckResidual
+
 	// MajorIteration indicates that Method has finished
 	// what it considers to be one iteration. Method
 	// will make sure that Context.X and
-	// Context.Residual are updated. The caller should
-	// check convergence and other stopping criteria,
-	// and it may call Method.Iterate again if
-	// necessary. Otherwise it can terminate the
-	// iterative process.
+	// Context.Residual are updated. If Context.Converged is true,
+	// the caller should terminate the iterative process,
+	// otherwise it should call Method.Iterate again.
 	MajorIteration
 )
 
