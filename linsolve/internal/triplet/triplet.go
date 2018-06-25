@@ -17,7 +17,10 @@ type Matrix struct {
 	data []triplet
 }
 
-func New(r, c int) *Matrix {
+func NewMatrix(r, c int) *Matrix {
+	if r <= 0 || c <= 0 {
+		panic("triplet: invalid shape")
+	}
 	return &Matrix{
 		r: r,
 		c: c,

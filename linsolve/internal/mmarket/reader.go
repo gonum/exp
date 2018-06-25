@@ -74,7 +74,7 @@ func (r *Reader) Read() (*triplet.Matrix, error) {
 		return nil, errBadFormat
 	}
 
-	m := triplet.New(nr, nc)
+	m := triplet.NewMatrix(nr, nc)
 	for i := 0; i < nnz; i++ {
 		if !r.s.Scan() {
 			return nil, errBadFormat
