@@ -11,9 +11,8 @@ type triplet struct {
 }
 
 type Matrix struct {
-	r, c  int
-	data  []triplet
-	issym bool
+	r, c int
+	data []triplet
 }
 
 func New(r, c int) *Matrix {
