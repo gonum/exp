@@ -23,9 +23,9 @@ type testCase struct {
 	mulVecTo func([]float64, bool, []float64) // Matrix-vector multiplication
 	b        []float64                        // Right-hand side vector
 	diag     []float64                        // Diagonal for the Jacobi preconditioner
-	tol      float64
+	tol      float64                          // Tolerance for the convergence criterion
 
-	want []float64
+	want []float64 // Expected solution
 }
 
 func (tc *testCase) MulVecTo(dst []float64, trans bool, x []float64) {
