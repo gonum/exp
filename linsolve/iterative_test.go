@@ -101,6 +101,9 @@ func newTestSettings(rnd *rand.Rand, tc testCase) *Settings {
 func testMethodWithSettings(t *testing.T, m Method, s *Settings, tc testCase) {
 	wantTol := 1e-11
 	if s == nil {
+		// The default value of Settings.Tolerance is not as low as the tolerance in
+		// individual test cases, therefore we must use a higher tolerance for
+		// the expected accuracy of the computed solution.
 		wantTol = 1e-7
 	}
 
