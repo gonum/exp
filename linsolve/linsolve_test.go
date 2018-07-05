@@ -261,7 +261,7 @@ func newPoisson2D(nx, ny int, rnd *rand.Rand) testCase {
 	return tc
 }
 
-// newRandomUnsym returns a test case with a general unsymmetric matrix
+// newGreenbaum54 returns a test case with a general unsymmetric matrix
 // A defined as
 //  A = V*D*V^{-1},
 // where V is a random matrix and D is a block-diagonal matrix with n1 complex
