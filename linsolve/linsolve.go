@@ -108,7 +108,7 @@ const (
 	// must be placed in Context.Dst.
 	PreconSolve
 
-	// Trans indicates that MulVec or PrecondSolve
+	// Trans indicates that MulVec or PreconSolve
 	// operation must be performed wih the transpose,
 	// that is, compute A^T*x or solve M^T z = r. Method
 	// will command Trans only in bitwise OR combination
