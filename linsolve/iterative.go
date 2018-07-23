@@ -233,10 +233,10 @@ func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats 
 
 		switch op {
 		case NoOperation:
-		case MulVec:
+		case MulVec, MulVec | Trans:
 			stats.MulVec++
 			a.MulVecTo(ctx.Dst, op&Trans == Trans, ctx.Src)
-		case PreconSolve:
+		case PreconSolve, PreconSolve | Trans:
 			stats.PreconSolve++
 			err = settings.PreconSolve(ctx.Dst, op&Trans == Trans, ctx.Src)
 			if err != nil {
