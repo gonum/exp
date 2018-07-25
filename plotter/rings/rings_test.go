@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package rings_test
+package rings
 
 import (
 	"flag"
@@ -13,7 +13,6 @@ import (
 	"reflect"
 	"testing"
 
-	"gonum.org/v1/exp/plotter/rings"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/palette"
 	"gonum.org/v1/plot/plotter"
@@ -145,9 +144,9 @@ func (s *S) TestHighlight(c *check.C) {
 	p, err := plot.New()
 	c.Assert(err, check.Equals, nil)
 
-	h := rings.NewHighlight(
+	h := NewHighlight(
 		color.NRGBA{R: 0xf3, G: 0xf3, B: 0x15, A: 0xff},
-		rings.Arc{0, rings.Complete / 2 * rings.Clockwise},
+		Arc{0, Complete / 2 * Clockwise},
 		30, 120,
 	)
 	h.LineStyle = plotter.DefaultLineStyle
@@ -187,8 +186,8 @@ func (s *S) TestBlocks(c *check.C) {
 	c.Assert(err, check.Equals, nil)
 
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
@@ -259,8 +258,8 @@ func (s *S) TestBlocks(c *check.C) {
 
 func (s *S) TestBlocksScale(c *check.C) {
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
@@ -799,7 +798,7 @@ func (s *S) TestBlocksScale(c *check.C) {
 		p, err := plot.New()
 		c.Assert(err, check.Equals, nil)
 
-		s, err := rings.NewScale(t.feats, b, 110)
+		s, err := NewScale(t.feats, b, 110)
 		c.Assert(err, check.Equals, nil)
 		s.LineStyle = plotter.DefaultLineStyle
 		s.Tick.Length = 3
@@ -826,8 +825,8 @@ func (s *S) TestBlocksScale(c *check.C) {
 
 func (s *S) TestLabelsBlocks(c *check.C) {
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
@@ -836,7 +835,7 @@ func (s *S) TestLabelsBlocks(c *check.C) {
 
 	for i, t := range []struct {
 		feats     []feat.Feature
-		placement rings.TextPlacement
+		placement TextPlacement
 		actions   []interface{}
 	}{
 		{
@@ -876,7 +875,7 @@ func (s *S) TestLabelsBlocks(c *check.C) {
 		},
 		{
 			feats:     b.Set,
-			placement: rings.Radial,
+			placement: Radial,
 			actions: []interface{}{
 				setColor{col: color.Gray16{Y: 0x0}},
 				push{},
@@ -897,7 +896,7 @@ func (s *S) TestLabelsBlocks(c *check.C) {
 		},
 		{
 			feats: b.Set,
-			placement: func(a rings.Angle) (rot rings.Angle, xalign, yalign float64) {
+			placement: func(a Angle) (rot Angle, xalign, yalign float64) {
 				return a, 0, -0.5
 			},
 			actions: []interface{}{
@@ -919,7 +918,7 @@ func (s *S) TestLabelsBlocks(c *check.C) {
 		},
 		{
 			feats:     b.Set,
-			placement: rings.Horizontal,
+			placement: Horizontal,
 			actions: []interface{}{
 				setColor{col: color.Gray16{Y: 0x0}},
 				fillString{font: "Helvetica", size: 10, x: 215.74248908596053, y: 59.10442792299643, str: "feature0"},
@@ -933,7 +932,7 @@ func (s *S) TestLabelsBlocks(c *check.C) {
 		p, err := plot.New()
 		c.Assert(err, check.Equals, nil)
 
-		l, err := rings.NewLabels(b, 110, rings.NameLabels(t.feats)...)
+		l, err := NewLabels(b, 110, NameLabels(t.feats)...)
 		c.Assert(err, check.Equals, nil)
 		l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
 		l.Placement = t.placement
@@ -954,8 +953,8 @@ func (s *S) TestLabelsBlocks(c *check.C) {
 }
 
 func (s *S) TestLabelsArcs(c *check.C) {
-	a := rings.Arc{Theta: -0.031415926535897934, Phi: -1.7009436868899361} // This is feature0 from the blocks test.
-	h := rings.NewHighlight(
+	a := Arc{Theta: -0.031415926535897934, Phi: -1.7009436868899361} // This is feature0 from the blocks test.
+	h := NewHighlight(
 		color.NRGBA{R: 243, G: 243, B: 21, A: 128},
 		a,
 		80, 100,
@@ -966,9 +965,9 @@ func (s *S) TestLabelsArcs(c *check.C) {
 	c.Assert(err, check.Equals, nil)
 
 	for i, t := range []struct {
-		arc       rings.Arcer
-		label     rings.Label
-		placement rings.TextPlacement
+		arc       Arcer
+		label     Label
+		placement TextPlacement
 		actions   []interface{}
 	}{
 		{
@@ -996,7 +995,7 @@ func (s *S) TestLabelsArcs(c *check.C) {
 		{
 			arc:       h,
 			label:     "Label",
-			placement: rings.Radial,
+			placement: Radial,
 			actions: []interface{}{
 				setColor{col: color.Gray16{Y: 0x0}},
 				push{},
@@ -1008,7 +1007,7 @@ func (s *S) TestLabelsArcs(c *check.C) {
 		{
 			arc:   h,
 			label: "Label",
-			placement: func(a rings.Angle) (rot rings.Angle, xalign, yalign float64) {
+			placement: func(a Angle) (rot Angle, xalign, yalign float64) {
 				return a, 0, -0.5
 			},
 			actions: []interface{}{
@@ -1022,7 +1021,7 @@ func (s *S) TestLabelsArcs(c *check.C) {
 		{
 			arc:       h,
 			label:     "Label",
-			placement: rings.Horizontal,
+			placement: Horizontal,
 			actions: []interface{}{
 				setColor{col: color.Gray16{Y: 0x0}},
 				fillString{font: "Helvetica", size: 10, x: 217.96958781584493, y: 59.10442792299643, str: "Label"},
@@ -1032,7 +1031,7 @@ func (s *S) TestLabelsArcs(c *check.C) {
 		p, err := plot.New()
 		c.Assert(err, check.Equals, nil)
 
-		l, err := rings.NewLabels(t.arc, 110, t.label)
+		l, err := NewLabels(t.arc, 110, t.label)
 		c.Assert(err, check.Equals, nil)
 		l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
 		l.Placement = t.placement
@@ -1057,8 +1056,8 @@ func (s *S) TestLabelSpokes(c *check.C) {
 	c.Assert(err, check.Equals, nil)
 
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
@@ -1067,17 +1066,17 @@ func (s *S) TestLabelSpokes(c *check.C) {
 	for _, mf := range m {
 		mf.(*fs).location = b.Set[1]
 	}
-	ms, err := rings.NewSpokes(m, b, 73, 78)
+	ms, err := NewSpokes(m, b, 73, 78)
 	c.Assert(err, check.Equals, nil)
 	ms.LineStyle = plotter.DefaultLineStyle
 
 	font, err := vg.MakeFont("Helvetica", 10)
 	c.Assert(err, check.Equals, nil)
 
-	l, err := rings.NewLabels(ms, 125, rings.NameLabels([]feat.Feature{m[1], m[5], m[9]})...)
+	l, err := NewLabels(ms, 125, NameLabels([]feat.Feature{m[1], m[5], m[9]})...)
 	c.Assert(err, check.Equals, nil)
 	l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
-	l.Placement = rings.Radial
+	l.Placement = Radial
 	p.Add(l)
 
 	p.HideAxes()
@@ -1113,8 +1112,8 @@ func (s *S) TestSpokes(c *check.C) {
 	c.Assert(err, check.Equals, nil)
 
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
@@ -1123,7 +1122,7 @@ func (s *S) TestSpokes(c *check.C) {
 	for _, mf := range m {
 		mf.(*fs).location = b.Set[1]
 	}
-	ms, err := rings.NewSpokes(m, b, 73, 78)
+	ms, err := NewSpokes(m, b, 73, 78)
 	c.Assert(err, check.Equals, nil)
 	ms.LineStyle = plotter.DefaultLineStyle
 	p.Add(ms)
@@ -1218,22 +1217,22 @@ func (s *S) TestLinks(c *check.C) {
 	const marks = 16
 
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
 
 	for i, t := range []struct {
 		ends    [2]feat.Feature
-		bezier  *rings.Bezier
+		bezier  *Bezier
 		actions []interface{}
 	}{
 		{
 			ends: [2]feat.Feature{b.Set[1], b.Set[1]},
-			bezier: &rings.Bezier{Segments: 5,
-				Radius: rings.LengthDist{Length: 2 * 70 / 3, Min: floatPtr(0.95), Max: floatPtr(1.05)},
-				Crest:  &rings.FactorDist{Factor: 2, Min: floatPtr(0.7), Max: floatPtr(1.4)},
+			bezier: &Bezier{Segments: 5,
+				Radius: LengthDist{Length: 2 * 70 / 3, Min: floatPtr(0.95), Max: floatPtr(1.05)},
+				Crest:  &FactorDist{Factor: 2, Min: floatPtr(0.7), Max: floatPtr(1.4)},
 			},
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0x0, G: 0x0, B: 0x0, A: 0xfe}},
@@ -1328,9 +1327,9 @@ func (s *S) TestLinks(c *check.C) {
 		},
 		{
 			ends: [2]feat.Feature{b.Set[0], b.Set[1]},
-			bezier: &rings.Bezier{Segments: 5,
-				Radius: rings.LengthDist{Length: 2 * 70 / 3, Min: floatPtr(0.95), Max: floatPtr(1.05)},
-				Crest:  &rings.FactorDist{Factor: 2, Min: floatPtr(0.7), Max: floatPtr(1.4)},
+			bezier: &Bezier{Segments: 5,
+				Radius: LengthDist{Length: 2 * 70 / 3, Min: floatPtr(0.95), Max: floatPtr(1.05)},
+				Crest:  &FactorDist{Factor: 2, Min: floatPtr(0.7), Max: floatPtr(1.4)},
 			},
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0x0, G: 0x0, B: 0x0, A: 0xfe}},
@@ -1432,13 +1431,13 @@ func (s *S) TestLinks(c *check.C) {
 		for j := range m {
 			m[j] = randomFeatures(marks/2, t.ends[j].Start(), t.ends[j].End(), true, plotter.DefaultLineStyle)
 		}
-		mp := make([]rings.Pair, marks/2)
+		mp := make([]Pair, marks/2)
 		for j := range mp {
 			m[0][j].(*fs).location = t.ends[0]
 			m[1][j].(*fs).location = t.ends[1]
 			mp[j] = fp{feats: [2]*fs{m[0][j].(*fs), m[1][j].(*fs)}, sty: plotter.DefaultLineStyle}
 		}
-		l, err := rings.NewLinks(mp, [2]rings.ArcOfer{b, b}, [2]vg.Length{70, 70})
+		l, err := NewLinks(mp, [2]ArcOfer{b, b}, [2]vg.Length{70, 70})
 		c.Assert(err, check.Equals, nil)
 		l.Bezier = t.bezier
 		l.LineStyle = plotter.DefaultLineStyle
@@ -1452,7 +1451,7 @@ func (s *S) TestLinks(c *check.C) {
 		base.append(t.actions...)
 		c.Check(tc.actions, check.DeepEquals, base.actions, check.Commentf("Test %d", i))
 		if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
-			s, err := rings.NewSpokes(append(m[0], m[1]...), b, 72, 78)
+			s, err := NewSpokes(append(m[0], m[1]...), b, 72, 78)
 			c.Assert(err, check.Equals, nil)
 			p.Add(b, s)
 			c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("links-%d-%s.svg", i, failure(!ok))), check.Equals, nil)
@@ -1462,8 +1461,8 @@ func (s *S) TestLinks(c *check.C) {
 
 func (s *S) TestRibbons(c *check.C) {
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
@@ -1477,14 +1476,14 @@ func (s *S) TestRibbons(c *check.C) {
 
 	for i, t := range []struct {
 		orient   []feat.Orientation
-		pairs    []rings.Pair
+		pairs    []Pair
 		segments int
-		twist    rings.Twist
+		twist    Twist
 		actions  []interface{}
 	}{
 		{
 			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.NotOriented},
-			pairs: []rings.Pair{
+			pairs: []Pair{
 				fp{
 					feats: [2]*fs{
 						{
@@ -1525,7 +1524,7 @@ func (s *S) TestRibbons(c *check.C) {
 				},
 			},
 			segments: 5,
-			twist:    rings.Individual | rings.Flat,
+			twist:    Individual | Flat,
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}},
 				fill{path: vg.Path{
@@ -1626,7 +1625,7 @@ func (s *S) TestRibbons(c *check.C) {
 		},
 		{
 			orient: []feat.Orientation{feat.Forward, feat.Reverse, feat.NotOriented},
-			pairs: []rings.Pair{
+			pairs: []Pair{
 				fp{
 					feats: [2]*fs{
 						{
@@ -1667,7 +1666,7 @@ func (s *S) TestRibbons(c *check.C) {
 				},
 			},
 			segments: 5,
-			twist:    rings.Individual | rings.Flat,
+			twist:    Individual | Flat,
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}},
 				fill{path: vg.Path{
@@ -1769,7 +1768,7 @@ func (s *S) TestRibbons(c *check.C) {
 		},
 		{
 			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.Reverse},
-			pairs: []rings.Pair{
+			pairs: []Pair{
 				fp{
 					feats: [2]*fs{
 						{
@@ -1810,7 +1809,7 @@ func (s *S) TestRibbons(c *check.C) {
 				},
 			},
 			segments: 5,
-			twist:    rings.Individual | rings.Flat,
+			twist:    Individual | Flat,
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}},
 				fill{path: vg.Path{
@@ -1912,7 +1911,7 @@ func (s *S) TestRibbons(c *check.C) {
 		},
 		{
 			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.Forward},
-			pairs: []rings.Pair{
+			pairs: []Pair{
 				fp{
 					feats: [2]*fs{
 						{
@@ -1953,7 +1952,7 @@ func (s *S) TestRibbons(c *check.C) {
 				},
 			},
 			segments: 5,
-			twist:    rings.Individual | rings.Flat,
+			twist:    Individual | Flat,
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}},
 				fill{path: vg.Path{
@@ -2060,11 +2059,11 @@ func (s *S) TestRibbons(c *check.C) {
 		for j, o := range t.orient {
 			b.Set[j].(*fs).orient = o
 		}
-		b.Base = rings.NewGappedArcs(b.Base, b.Set, 0.01)
+		b.Base = NewGappedArcs(b.Base, b.Set, 0.01)
 
-		r, err := rings.NewRibbons(t.pairs, [2]rings.ArcOfer{b, b}, [2]vg.Length{70, 70})
+		r, err := NewRibbons(t.pairs, [2]ArcOfer{b, b}, [2]vg.Length{70, 70})
 		c.Assert(err, check.Equals, nil)
-		r.Bezier = &rings.Bezier{Segments: t.segments}
+		r.Bezier = &Bezier{Segments: t.segments}
 		r.Twist = t.twist
 		r.LineStyle = plotter.DefaultLineStyle
 		r.Color = color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}
@@ -2086,8 +2085,8 @@ func (s *S) TestRibbons(c *check.C) {
 
 func (s *S) TestSail(c *check.C) {
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
@@ -2103,7 +2102,7 @@ func (s *S) TestSail(c *check.C) {
 		orient   []feat.Orientation
 		ends     []feat.Feature
 		segments int
-		twist    rings.Twist
+		twist    Twist
 		actions  []interface{}
 	}{
 		{
@@ -2132,7 +2131,7 @@ func (s *S) TestSail(c *check.C) {
 				},
 			},
 			segments: 5,
-			twist:    rings.Individual | rings.Flat,
+			twist:    Individual | Flat,
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}},
 				fill{path: vg.Path{
@@ -2229,7 +2228,7 @@ func (s *S) TestSail(c *check.C) {
 				},
 			},
 			segments: 5,
-			twist:    rings.Individual | rings.Flat,
+			twist:    Individual | Flat,
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}},
 				fill{path: vg.Path{
@@ -2326,7 +2325,7 @@ func (s *S) TestSail(c *check.C) {
 				},
 			},
 			segments: 5,
-			twist:    rings.Individual | rings.Flat,
+			twist:    Individual | Flat,
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}},
 				fill{path: vg.Path{
@@ -2430,7 +2429,7 @@ func (s *S) TestSail(c *check.C) {
 				},
 			},
 			segments: 5,
-			twist:    rings.Individual | rings.Flat,
+			twist:    Individual | Flat,
 			actions: []interface{}{
 				setColor{col: color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}},
 				fill{path: vg.Path{
@@ -2527,11 +2526,11 @@ func (s *S) TestSail(c *check.C) {
 		for j, o := range t.orient {
 			b.Set[j].(*fs).orient = o
 		}
-		b.Base = rings.NewGappedArcs(b.Base, b.Set, 0.01)
+		b.Base = NewGappedArcs(b.Base, b.Set, 0.01)
 
-		r, err := rings.NewSail(t.ends, b, 70)
+		r, err := NewSail(t.ends, b, 70)
 		c.Assert(err, check.Equals, nil)
-		r.Bezier = &rings.Bezier{Segments: t.segments}
+		r.Bezier = &Bezier{Segments: t.segments}
 		r.Twist = t.twist
 		r.LineStyle = plotter.DefaultLineStyle
 		r.Color = color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}
@@ -2552,8 +2551,8 @@ func (s *S) TestSail(c *check.C) {
 }
 
 // makeScorers returns n Scorers each with m scores.
-func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []rings.Scorer {
-	s := make([]rings.Scorer, n)
+func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []Scorer {
+	s := make([]Scorer, n)
 	for i := 0; i < n; i++ {
 		cs := &fs{
 			start:    f.Start() + i*(f.Len()/n),
@@ -2572,21 +2571,21 @@ func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []rings.Scorer {
 
 func (s *S) TestScores(c *check.C) {
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
 
 	for i, t := range []struct {
 		orient   feat.Orientation
-		scores   []rings.Scorer
-		renderer rings.ScoreRenderer
+		scores   []Scorer
+		renderer ScoreRenderer
 		actions  []interface{}
 	}{
 		{
 			scores:   makeScorers(b.Set[1].(*fs), 10, 5, func(i, j int) float64 { return float64(i * j) }),
-			renderer: &rings.Heat{Palette: palette.Radial(10, palette.Cyan, palette.Magenta, 1).Colors()},
+			renderer: &Heat{Palette: palette.Radial(10, palette.Cyan, palette.Magenta, 1).Colors()},
 			actions: []interface{}{
 				setColor{col: color.NRGBA{R: 0x7f, G: 0xff, B: 0xff, A: 0xff}},
 				fill{path: vg.Path{
@@ -2942,7 +2941,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			scores:   makeScorers(b.Set[1].(*fs), 10, 5, func(_, _ int) float64 { return rand.NormFloat64() }),
-			renderer: &rings.Heat{Palette: palette.Radial(10, palette.Cyan, palette.Magenta, 1).Colors()},
+			renderer: &Heat{Palette: palette.Radial(10, palette.Cyan, palette.Magenta, 1).Colors()},
 			actions: []interface{}{
 				setColor{col: color.NRGBA{R: 0xff, G: 0xcc, B: 0xff, A: 0xff}},
 				fill{path: vg.Path{
@@ -3298,7 +3297,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			scores: makeScorers(b.Set[1].(*fs), 10, 1, func(v, _ int) float64 { return float64(v) }),
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
@@ -3379,7 +3378,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			scores: makeScorers(b.Set[1].(*fs), 10, 1, func(v, _ int) float64 { return float64(v) }),
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
@@ -3471,7 +3470,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			orient: feat.Forward,
-			scores: []rings.Scorer{
+			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
 					end:      b.Set[1].Start() + b.Set[1].Len()/3,
@@ -3494,7 +3493,7 @@ func (s *S) TestScores(c *check.C) {
 					scores:   []float64{2},
 				},
 			},
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
@@ -3530,7 +3529,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			orient: feat.Forward,
-			scores: []rings.Scorer{
+			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
 					end:      b.Set[1].Start() + b.Set[1].Len()/3,
@@ -3553,7 +3552,7 @@ func (s *S) TestScores(c *check.C) {
 					scores:   []float64{2},
 				},
 			},
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
@@ -3588,7 +3587,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			orient: feat.Forward,
-			scores: []rings.Scorer{
+			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
 					end:      b.Set[1].Start() + b.Set[1].Len()/3,
@@ -3611,7 +3610,7 @@ func (s *S) TestScores(c *check.C) {
 					scores:   []float64{2},
 				},
 			},
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
@@ -3646,7 +3645,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			orient: feat.Reverse,
-			scores: []rings.Scorer{
+			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
 					end:      b.Set[1].Start() + b.Set[1].Len()/3,
@@ -3669,7 +3668,7 @@ func (s *S) TestScores(c *check.C) {
 					scores:   []float64{2},
 				},
 			},
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
@@ -3705,7 +3704,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			orient: feat.Reverse,
-			scores: []rings.Scorer{
+			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
 					end:      b.Set[1].Start() + b.Set[1].Len()/3,
@@ -3728,7 +3727,7 @@ func (s *S) TestScores(c *check.C) {
 					scores:   []float64{2},
 				},
 			},
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
@@ -3762,7 +3761,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			orient: feat.Reverse,
-			scores: []rings.Scorer{
+			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
 					end:      b.Set[1].Start() + b.Set[1].Len()/3,
@@ -3785,7 +3784,7 @@ func (s *S) TestScores(c *check.C) {
 					scores:   []float64{2},
 				},
 			},
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
@@ -3820,7 +3819,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			scores: makeScorers(b.Set[1].(*fs), 10, 2, func(_, _ int) float64 { return rand.NormFloat64() }),
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: func() []draw.LineStyle {
 					sty := []draw.LineStyle{plotter.DefaultLineStyle, plotter.DefaultLineStyle}
 					sty[0].Color = color.NRGBA{R: 0xff, A: 0xff}
@@ -3973,7 +3972,7 @@ func (s *S) TestScores(c *check.C) {
 		},
 		{
 			scores: makeScorers(b.Set[1].(*fs), 10, 2, func(_, _ int) float64 { return rand.NormFloat64() }),
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: func() []draw.LineStyle {
 					sty := []draw.LineStyle{plotter.DefaultLineStyle, plotter.DefaultLineStyle}
 					sty[0].Color = color.NRGBA{R: 0xff, A: 0xff}
@@ -4148,8 +4147,8 @@ func (s *S) TestScores(c *check.C) {
 		c.Assert(err, check.Equals, nil)
 
 		b.Set[1].(*fs).orient = t.orient
-		b.Base = rings.NewGappedArcs(b.Base, b.Set, 0.01)
-		r, err := rings.NewScores(t.scores, b, 40, 75, t.renderer)
+		b.Base = NewGappedArcs(b.Base, b.Set, 0.01)
+		r, err := NewScores(t.scores, b, 40, 75, t.renderer)
 		c.Assert(err, check.Equals, nil)
 		p.Add(r)
 
@@ -4169,8 +4168,8 @@ func (s *S) TestScores(c *check.C) {
 
 func (s *S) TestScoresAxis(c *check.C) {
 	rand.Seed(1)
-	b, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
-		rings.Arc{0, rings.Complete * rings.Clockwise},
+	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
 	c.Assert(err, check.Equals, nil)
@@ -4179,30 +4178,30 @@ func (s *S) TestScoresAxis(c *check.C) {
 
 	for i, t := range []struct {
 		orient   feat.Orientation
-		scores   []rings.Scorer
-		renderer rings.ScoreRenderer
+		scores   []Scorer
+		renderer ScoreRenderer
 		actions  []interface{}
 	}{
 		{
 			scores: makeScorers(b.Set[1].(*fs), 10, 1, func(v, _ int) float64 { return float64(v) }),
-			renderer: &rings.Trace{
+			renderer: &Trace{
 				LineStyles: []draw.LineStyle{func() draw.LineStyle {
 					sty := plotter.DefaultLineStyle
 					sty.Color = color.Gray{0}
 					return sty
 				}()},
-				Axis: func() *rings.Axis {
+				Axis: func() *Axis {
 					a, err := b.ArcOf(b.Set[1], nil)
 					c.Assert(err, check.Equals, nil)
-					return &rings.Axis{
-						Angle:     a.Theta + a.Phi - rings.Complete*0.01/2,
+					return &Axis{
+						Angle:     a.Theta + a.Phi - Complete*0.01/2,
 						Grid:      plotter.DefaultGridLineStyle,
 						LineStyle: plotter.DefaultLineStyle,
-						Label: rings.AxisLabel{
+						Label: AxisLabel{
 							Text:      "Test",
 							TextStyle: draw.TextStyle{Color: color.Gray16{0}, Font: font},
 						},
-						Tick: rings.TickConfig{
+						Tick: TickConfig{
 							Marker:    plot.DefaultTicks{},
 							LineStyle: plotter.DefaultLineStyle,
 							Length:    -2,
@@ -4402,7 +4401,7 @@ func (s *S) TestScoresAxis(c *check.C) {
 		c.Assert(err, check.Equals, nil)
 
 		b.Set[1].(*fs).orient = t.orient
-		r, err := rings.NewScores(t.scores, b, 40, 75, t.renderer)
+		r, err := NewScores(t.scores, b, 40, 75, t.renderer)
 
 		c.Assert(err, check.Equals, nil)
 		p.Add(r)
