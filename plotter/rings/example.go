@@ -108,12 +108,12 @@ func main() {
 		fp{
 			feats: [2]*fs{
 				{
-					start: bs.Set[1].Start(), end: bs.Set[1].Start() + bs.Set[1].Len()/4,
+					start: bs.Set[1].Start(), end: bs.Set[1].Start() + lengthOf(bs.Set[1])/4,
 					orient: rings.Backward, location: bs.Set[1],
 					style: redSty,
 				},
 				{
-					start: bs.Set[2].Start() + 7*bs.Set[2].Len()/8, end: bs.Set[2].End(),
+					start: bs.Set[2].Start() + 7*lengthOf(bs.Set[2])/8, end: bs.Set[2].End(),
 					orient: rings.Forward, location: bs.Set[2],
 					style: blueSty,
 				},
@@ -134,17 +134,17 @@ func main() {
 
 	sf := []rings.Feature{
 		&fs{
-			start: bs.Set[0].Start() + 2*bs.Set[0].Len()/5, end: bs.Set[0].End() - 2*bs.Set[0].Len()/5,
+			start: bs.Set[0].Start() + 2*lengthOf(bs.Set[0])/5, end: bs.Set[0].End() - 2*lengthOf(bs.Set[0])/5,
 			orient: rings.NotOriented, location: bs.Set[0],
 			style: redSty,
 		},
 		&fs{
-			start: bs.Set[1].Start() + 2*bs.Set[1].Len()/5, end: bs.Set[1].End() - 2*bs.Set[1].Len()/5,
+			start: bs.Set[1].Start() + 2*lengthOf(bs.Set[1])/5, end: bs.Set[1].End() - 2*lengthOf(bs.Set[1])/5,
 			orient: rings.NotOriented, location: bs.Set[1],
 			style: redSty,
 		},
 		&fs{
-			start: bs.Set[2].Start() + 2*bs.Set[2].Len()/5, end: bs.Set[2].End() - 2*bs.Set[2].Len()/5,
+			start: bs.Set[2].Start() + 2*lengthOf(bs.Set[2])/5, end: bs.Set[2].End() - 2*lengthOf(bs.Set[2])/5,
 			orient: rings.Backward, location: bs.Set[2],
 			style: blueSty,
 		},
@@ -194,7 +194,6 @@ type fs struct {
 
 func (f *fs) Start() int                     { return f.start }
 func (f *fs) End() int                       { return f.end }
-func (f *fs) Len() int                       { return f.end - f.start }
 func (f *fs) Name() string                   { return f.name }
 func (f *fs) Location() rings.Feature        { return f.location }
 func (f *fs) Orientation() rings.Orientation { return f.orient }
@@ -217,6 +216,10 @@ func (p fp) LineStyle() draw.LineStyle {
 	}
 	p.sty.Color = col
 	return p.sty
+}
+
+func lengthOf(f rings.Feature) int {
+	return f.End() - f.Start()
 }
 
 func randomFeatures(n, min, max int, single bool, sty draw.LineStyle) []rings.Feature {

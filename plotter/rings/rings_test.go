@@ -39,7 +39,6 @@ type fs struct {
 
 func (f *fs) Start() int                { return f.start }
 func (f *fs) End() int                  { return f.end }
-func (f *fs) Len() int                  { return f.end - f.start }
 func (f *fs) Name() string              { return f.name }
 func (f *fs) Location() Feature         { return f.location }
 func (f *fs) Orientation() Orientation  { return f.orient }
@@ -90,8 +89,8 @@ func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []Scorer {
 	s := make([]Scorer, n)
 	for i := 0; i < n; i++ {
 		cs := &fs{
-			start:    f.Start() + i*(f.Len()/n),
-			end:      f.Start() + (i+1)*(f.Len()/n),
+			start:    f.Start() + i*(lengthOf(f)/n),
+			end:      f.Start() + (i+1)*(lengthOf(f)/n),
 			name:     fmt.Sprintf("%s#%d", f.Name(), i),
 			location: f,
 			scores:   make([]float64, m),

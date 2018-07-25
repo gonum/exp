@@ -924,20 +924,20 @@ func TestScores(t *testing.T) {
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + b.Set[1].Len()/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
 					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/3,
-					end:      b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					end:      b.Set[1].End(),
 					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
 					location: b.Set[1],
@@ -983,20 +983,20 @@ func TestScores(t *testing.T) {
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + b.Set[1].Len()/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
 					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/3 + 1,
-					end:      b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3 + 1,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					end:      b.Set[1].End(),
 					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
 					location: b.Set[1],
@@ -1041,20 +1041,20 @@ func TestScores(t *testing.T) {
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + b.Set[1].Len()/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
 					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/3,
-					end:      b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/2 + 1,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2 + 1,
 					end:      b.Set[1].End(),
 					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
 					location: b.Set[1],
@@ -1099,20 +1099,20 @@ func TestScores(t *testing.T) {
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + b.Set[1].Len()/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
 					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/3,
-					end:      b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					end:      b.Set[1].End(),
 					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
 					location: b.Set[1],
@@ -1158,20 +1158,20 @@ func TestScores(t *testing.T) {
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + b.Set[1].Len()/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
 					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/3 + 1,
-					end:      b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3 + 1,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					end:      b.Set[1].End(),
 					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
 					location: b.Set[1],
@@ -1215,20 +1215,20 @@ func TestScores(t *testing.T) {
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + b.Set[1].Len()/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
 					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/3,
-					end:      b.Set[1].Start() + b.Set[1].Len()/2,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
 					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
 					location: b.Set[1],
 					scores:   []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + b.Set[1].Len()/2 + 1,
+					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2 + 1,
 					end:      b.Set[1].End(),
 					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
 					location: b.Set[1],

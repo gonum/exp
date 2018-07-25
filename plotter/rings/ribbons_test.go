@@ -48,14 +48,14 @@ func TestRibbons(t *testing.T) {
 					feats: [2]*fs{
 						{
 							start:    b.Set[0].Start(),
-							end:      b.Set[0].Start() + b.Set[0].Len()/5,
+							end:      b.Set[0].Start() + lengthOf(b.Set[0])/5,
 							orient:   Backward,
 							location: b.Set[0],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[1].Start(),
-							end:      b.Set[1].End() - b.Set[1].Len()/5,
+							end:      b.Set[1].End() - lengthOf(b.Set[1])/5,
 							orient:   Backward,
 							location: b.Set[1],
 							style:    blueSty,
@@ -67,13 +67,13 @@ func TestRibbons(t *testing.T) {
 					feats: [2]*fs{
 						{
 							start:    b.Set[2].Start(),
-							end:      b.Set[2].Start() + b.Set[2].Len()/3,
+							end:      b.Set[2].Start() + lengthOf(b.Set[2])/3,
 							orient:   Forward,
 							location: b.Set[2],
 							style:    redSty,
 						},
 						{
-							start:    b.Set[2].End() - b.Set[2].Len()/8,
+							start:    b.Set[2].End() - lengthOf(b.Set[2])/8,
 							end:      b.Set[2].End(),
 							orient:   Backward,
 							location: b.Set[2],
@@ -190,14 +190,14 @@ func TestRibbons(t *testing.T) {
 					feats: [2]*fs{
 						{
 							start:    b.Set[0].Start(),
-							end:      b.Set[0].Start() + b.Set[0].Len()/5,
+							end:      b.Set[0].Start() + lengthOf(b.Set[0])/5,
 							orient:   Backward,
 							location: b.Set[0],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[1].Start(),
-							end:      b.Set[1].End() - b.Set[1].Len()/5,
+							end:      b.Set[1].End() - lengthOf(b.Set[1])/5,
 							orient:   Backward,
 							location: b.Set[1],
 							style:    blueSty,
@@ -209,13 +209,13 @@ func TestRibbons(t *testing.T) {
 					feats: [2]*fs{
 						{
 							start:    b.Set[2].Start(),
-							end:      b.Set[2].Start() + b.Set[2].Len()/3,
+							end:      b.Set[2].Start() + lengthOf(b.Set[2])/3,
 							orient:   Forward,
 							location: b.Set[2],
 							style:    redSty,
 						},
 						{
-							start:    b.Set[2].End() - b.Set[2].Len()/8,
+							start:    b.Set[2].End() - lengthOf(b.Set[2])/8,
 							end:      b.Set[2].End(),
 							orient:   Backward,
 							location: b.Set[2],
@@ -333,14 +333,14 @@ func TestRibbons(t *testing.T) {
 					feats: [2]*fs{
 						{
 							start:    b.Set[0].Start(),
-							end:      b.Set[0].Start() + b.Set[0].Len()/5,
+							end:      b.Set[0].Start() + lengthOf(b.Set[0])/5,
 							orient:   Backward,
 							location: b.Set[0],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[1].Start(),
-							end:      b.Set[1].End() - b.Set[1].Len()/5,
+							end:      b.Set[1].End() - lengthOf(b.Set[1])/5,
 							orient:   Backward,
 							location: b.Set[1],
 							style:    blueSty,
@@ -352,13 +352,13 @@ func TestRibbons(t *testing.T) {
 					feats: [2]*fs{
 						{
 							start:    b.Set[2].Start(),
-							end:      b.Set[2].Start() + b.Set[2].Len()/3,
+							end:      b.Set[2].Start() + lengthOf(b.Set[2])/3,
 							orient:   Forward,
 							location: b.Set[2],
 							style:    redSty,
 						},
 						{
-							start:    b.Set[2].End() - b.Set[2].Len()/8,
+							start:    b.Set[2].End() - lengthOf(b.Set[2])/8,
 							end:      b.Set[2].End(),
 							orient:   Backward,
 							location: b.Set[2],
@@ -476,14 +476,14 @@ func TestRibbons(t *testing.T) {
 					feats: [2]*fs{
 						{
 							start:    b.Set[0].Start(),
-							end:      b.Set[0].Start() + b.Set[0].Len()/5,
+							end:      b.Set[0].Start() + lengthOf(b.Set[0])/5,
 							orient:   Backward,
 							location: b.Set[0],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[1].Start(),
-							end:      b.Set[1].End() - b.Set[1].Len()/5,
+							end:      b.Set[1].End() - lengthOf(b.Set[1])/5,
 							orient:   Backward,
 							location: b.Set[1],
 							style:    blueSty,
@@ -495,13 +495,13 @@ func TestRibbons(t *testing.T) {
 					feats: [2]*fs{
 						{
 							start:    b.Set[2].Start(),
-							end:      b.Set[2].Start() + b.Set[2].Len()/3,
+							end:      b.Set[2].Start() + lengthOf(b.Set[2])/3,
 							orient:   Forward,
 							location: b.Set[2],
 							style:    redSty,
 						},
 						{
-							start:    b.Set[2].End() - b.Set[2].Len()/8,
+							start:    b.Set[2].End() - lengthOf(b.Set[2])/8,
 							end:      b.Set[2].End(),
 							orient:   Forward,
 							location: b.Set[2],

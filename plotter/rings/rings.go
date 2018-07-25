@@ -38,15 +38,20 @@ type LineStyleFunc func(interface{}) draw.LineStyle
 // its location which can be nil. In the latter case callers should make no
 // assumptions whether coordinates of such features are comparable.
 type Feature interface {
+	// Start and End indicate the position of the feature within the
+	// containing Location's coordinate system.
 	Start() int
 	End() int
-	Len() int
 
 	// Name returns the name of the feature.
 	Name() string
 
 	// Location returns the reference feature on which the feature is located.
 	Location() Feature
+}
+
+func lengthOf(f Feature) int {
+	return f.End() - f.Start()
 }
 
 // Conformationer wraps the Conformation method.

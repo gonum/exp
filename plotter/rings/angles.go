@@ -101,7 +101,7 @@ func NewGappedArcs(base Arcer, fs []Feature, gap float64) Arcs {
 
 	var total float64
 	for _, f := range fs {
-		total += float64(f.Len())
+		total += float64(lengthOf(f))
 	}
 
 	arc := base.Arc()
@@ -111,12 +111,12 @@ func NewGappedArcs(base Arcer, fs []Feature, gap float64) Arcs {
 	theta := arc.Theta + g/2
 	for _, f := range fs {
 		if fo, ok := f.(featureOrienter); ok && globalOrientation(fo) == Backward {
-			phi := Angle(f.Len()) * scale
+			phi := Angle(lengthOf(f)) * scale
 			arcs[f] = Arc{Theta: Normalize(theta + phi), Phi: -phi}
 		} else {
-			arcs[f] = Arc{Theta: Normalize(theta), Phi: Angle(f.Len()) * scale}
+			arcs[f] = Arc{Theta: Normalize(theta), Phi: Angle(lengthOf(f)) * scale}
 		}
-		theta += Angle(f.Len())*scale + g
+		theta += Angle(lengthOf(f))*scale + g
 	}
 
 	return Arcs{Base: arc, Arcs: arcs}
