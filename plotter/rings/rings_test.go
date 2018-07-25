@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"testing"
 
+	"gonum.org/v1/exp/plotter/rings"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/palette"
 	"gonum.org/v1/plot/plotter"
@@ -20,8 +21,6 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 
 	"github.com/biogo/biogo/feat"
-	"github.com/biogo/graphics/rings"
-
 	"gopkg.in/check.v1"
 )
 
