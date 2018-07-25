@@ -40,6 +40,7 @@ type LineStyleFunc func(interface{}) draw.LineStyle
 type Feature interface {
 	// Start and End indicate the position of the feature within the
 	// containing Location's coordinate system.
+	// TODO(kortschak): Make these return float64.
 	Start() int
 	End() int
 
@@ -50,6 +51,7 @@ type Feature interface {
 	Location() Feature
 }
 
+// TODO(kortschak): Make this return float64.
 func lengthOf(f Feature) int {
 	return f.End() - f.Start()
 }
