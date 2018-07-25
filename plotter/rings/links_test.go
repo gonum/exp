@@ -264,11 +264,7 @@ func TestLinks(t *testing.T) {
 			t.Errorf("unexpected actions for test %d:\ngot :%#v\nwant:%#v", i, tc.actions, base.actions)
 		}
 		if *pics && !ok || *allPics {
-			s, err := NewSpokes(append(m[0], m[1]...), b, 72, 78)
-			if err != nil {
-				t.Fatalf("unexpected error for NewSpokes: %v", err)
-			}
-			p.Add(b, s)
+			p.Add(b)
 			err = p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("links-%d-%s.svg", i, failure(!ok)))
 			if err != nil {
 				t.Fatalf("unexpected error writing file: %v", err)
