@@ -15,8 +15,6 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 func TestLabelsBlocks(t *testing.T) {
@@ -34,7 +32,7 @@ func TestLabelsBlocks(t *testing.T) {
 	}
 
 	for i, test := range []struct {
-		feats     []feat.Feature
+		feats     []Feature
 		placement TextPlacement
 		actions   []interface{}
 	}{
@@ -303,7 +301,7 @@ func TestLabelSpokes(t *testing.T) {
 		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
 	}
 
-	l, err := NewLabels(ms, 125, NameLabels([]feat.Feature{m[1], m[5], m[9]})...)
+	l, err := NewLabels(ms, 125, NameLabels([]Feature{m[1], m[5], m[9]})...)
 	if err != nil {
 		t.Fatalf("unexpected error for NewLabels: %v", err)
 	}

@@ -13,8 +13,6 @@ import (
 	"image/color"
 
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 // Twist is a flag type used to specify Ribbon and Sail twist behaviour. Specific interpretation
@@ -35,9 +33,77 @@ type ColorFunc func(interface{}) color.Color
 // LineStyleFunc allows dynamic assignment of line styles to objects based on passed parameters.
 type LineStyleFunc func(interface{}) draw.LineStyle
 
+// Feature is a Range whose coordinates are defined relative to a feature
+// location. Start and End return the coordinates of the feature relative to
+// its location which can be nil. In the latter case callers should make no
+// assumptions whether coordinates of such features are comparable.
+type Feature interface {
+	Start() int
+	End() int
+	Len() int
+
+	// Name returns the name of the feature.
+	Name() string
+
+	// Location returns the reference feature on which the feature is located.
+	Location() Feature
+}
+
+// Conformationer wraps the Conformation method.
+type Conformationer interface {
+	Conformation() Conformation
+}
+
+// Conformation describes whether a feaature is linear are circular.
+type Conformation int8
+
+func (c Conformation) String() string {
+	switch c {
+	case UndefinedConformation:
+		return "undefined"
+	case Linear:
+		return "linear"
+	case Circular:
+		return "circular"
+	}
+	panic("rings: illegal conformation")
+}
+
+const (
+	UndefinedConformation Conformation = iota - 1
+	Linear
+	Circular
+)
+
+// Orienter wraps the Orientation method.
+type Orienter interface {
+	Orientation() Orientation
+}
+
+// Orientation describes whether a feature is oriented forwards or backwards.
+type Orientation int8
+
+func (o Orientation) String() string {
+	switch o {
+	case Backward:
+		return "backward"
+	case NotOriented:
+		return "not oriented"
+	case Forward:
+		return "forward"
+	}
+	panic("rings: illegal orientation")
+}
+
+const (
+	Backward Orientation = iota - 1
+	NotOriented
+	Forward
+)
+
 // Pair represents a pair of associated features.
 type Pair interface {
-	Features() [2]feat.Feature
+	Features() [2]Feature
 }
 
 // TextStyler is a type that can define its text style. For the purposes of the rings package

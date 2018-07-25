@@ -12,14 +12,12 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 // Scale represents the circular axis of ring.
 type Scale struct {
 	// Set holds a collection of features to render scales for.
-	Set []feat.Feature
+	Set []Feature
 
 	// Base defines the targets of the rendered blocks.
 	Base ArcOfer
@@ -49,7 +47,7 @@ type ScaleGrid struct {
 
 // NewScale returns a Scale based on the parameters, first checking that the provided feature
 // scales are able to be rendered. An error is returned if the scales are not renderable.
-func NewScale(fs []feat.Feature, base ArcOfer, r vg.Length) (*Scale, error) {
+func NewScale(fs []Feature, base ArcOfer, r vg.Length) (*Scale, error) {
 	for _, f := range fs {
 		if f.End() < f.Start() {
 			return nil, errors.New("rings: inverted feature")

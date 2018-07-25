@@ -15,8 +15,6 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 func TestRibbons(t *testing.T) {
@@ -37,28 +35,28 @@ func TestRibbons(t *testing.T) {
 	blueSty.Color = color.RGBA{R: 0, G: 0, B: 255, A: 255}
 
 	for i, test := range []struct {
-		orient   []feat.Orientation
+		orient   []Orientation
 		pairs    []Pair
 		segments int
 		twist    Twist
 		actions  []interface{}
 	}{
 		{
-			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.NotOriented},
+			orient: []Orientation{NotOriented, NotOriented, NotOriented},
 			pairs: []Pair{
 				fp{
 					feats: [2]*fs{
 						{
 							start:    b.Set[0].Start(),
 							end:      b.Set[0].Start() + b.Set[0].Len()/5,
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[0],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[1].Start(),
 							end:      b.Set[1].End() - b.Set[1].Len()/5,
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[1],
 							style:    blueSty,
 						},
@@ -70,14 +68,14 @@ func TestRibbons(t *testing.T) {
 						{
 							start:    b.Set[2].Start(),
 							end:      b.Set[2].Start() + b.Set[2].Len()/3,
-							orient:   feat.Forward,
+							orient:   Forward,
 							location: b.Set[2],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[2].End() - b.Set[2].Len()/8,
 							end:      b.Set[2].End(),
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[2],
 							style:    blueSty,
 						},
@@ -186,21 +184,21 @@ func TestRibbons(t *testing.T) {
 				}},
 		},
 		{
-			orient: []feat.Orientation{feat.Forward, feat.Reverse, feat.NotOriented},
+			orient: []Orientation{Forward, Backward, NotOriented},
 			pairs: []Pair{
 				fp{
 					feats: [2]*fs{
 						{
 							start:    b.Set[0].Start(),
 							end:      b.Set[0].Start() + b.Set[0].Len()/5,
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[0],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[1].Start(),
 							end:      b.Set[1].End() - b.Set[1].Len()/5,
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[1],
 							style:    blueSty,
 						},
@@ -212,14 +210,14 @@ func TestRibbons(t *testing.T) {
 						{
 							start:    b.Set[2].Start(),
 							end:      b.Set[2].Start() + b.Set[2].Len()/3,
-							orient:   feat.Forward,
+							orient:   Forward,
 							location: b.Set[2],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[2].End() - b.Set[2].Len()/8,
 							end:      b.Set[2].End(),
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[2],
 							style:    blueSty,
 						},
@@ -329,21 +327,21 @@ func TestRibbons(t *testing.T) {
 			},
 		},
 		{
-			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.Reverse},
+			orient: []Orientation{NotOriented, NotOriented, Backward},
 			pairs: []Pair{
 				fp{
 					feats: [2]*fs{
 						{
 							start:    b.Set[0].Start(),
 							end:      b.Set[0].Start() + b.Set[0].Len()/5,
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[0],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[1].Start(),
 							end:      b.Set[1].End() - b.Set[1].Len()/5,
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[1],
 							style:    blueSty,
 						},
@@ -355,14 +353,14 @@ func TestRibbons(t *testing.T) {
 						{
 							start:    b.Set[2].Start(),
 							end:      b.Set[2].Start() + b.Set[2].Len()/3,
-							orient:   feat.Forward,
+							orient:   Forward,
 							location: b.Set[2],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[2].End() - b.Set[2].Len()/8,
 							end:      b.Set[2].End(),
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[2],
 							style:    blueSty,
 						},
@@ -472,21 +470,21 @@ func TestRibbons(t *testing.T) {
 			},
 		},
 		{
-			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.Forward},
+			orient: []Orientation{NotOriented, NotOriented, Forward},
 			pairs: []Pair{
 				fp{
 					feats: [2]*fs{
 						{
 							start:    b.Set[0].Start(),
 							end:      b.Set[0].Start() + b.Set[0].Len()/5,
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[0],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[1].Start(),
 							end:      b.Set[1].End() - b.Set[1].Len()/5,
-							orient:   feat.Reverse,
+							orient:   Backward,
 							location: b.Set[1],
 							style:    blueSty,
 						},
@@ -498,14 +496,14 @@ func TestRibbons(t *testing.T) {
 						{
 							start:    b.Set[2].Start(),
 							end:      b.Set[2].Start() + b.Set[2].Len()/3,
-							orient:   feat.Forward,
+							orient:   Forward,
 							location: b.Set[2],
 							style:    redSty,
 						},
 						{
 							start:    b.Set[2].End() - b.Set[2].Len()/8,
 							end:      b.Set[2].End(),
-							orient:   feat.Forward,
+							orient:   Forward,
 							location: b.Set[2],
 							style:    blueSty,
 						},

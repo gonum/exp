@@ -13,11 +13,9 @@ import (
 	"gonum.org/v1/plot/tools/bezier"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
-// Links implements rendering of feat.Feature associations as Bézier curves.
+// Links implements rendering of Feature associations as Bézier curves.
 type Links struct {
 	// Set holds a collection of feature pairs to render.
 	Set []Pair
@@ -73,7 +71,7 @@ func (r *Links) DrawAt(ca draw.Canvas, cen vg.Point) {
 loop:
 	for _, fp := range r.Set {
 		p := fp.Features()
-		loc := [2]feat.Feature{p[0].Location(), p[1].Location()}
+		loc := [2]Feature{p[0].Location(), p[1].Location()}
 		var min, max [2]int
 		for j, l := range loc {
 			min[j] = l.Start()
@@ -146,7 +144,7 @@ func (r *Links) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 	loop:
 		for _, fp := range r.Set {
 			p := fp.Features()
-			loc := [2]feat.Feature{p[0].Location(), p[1].Location()}
+			loc := [2]Feature{p[0].Location(), p[1].Location()}
 			var min, max [2]int
 			for j, l := range loc {
 				min[j] = l.Start()

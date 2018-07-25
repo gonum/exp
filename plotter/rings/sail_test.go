@@ -11,7 +11,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/biogo/biogo/feat"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -36,33 +35,33 @@ func TestSail(t *testing.T) {
 	blueSty.Color = color.RGBA{R: 0, G: 0, B: 255, A: 255}
 
 	for i, test := range []struct {
-		orient   []feat.Orientation
-		ends     []feat.Feature
+		orient   []Orientation
+		ends     []Feature
 		segments int
 		twist    Twist
 		actions  []interface{}
 	}{
 		{
-			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.NotOriented},
-			ends: []feat.Feature{
+			orient: []Orientation{NotOriented, NotOriented, NotOriented},
+			ends: []Feature{
 				&fs{
 					start:    b.Set[0].Start(),
 					end:      b.Set[0].Start() + b.Set[0].Len()/8,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[0],
 					style:    redSty,
 				},
 				&fs{
 					start:    b.Set[1].Start() + b.Set[0].Len()/8,
 					end:      b.Set[1].Start() + b.Set[0].Len()/4,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[1],
 					style:    redSty,
 				},
 				&fs{
 					start:    b.Set[2].Start() + 2*b.Set[2].Len()/5,
 					end:      b.Set[2].End() - 2*b.Set[2].Len()/5,
-					orient:   feat.Reverse,
+					orient:   Backward,
 					location: b.Set[2],
 					style:    blueSty,
 				},
@@ -140,26 +139,26 @@ func TestSail(t *testing.T) {
 			},
 		},
 		{
-			orient: []feat.Orientation{feat.Reverse, feat.NotOriented, feat.NotOriented},
-			ends: []feat.Feature{
+			orient: []Orientation{Backward, NotOriented, NotOriented},
+			ends: []Feature{
 				&fs{
 					start:    b.Set[0].Start(),
 					end:      b.Set[0].Start() + b.Set[0].Len()/8,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[0],
 					style:    redSty,
 				},
 				&fs{
 					start:    b.Set[1].Start() + b.Set[0].Len()/8,
 					end:      b.Set[1].Start() + b.Set[0].Len()/4,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[1],
 					style:    redSty,
 				},
 				&fs{
 					start:    b.Set[2].Start() + 2*b.Set[2].Len()/5,
 					end:      b.Set[2].End() - 2*b.Set[2].Len()/5,
-					orient:   feat.Reverse,
+					orient:   Backward,
 					location: b.Set[2],
 					style:    blueSty,
 				},
@@ -237,26 +236,26 @@ func TestSail(t *testing.T) {
 			},
 		},
 		{
-			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.NotOriented},
-			ends: []feat.Feature{
+			orient: []Orientation{NotOriented, NotOriented, NotOriented},
+			ends: []Feature{
 				&fs{
 					start:    b.Set[0].Start(),
 					end:      b.Set[0].Start() + b.Set[0].Len()/8,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[0],
 					style:    redSty,
 				},
 				&fs{
 					start:    b.Set[1].Start(),
 					end:      b.Set[1].Start() + b.Set[1].Len()/8,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[1],
 					style:    redSty,
 				},
 				&fs{
 					start:    b.Set[0].Start() + 2*b.Set[0].Len()/5,
 					end:      b.Set[0].End() - 2*b.Set[0].Len()/5,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[0],
 					style:    blueSty,
 				},
@@ -334,33 +333,33 @@ func TestSail(t *testing.T) {
 			},
 		},
 		{
-			orient: []feat.Orientation{feat.NotOriented, feat.NotOriented, feat.NotOriented},
-			ends: []feat.Feature{
+			orient: []Orientation{NotOriented, NotOriented, NotOriented},
+			ends: []Feature{
 				&fs{
 					start:    b.Set[0].Start(),
 					end:      b.Set[0].Start() + b.Set[0].Len()/8,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[0],
 					style:    redSty,
 				},
 				&fs{
 					start:    b.Set[1].Start(),
 					end:      b.Set[1].Start() + b.Set[1].Len()/8,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[1],
 					style:    redSty,
 				},
 				&fs{
 					start:    b.Set[0].Start() + 2*b.Set[0].Len()/5,
 					end:      b.Set[0].End() - 2*b.Set[0].Len()/5,
-					orient:   feat.NotOriented,
+					orient:   NotOriented,
 					location: b.Set[0],
 					style:    blueSty,
 				},
 				&fs{
 					start:    b.Set[0].Start() + b.Set[0].Len()/5,
 					end:      b.Set[0].Start() + 2*b.Set[0].Len()/7,
-					orient:   feat.Reverse,
+					orient:   Backward,
 					location: b.Set[0],
 					style:    blueSty,
 				},

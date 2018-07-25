@@ -13,13 +13,11 @@ import (
 	"math/rand"
 	"os"
 
+	"gonum.org/v1/exp/plotter/rings"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
-	"github.com/biogo/graphics/rings"
 )
 
 const name = "example_rings"
@@ -70,9 +68,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	bs.Set[0].(*fs).orient = feat.Forward
-	bs.Set[1].(*fs).orient = feat.Forward
-	bs.Set[2].(*fs).orient = feat.Forward
+	bs.Set[0].(*fs).orient = rings.Forward
+	bs.Set[1].(*fs).orient = rings.Forward
+	bs.Set[2].(*fs).orient = rings.Forward
 	bs.LineStyle = sty
 	bs.Color = color.RGBA{R: 196, G: g + 24, B: 128, A: 255}
 	g += 60
@@ -111,12 +109,12 @@ func main() {
 			feats: [2]*fs{
 				{
 					start: bs.Set[1].Start(), end: bs.Set[1].Start() + bs.Set[1].Len()/4,
-					orient: feat.Reverse, location: bs.Set[1],
+					orient: rings.Backward, location: bs.Set[1],
 					style: redSty,
 				},
 				{
 					start: bs.Set[2].Start() + 7*bs.Set[2].Len()/8, end: bs.Set[2].End(),
-					orient: feat.Forward, location: bs.Set[2],
+					orient: rings.Forward, location: bs.Set[2],
 					style: blueSty,
 				},
 			},
@@ -134,20 +132,20 @@ func main() {
 	rs.Color = bs.Color
 	p.Add(rs)
 
-	sf := []feat.Feature{
+	sf := []rings.Feature{
 		&fs{
 			start: bs.Set[0].Start() + 2*bs.Set[0].Len()/5, end: bs.Set[0].End() - 2*bs.Set[0].Len()/5,
-			orient: feat.NotOriented, location: bs.Set[0],
+			orient: rings.NotOriented, location: bs.Set[0],
 			style: redSty,
 		},
 		&fs{
 			start: bs.Set[1].Start() + 2*bs.Set[1].Len()/5, end: bs.Set[1].End() - 2*bs.Set[1].Len()/5,
-			orient: feat.NotOriented, location: bs.Set[1],
+			orient: rings.NotOriented, location: bs.Set[1],
 			style: redSty,
 		},
 		&fs{
 			start: bs.Set[2].Start() + 2*bs.Set[2].Len()/5, end: bs.Set[2].End() - 2*bs.Set[2].Len()/5,
-			orient: feat.Reverse, location: bs.Set[2],
+			orient: rings.Backward, location: bs.Set[2],
 			style: blueSty,
 		},
 	}
@@ -189,26 +187,25 @@ func main() {
 type fs struct {
 	start, end int
 	name       string
-	location   feat.Feature
-	orient     feat.Orientation
+	location   rings.Feature
+	orient     rings.Orientation
 	style      draw.LineStyle
 }
 
-func (f *fs) Start() int                    { return f.start }
-func (f *fs) End() int                      { return f.end }
-func (f *fs) Len() int                      { return f.end - f.start }
-func (f *fs) Name() string                  { return f.name }
-func (f *fs) Description() string           { return "bogus" }
-func (f *fs) Location() feat.Feature        { return f.location }
-func (f *fs) Orientation() feat.Orientation { return f.orient }
-func (f *fs) LineStyle() draw.LineStyle     { return f.style }
+func (f *fs) Start() int                     { return f.start }
+func (f *fs) End() int                       { return f.end }
+func (f *fs) Len() int                       { return f.end - f.start }
+func (f *fs) Name() string                   { return f.name }
+func (f *fs) Location() rings.Feature        { return f.location }
+func (f *fs) Orientation() rings.Orientation { return f.orient }
+func (f *fs) LineStyle() draw.LineStyle      { return f.style }
 
 type fp struct {
 	feats [2]*fs
 	sty   draw.LineStyle
 }
 
-func (p fp) Features() [2]feat.Feature { return [2]feat.Feature{p.feats[0], p.feats[1]} }
+func (p fp) Features() [2]rings.Feature { return [2]rings.Feature{p.feats[0], p.feats[1]} }
 func (p fp) LineStyle() draw.LineStyle {
 	var col color.RGBA
 	for _, f := range p.feats {
@@ -222,8 +219,8 @@ func (p fp) LineStyle() draw.LineStyle {
 	return p.sty
 }
 
-func randomFeatures(n, min, max int, single bool, sty draw.LineStyle) []feat.Feature {
-	data := make([]feat.Feature, n)
+func randomFeatures(n, min, max int, single bool, sty draw.LineStyle) []rings.Feature {
+	data := make([]rings.Feature, n)
 	for i := range data {
 		start := rand.Intn(max-min) + min
 		var end int

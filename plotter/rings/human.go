@@ -4,6 +4,8 @@
 
 // +build ignore
 
+// human.go renders a rings plot of the human hg19 karyotype. It depends on
+// packages from biogo.
 package main
 
 import (
@@ -11,15 +13,17 @@ import (
 	"image/color"
 	"math"
 
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/plot/vg/draw"
-
 	"github.com/biogo/biogo/feat"
 	"github.com/biogo/biogo/feat/genome"
+
+	// hg19 provides the karyotype band locations for the plot.
 	human "github.com/biogo/biogo/feat/genome/human/hg19"
-	"github.com/biogo/graphics/rings"
+
+	"gonum.org/v1/exp/plotter/rings"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 )
 
 func main() {
@@ -31,9 +35,9 @@ func main() {
 	sty := plotter.DefaultLineStyle
 	sty.Width /= 2
 
-	chr := make([]feat.Feature, len(human.Chromosomes))
+	chr := make([]rings.Feature, len(human.Chromosomes))
 	for i, c := range human.Chromosomes {
-		chr[i] = c
+		chr[i] = chromosome{c}
 	}
 	hs, err := rings.NewGappedBlocks(chr, rings.Arc{rings.Complete / 4 * rings.CounterClockwise, rings.Complete * rings.Clockwise}, 100, 110, 0.005)
 	if err != nil {
@@ -42,8 +46,8 @@ func main() {
 	hs.LineStyle = sty
 	p.Add(hs)
 
-	bands := make([]feat.Feature, len(human.Bands))
-	cens := make([]feat.Feature, 0, len(human.Chromosomes))
+	bands := make([]rings.Feature, len(human.Bands))
+	cens := make([]rings.Feature, 0, len(human.Chromosomes))
 	for i, b := range human.Bands {
 		bands[i] = colorBand{b}
 	}
@@ -90,9 +94,17 @@ func main() {
 	}
 }
 
+type chromosome struct {
+	feat.Feature
+}
+
+func (c chromosome) Location() rings.Feature { return nil }
+
 type colorBand struct {
 	*genome.Band
 }
+
+func (b colorBand) Location() rings.Feature { return chromosome{b.Band.Location()} }
 
 func (b colorBand) FillColor() color.Color {
 	switch b.Giemsa {

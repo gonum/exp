@@ -11,8 +11,6 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 // Labeler is a type that can be used to label a block in a ring.
@@ -29,20 +27,20 @@ func (l Label) Label() string { return string(l) }
 
 type locater interface {
 	Labeler
-	location() feat.Feature
+	location() Feature
 }
 
-// featLabel is a wrapper for feat.Feature to allow it to be used as a Labeler. The
-// location method is required to allow the distinction between a feat.Feature that
+// featLabel is a wrapper for Feature to allow it to be used as a Labeler. The
+// location method is required to allow the distinction between a Feature that
 // provides its own Label method.
-type featLabel struct{ feat.Feature }
+type featLabel struct{ Feature }
 
-func (l featLabel) Label() string          { return l.Feature.Name() }
-func (l featLabel) location() feat.Feature { return l.Feature }
+func (l featLabel) Label() string     { return l.Feature.Name() }
+func (l featLabel) location() Feature { return l.Feature }
 
 // NameLabels returns a Labeler slice built from the provided slice of features. The
 // labels returned are generated from the features' Name() values.
-func NameLabels(fs []feat.Feature) []Labeler {
+func NameLabels(fs []Feature) []Labeler {
 	l := make([]Labeler, len(fs))
 	for i, f := range fs {
 		if fl, ok := f.(locater); ok {
@@ -56,7 +54,7 @@ func NameLabels(fs []feat.Feature) []Labeler {
 
 // Labels implements rendering of radial labels.
 type Labels struct {
-	// Labels contains the set of labels. Labelers that are feat.Features and are found
+	// Labels contains the set of labels. Labelers that are Features and are found
 	// in the Base ArcOfer label the identified block with the string returned by
 	// their Name method.
 	Labels []Labeler
@@ -81,7 +79,7 @@ type Labels struct {
 
 // NewLabels returns a Labels based on the parameters, first checking that the provided set of labels
 // are able to be rendered; an Arc or Highlight may only take a single label, otherwise the labels
-// must be a feat.Feature that can be found in the base ring. An error is returned if the labels are
+// must be a Feature that can be found in the base ring. An error is returned if the labels are
 // not renderable. If base is an XYer, the returned base XY values are used to populate the Labels' X
 // and Y fields.
 func NewLabels(base Arcer, r vg.Length, ls ...Labeler) (*Labels, error) {
@@ -93,7 +91,7 @@ func NewLabels(base Arcer, r vg.Length, ls ...Labeler) (*Labels, error) {
 			switch l := l.(type) {
 			case locater:
 				_, err = base.ArcOf(l.location(), nil)
-			case feat.Feature:
+			case Feature:
 				_, err = base.ArcOf(l, nil)
 			default:
 				_, err = base.ArcOf(nil, nil)
@@ -108,7 +106,7 @@ func NewLabels(base Arcer, r vg.Length, ls ...Labeler) (*Labels, error) {
 			return nil, fmt.Errorf("rings: cannot label a type %T with more than one feature", base)
 		}
 		arc := base.Arc()
-		b = Arcs{Base: arc, Arcs: map[feat.Feature]Arc{feat.Feature(nil): arc}}
+		b = Arcs{Base: arc, Arcs: map[Feature]Arc{Feature(nil): arc}}
 	}
 	var x, y float64
 	if xy, ok := base.(XYer); ok {
@@ -144,7 +142,7 @@ func (r *Labels) DrawAt(ca draw.Canvas, cen vg.Point) {
 		switch l := l.(type) {
 		case locater:
 			arc, err = r.Base.ArcOf(l.location().Location(), l.location())
-		case feat.Feature:
+		case Feature:
 			arc, err = r.Base.ArcOf(l.Location(), l)
 		default:
 			arc, err = r.Base.ArcOf(nil, nil)

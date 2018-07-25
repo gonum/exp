@@ -19,8 +19,6 @@ before_install:
  # Required for coverage.
  - go get golang.org/x/tools/cmd/cover
  - go get github.com/mattn/goveralls
- # Temporarily required for addition of rings package.
- - go get github.com/biogo/biogo/feat
 
 go_import_path: gonum.org/v1/exp
 

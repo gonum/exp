@@ -15,8 +15,6 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 func TestLinks(t *testing.T) {
@@ -32,12 +30,12 @@ func TestLinks(t *testing.T) {
 	}
 
 	for i, test := range []struct {
-		ends    [2]feat.Feature
+		ends    [2]Feature
 		bezier  *Bezier
 		actions []interface{}
 	}{
 		{
-			ends: [2]feat.Feature{b.Set[1], b.Set[1]},
+			ends: [2]Feature{b.Set[1], b.Set[1]},
 			bezier: &Bezier{Segments: 5,
 				Radius: LengthDist{Length: 2 * 70 / 3, Min: floatPtr(0.95), Max: floatPtr(1.05)},
 				Crest:  &FactorDist{Factor: 2, Min: floatPtr(0.7), Max: floatPtr(1.4)},
@@ -134,7 +132,7 @@ func TestLinks(t *testing.T) {
 			},
 		},
 		{
-			ends: [2]feat.Feature{b.Set[0], b.Set[1]},
+			ends: [2]Feature{b.Set[0], b.Set[1]},
 			bezier: &Bezier{Segments: 5,
 				Radius: LengthDist{Length: 2 * 70 / 3, Min: floatPtr(0.95), Max: floatPtr(1.05)},
 				Crest:  &FactorDist{Factor: 2, Min: floatPtr(0.7), Max: floatPtr(1.4)},
@@ -236,7 +234,7 @@ func TestLinks(t *testing.T) {
 			t.Fatalf("unexpected error for plot.New: %v", err)
 		}
 
-		var m [2][]feat.Feature
+		var m [2][]Feature
 		rand.Seed(2)
 		for j := range m {
 			m[j] = randomFeatures(marks/2, test.ends[j].Start(), test.ends[j].End(), true, plotter.DefaultLineStyle)

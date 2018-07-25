@@ -15,8 +15,6 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 func TestScoresAxis(t *testing.T) {
@@ -34,7 +32,7 @@ func TestScoresAxis(t *testing.T) {
 	}
 
 	for i, test := range []struct {
-		orient   feat.Orientation
+		orient   Orientation
 		scores   []Scorer
 		renderer ScoreRenderer
 		actions  []interface{}

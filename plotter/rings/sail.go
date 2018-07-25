@@ -15,16 +15,14 @@ import (
 	"gonum.org/v1/plot/tools/bezier"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
-// Sail implements rendering of feat.Feature associations as sails. A sail is conceptually
+// Sail implements rendering of Feature associations as sails. A sail is conceptually
 // a hyper edge connecting a number of features.
 type Sail struct {
 	// Set holds a collection of connected features to render.
-	// If the features are feat.Orienters this is taken into account according to Twist.
-	Set []feat.Feature
+	// If the features are Orienters this is taken into account according to Twist.
+	Set []Feature
 
 	// Base holds the element that defines the end targets of the rendered sail.
 	Base ArcOfer
@@ -76,7 +74,7 @@ type Sail struct {
 // NewSail returns a Sail based on the parameters, first checking that the provided features
 // are able to be rendered. An error is returned if the features are not renderable. The base of
 // a Sail ring cannot be an Arc or a Highlight.
-func NewSail(fs []feat.Feature, base ArcOfer, r vg.Length) (*Sail, error) {
+func NewSail(fs []Feature, base ArcOfer, r vg.Length) (*Sail, error) {
 	for _, f := range fs {
 		if f.End() < f.Start() {
 			return nil, errors.New("rings: inverted feature")
@@ -96,7 +94,7 @@ func NewSail(fs []feat.Feature, base ArcOfer, r vg.Length) (*Sail, error) {
 type (
 	angleFeat struct {
 		angles [2]Angle
-		feat.Feature
+		Feature
 	}
 	angleFeats []angleFeat
 )
@@ -111,7 +109,7 @@ func (af angleFeats) Swap(i, j int) { af[i], af[j] = af[j], af[i] }
 // of the provided feature and the Twist flags of the receiver.
 func (r *Sail) twist(af []angleFeat) {
 	for i, f := range af {
-		var orient feat.Orientation
+		var orient Orientation
 		switch {
 		case r.Twist&(Flat|Twisted) == Flat|Twisted:
 			panic("rings: cannot specify flat and twisted")
@@ -119,13 +117,13 @@ func (r *Sail) twist(af []angleFeat) {
 			// fs[0].Start() -> fs[0].End() -> fs[1].Start() -> fs[1].End() {... -> fs[0].Start()}
 			af[i].angles[0], af[i].angles[1] = af[i].angles[1], af[i].angles[0]
 		case r.Twist&Individual != 0:
-			if o, ok := f.Feature.(feat.Orienter); ok {
+			if o, ok := f.Feature.(Orienter); ok {
 				switch orient = o.Orientation(); orient {
-				case feat.Reverse, feat.NotOriented:
+				case Backward, NotOriented:
 					// We do nothing in this case, since we already have the correct order:
 					// fs[0].Start() -> fs[0].End() -> fs[1].Start() -> fs[1].End() {... -> fs[0].Start()}
 					// If we have asked for flat or twisted, let that case handle the twist.
-				case feat.Forward:
+				case Forward:
 					// p[0].Start() -> p[0].End() -> p[1].End() -> p[1].Start() {... -> p[0].Start()}
 					af[i].angles[0], af[i].angles[1] = af[i].angles[1], af[i].angles[0]
 				default:
@@ -141,7 +139,7 @@ func (r *Sail) twist(af []angleFeat) {
 			}
 			fallthrough
 		case r.Twist&(Flat|Twisted) != 0:
-			if orient == feat.NotOriented {
+			if orient == NotOriented {
 				// Test relative positions on the arc of the start and end points
 				// for each case of flat or twisted.
 				if r.Twist&Flat != 0 {
@@ -166,8 +164,8 @@ func (r *Sail) twist(af []angleFeat) {
 
 // DrawAt renders the features of a Sail at cen in the specified drawing area,
 // according to the Sail configuration.
-// DrawAt will panic if the feature pairs being linked both satisfy feat.Orienter and the
-// product of orientations is not in feat.{Forward,NotOriented,Reverse}.
+// DrawAt will panic if the feature pairs being linked both satisfy Orienter and the
+// product of orientations is not in {Forward,NotOriented,Reverse}.
 func (r *Sail) DrawAt(ca draw.Canvas, cen vg.Point) {
 	if len(r.Set) == 0 {
 		return

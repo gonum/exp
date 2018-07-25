@@ -12,14 +12,12 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
-// Blocks implements rendering of feat.Features as radial blocks.
+// Blocks implements rendering of Features as radial blocks.
 type Blocks struct {
 	// Set holds a collection of features to render.
-	Set []feat.Feature
+	Set []Feature
 
 	// Base defines the targets of the rendered blocks.
 	Base ArcOfer
@@ -42,7 +40,7 @@ type Blocks struct {
 
 // NewBlocks returns a Blocks based on the parameters, first checking that the provided features
 // are able to be rendered. An error is returned if the features are not renderable.
-func NewBlocks(fs []feat.Feature, base ArcOfer, inner, outer vg.Length) (*Blocks, error) {
+func NewBlocks(fs []Feature, base ArcOfer, inner, outer vg.Length) (*Blocks, error) {
 	if inner > outer {
 		return nil, errors.New("rings: inner radius greater than outer radius")
 	}
@@ -70,7 +68,7 @@ func NewBlocks(fs []feat.Feature, base ArcOfer, inner, outer vg.Length) (*Blocks
 // NewGappedBlocks is a convenience wrapper of NewBlocks that guarantees to provide a valid ArcOfer based
 // of the provided Arcer. If the provided Arcer is an ArcOfer it is tested for validity and a new ArcOfer is
 // created only if needed.
-func NewGappedBlocks(fs []feat.Feature, base Arcer, inner, outer vg.Length, gap float64) (*Blocks, error) {
+func NewGappedBlocks(fs []Feature, base Arcer, inner, outer vg.Length, gap float64) (*Blocks, error) {
 	if inner > outer {
 		return nil, errors.New("rings: inner radius greater than outer radius")
 	}
@@ -109,7 +107,7 @@ func (r *Blocks) DrawAt(ca draw.Canvas, cen vg.Point) {
 		pa.Move(cen.Add(Rectangular(arc.Theta, r.Inner)))
 		pa.Arc(cen, r.Inner, float64(arc.Theta), float64(arc.Phi))
 		if arc.Phi == Clockwise*Complete || arc.Phi == CounterClockwise*Complete {
-			if c, ok := f.(feat.Conformationer); ok && c.Conformation() == feat.Circular {
+			if c, ok := f.(Conformationer); ok && c.Conformation() == Circular {
 				pa.Move(cen.Add(Rectangular(arc.Theta+arc.Phi, r.Outer)))
 			}
 		}
@@ -145,15 +143,15 @@ func (r *Blocks) Arc() Arc { return r.Base.Arc() }
 
 // ArcOf returns the Arc location of the parameter. If the location is not found in
 // the Blocks, an error is returned.
-func (r *Blocks) ArcOf(loc, f feat.Feature) (Arc, error) { return r.Base.ArcOf(loc, f) }
+func (r *Blocks) ArcOf(loc, f Feature) (Arc, error) { return r.Base.ArcOf(loc, f) }
 
 type featureOrienter interface {
-	feat.Feature
-	feat.Orienter
+	Feature
+	Orienter
 }
 
 // globalOrientation returns the orientation of a feature depending on it parent features' orientations.
-func globalOrientation(f featureOrienter) feat.Orientation {
+func globalOrientation(f featureOrienter) Orientation {
 	if fo, ok := f.Location().(featureOrienter); ok {
 		return globalOrientation(fo) * f.Orientation()
 	}

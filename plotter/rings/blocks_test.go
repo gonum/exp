@@ -11,8 +11,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/biogo/biogo/feat"
-
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
@@ -119,7 +117,7 @@ func TestBlocksScale(t *testing.T) {
 	}
 
 	for i, test := range []struct {
-		feats   []feat.Feature
+		feats   []Feature
 		grid    draw.LineStyle
 		inner   vg.Length
 		outer   vg.Length

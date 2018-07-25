@@ -4,21 +4,25 @@
 
 // +build ignore
 
+// mouse.go renders a rings plot of the mouse mm10 karyotype. It depends on
+// packages from biogo.
 package main
 
 import (
 	"image/color"
 	"math"
 
-	"github.com/gonum/plot"
-	"github.com/gonum/plot/plotter"
-	"github.com/gonum/plot/vg"
-	"github.com/gonum/plot/vg/draw"
-
 	"github.com/biogo/biogo/feat"
 	"github.com/biogo/biogo/feat/genome"
+
+	// mm10 provides the karyotype band locations for the plot.
 	mouse "github.com/biogo/biogo/feat/genome/mouse/mm10"
-	"github.com/biogo/graphics/rings"
+
+	"gonum.org/v1/exp/plotter/rings"
+	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/plotter"
+	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/vg/draw"
 )
 
 func main() {
@@ -30,9 +34,9 @@ func main() {
 	sty := plotter.DefaultLineStyle
 	sty.Width /= 2
 
-	chr := make([]feat.Feature, len(mouse.Chromosomes))
+	chr := make([]rings.Feature, len(mouse.Chromosomes))
 	for i, c := range mouse.Chromosomes {
-		chr[i] = c
+		chr[i] = chromosome{c}
 	}
 	mm, err := rings.NewGappedBlocks(chr, rings.Arc{rings.Complete / 4 * rings.CounterClockwise, rings.Complete * rings.Clockwise}, 100, 110, 0.005)
 	if err != nil {
@@ -41,8 +45,8 @@ func main() {
 	mm.LineStyle = sty
 	p.Add(mm)
 
-	bands := make([]feat.Feature, len(mouse.Bands))
-	cens := make([]feat.Feature, 0, len(mouse.Chromosomes))
+	bands := make([]rings.Feature, len(mouse.Bands))
+	cens := make([]rings.Feature, 0, len(mouse.Chromosomes))
 	for i, b := range mouse.Bands {
 		bands[i] = colorBand{b}
 		s := b.Start()
@@ -80,9 +84,17 @@ func main() {
 	}
 }
 
+type chromosome struct {
+	feat.Feature
+}
+
+func (c chromosome) Location() rings.Feature { return nil }
+
 type colorBand struct {
 	*genome.Band
 }
+
+func (b colorBand) Location() rings.Feature { return chromosome{b.Band.Location()} }
 
 func (b colorBand) FillColor() color.Color {
 	switch b.Giemsa {

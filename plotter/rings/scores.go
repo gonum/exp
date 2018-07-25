@@ -14,13 +14,11 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 // Scorer describes features that can provided scored values.
 type Scorer interface {
-	feat.Feature
+	Feature
 	Scores() []float64
 }
 
@@ -40,7 +38,7 @@ type ScoreRenderer interface {
 	Close()
 }
 
-// Scores implements rendering of feat.Features as radial blocks.
+// Scores implements rendering of Features as radial blocks.
 type Scores struct {
 	// Set holds a collection of features to render. Scores does not
 	// make any check for Scorer overlap in Set.
@@ -340,6 +338,6 @@ func (t *Trace) Close() {
 	}
 }
 
-func adjacent(a, b feat.Feature) bool {
+func adjacent(a, b Feature) bool {
 	return a.Location() == b.Location() && a.Start() == b.End() || b.Start() == a.End()
 }

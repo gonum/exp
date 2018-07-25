@@ -10,8 +10,6 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 // Axis represents the radial axis of ring, usually a Scores.
@@ -71,7 +69,7 @@ type TickConfig struct {
 // drawAt renders the axis at cen in the specified drawing area, according to the
 // Axis configuration.
 func (r *Axis) drawAt(ca draw.Canvas, cen vg.Point, fs []Scorer, base ArcOfer, inner, outer vg.Length, min, max float64) {
-	locMap := make(map[feat.Feature]struct{})
+	locMap := make(map[Feature]struct{})
 
 	var (
 		pa vg.Path

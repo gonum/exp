@@ -11,14 +11,12 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
-// Blocks implements rendering of feat.Features representing 0 or 1 length features as radial lines.
+// Blocks implements rendering of Features representing 0 or 1 length features as radial lines.
 type Spokes struct {
 	// Set holds a collection of features to render.
-	Set []feat.Feature
+	Set []Feature
 
 	// Base holds the elements that define the targets of the rendered spokes.
 	Base ArcOfer
@@ -37,7 +35,7 @@ type Spokes struct {
 // NewSpokes returns a Spokes based on the parameters, first checking that the provided features
 // are able to be rendered. An error is returned if the features are not renderable. The base of
 // a Spokes ring cannot be an Arc or a Highlight.
-func NewSpokes(fs []feat.Feature, base ArcOfer, inner, outer vg.Length) (*Spokes, error) {
+func NewSpokes(fs []Feature, base ArcOfer, inner, outer vg.Length) (*Spokes, error) {
 	if inner > outer {
 		return nil, errors.New("rings: inner radius greater than outer radius")
 	}
@@ -111,7 +109,7 @@ func (r *Spokes) Arc() Arc { return r.Base.Arc() }
 
 // ArcOf returns the Arc location of the parameter. If the location is not found in
 // the Spokes, an error is returned.
-func (r *Spokes) ArcOf(loc, f feat.Feature) (Arc, error) { return r.Base.ArcOf(loc, f) }
+func (r *Spokes) ArcOf(loc, f Feature) (Arc, error) { return r.Base.ArcOf(loc, f) }
 
 // Plot calls DrawAt using the Spokes' X and Y values as the drawing coordinates.
 func (r *Spokes) Plot(ca draw.Canvas, plt *plot.Plot) {

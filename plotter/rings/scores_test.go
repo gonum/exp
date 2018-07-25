@@ -16,8 +16,6 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
 func TestScores(t *testing.T) {
@@ -31,7 +29,7 @@ func TestScores(t *testing.T) {
 	}
 
 	for i, test := range []struct {
-		orient   feat.Orientation
+		orient   Orientation
 		scores   []Scorer
 		renderer ScoreRenderer
 		actions  []interface{}
@@ -922,7 +920,7 @@ func TestScores(t *testing.T) {
 			},
 		},
 		{
-			orient: feat.Forward,
+			orient: Forward,
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
@@ -981,7 +979,7 @@ func TestScores(t *testing.T) {
 			},
 		},
 		{
-			orient: feat.Forward,
+			orient: Forward,
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
@@ -1039,7 +1037,7 @@ func TestScores(t *testing.T) {
 			},
 		},
 		{
-			orient: feat.Forward,
+			orient: Forward,
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
@@ -1097,7 +1095,7 @@ func TestScores(t *testing.T) {
 			},
 		},
 		{
-			orient: feat.Reverse,
+			orient: Backward,
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
@@ -1156,7 +1154,7 @@ func TestScores(t *testing.T) {
 			},
 		},
 		{
-			orient: feat.Reverse,
+			orient: Backward,
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),
@@ -1213,7 +1211,7 @@ func TestScores(t *testing.T) {
 				}},
 		},
 		{
-			orient: feat.Reverse,
+			orient: Backward,
 			scores: []Scorer{
 				&fs{
 					start:    b.Set[1].Start(),

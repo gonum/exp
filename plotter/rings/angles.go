@@ -9,8 +9,6 @@ import (
 	"math"
 
 	"gonum.org/v1/plot/vg"
-
-	"github.com/biogo/biogo/feat"
 )
 
 // Arcer is a type that describes an arc of circle.
@@ -22,10 +20,10 @@ type Arcer interface {
 type ArcOfer interface {
 	Arcer
 
-	// ArcOf must return a non-nil error if the feat.Feature is not found by
+	// ArcOf must return a non-nil error if the Feature is not found by
 	// the receiver or the query is nil, unless the receiver is an Arc. When
 	// the receiver is an Arc the error returned is always nil.
-	ArcOf(loc, f feat.Feature) (Arc, error)
+	ArcOf(loc, f Feature) (Arc, error)
 }
 
 // Point represents a 2-D point.
@@ -92,14 +90,14 @@ func (a Arc) Contains(alpha Angle) bool {
 
 // Arcs is the base ArcOfer implementation provided by the rings package.
 type Arcs struct {
-	Base Arc                  // Base represents the complete span of the Arcs.
-	Arcs map[feat.Feature]Arc // Arcs provides a lookup for features within the span.
+	Base Arc             // Base represents the complete span of the Arcs.
+	Arcs map[Feature]Arc // Arcs provides a lookup for features within the span.
 }
 
 // NewGappedArcs returns an Arcs that maps the provided features to the base arc with
 // a fractional gap between each feature.
-func NewGappedArcs(base Arcer, fs []feat.Feature, gap float64) Arcs {
-	arcs := make(map[feat.Feature]Arc, len(fs))
+func NewGappedArcs(base Arcer, fs []Feature, gap float64) Arcs {
+	arcs := make(map[Feature]Arc, len(fs))
 
 	var total float64
 	for _, f := range fs {
@@ -112,7 +110,7 @@ func NewGappedArcs(base Arcer, fs []feat.Feature, gap float64) Arcs {
 
 	theta := arc.Theta + g/2
 	for _, f := range fs {
-		if fo, ok := f.(featureOrienter); ok && globalOrientation(fo) == feat.Reverse {
+		if fo, ok := f.(featureOrienter); ok && globalOrientation(fo) == Backward {
 			phi := Angle(f.Len()) * scale
 			arcs[f] = Arc{Theta: Normalize(theta + phi), Phi: -phi}
 		} else {
@@ -139,8 +137,8 @@ func (a Arcs) Arc() Arc { return a.Base }
 //    will be returned.
 //
 // If no matching feature is found a non-nil error is returned.
-func (a Arcs) ArcOf(loc, f feat.Feature) (Arc, error) {
-	var q feat.Feature
+func (a Arcs) ArcOf(loc, f Feature) (Arc, error) {
+	var q Feature
 	switch {
 	case loc != nil && f != nil:
 		if !contains(loc, f) {
@@ -171,7 +169,7 @@ func (a Arcs) ArcOf(loc, f feat.Feature) (Arc, error) {
 	return arcNaN, errors.New("rings: location not found")
 }
 
-func contains(loc, f feat.Feature) bool {
+func contains(loc, f Feature) bool {
 	if loc == f {
 		return true
 	}
@@ -184,7 +182,7 @@ func contains(loc, f feat.Feature) bool {
 	return false
 }
 
-func (a Arcs) containingArcOf(f feat.Feature) (Arc, bool) {
+func (a Arcs) containingArcOf(f Feature) (Arc, bool) {
 	for q := f; q != nil; q = q.Location() {
 		arc, ok := a.Arcs[q]
 		if ok {
@@ -202,12 +200,12 @@ type Lens struct {
 	ArcOfer
 
 	// Optics is a contextual arc scaling function.
-	Optics func(loc, f feat.Feature, base, arc Arc) (Arc, error)
+	Optics func(loc, f Feature, base, arc Arc) (Arc, error)
 }
 
 // ArcOf returns a scaled arc determined by a call to the Optics function using the
 // arc returned by the embedded ArcOfer's ArcOf method.
-func (l Lens) ArcOf(loc, f feat.Feature) (Arc, error) {
+func (l Lens) ArcOf(loc, f Feature) (Arc, error) {
 	arc, err := l.ArcOfer.ArcOf(loc, f)
 	if err != nil {
 		return arc, err

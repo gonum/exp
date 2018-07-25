@@ -14,14 +14,12 @@ import (
 	"gonum.org/v1/plot/tools/bezier"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"github.com/biogo/biogo/feat"
 )
 
-// Ribbons implements rendering of feat.Feature associations as ribbons.
+// Ribbons implements rendering of Feature associations as ribbons.
 type Ribbons struct {
 	// Set holds a collection of feature pairs to render.
-	// If the features are both feat.Orienters this is taken into account according to Twist.
+	// If the features are both Orienters this is taken into account according to Twist.
 	Set []Pair
 
 	// Ends holds the elements that define the end targets of the rendered ribbons.
@@ -40,7 +38,7 @@ type Ribbons struct {
 	// drawn in angle sort order with each feature's end points joined by arcs.
 	//
 	// Individual allows a feature pair to define its ribbon twist; feature pairs where
-	// both features satisfy feat.Orienter are rendered according to the product of their
+	// both features satisfy Orienter are rendered according to the product of their
 	// orientations:
 	//
 	//  +1 - as if the Twist flag were set, ignoring all other flags except Reverse.
@@ -98,7 +96,7 @@ func NewRibbons(fp []Pair, ends [2]ArcOfer, r [2]vg.Length) (*Ribbons, error) {
 // of the provided features and the Twist flags of the receiver.
 func (r *Ribbons) twist(angles *[4]Angle, fp Pair) {
 	p := fp.Features()
-	var orient feat.Orientation
+	var orient Orientation
 	switch {
 	case r.Twist&(Flat|Twisted) == Flat|Twisted:
 		panic("rings: cannot specify flat and twisted")
@@ -107,17 +105,17 @@ func (r *Ribbons) twist(angles *[4]Angle, fp Pair) {
 		angles[2], angles[3] = angles[3], angles[2]
 	case r.Twist&Individual != 0:
 		var (
-			o  [2]feat.Orienter
+			o  [2]Orienter
 			ok [2]bool
 		)
-		o[0], ok[0] = p[0].(feat.Orienter)
-		o[1], ok[1] = p[1].(feat.Orienter)
+		o[0], ok[0] = p[0].(Orienter)
+		o[1], ok[1] = p[1].(Orienter)
 		if ok[0] && ok[1] {
 			switch orient = o[0].Orientation() * o[1].Orientation(); orient {
-			case feat.Forward:
+			case Forward:
 				// p[0].Start() -> p[0].End() -> p[1].End() -> p[1].Start() {-> p[0].Start()}
 				angles[2], angles[3] = angles[3], angles[2]
-			case feat.Reverse, feat.NotOriented:
+			case Backward, NotOriented:
 				// We do nothing in this case, since we already have the correct order:
 				// p[0].Start() -> p[0].End() -> p[1].Start() -> p[1].End() {-> p[0].Start()}
 				// If we have asked for flat or twisted, let that case handle the twist.
@@ -134,7 +132,7 @@ func (r *Ribbons) twist(angles *[4]Angle, fp Pair) {
 		}
 		fallthrough
 	case r.Twist&(Flat|Twisted) != 0:
-		if orient == feat.NotOriented {
+		if orient == NotOriented {
 			// Test relative positions on the arc of the start and end points
 			// for each case of flat or twisted.
 			if r.Twist&Flat != 0 {
@@ -158,8 +156,8 @@ func (r *Ribbons) twist(angles *[4]Angle, fp Pair) {
 
 // DrawAt renders the feature pairs of a Ribbons at cen in the specified drawing area,
 // according to the Ribbons configuration.
-// DrawAt will panic if the feature pairs being linked both satisfy feat.Orienter and the
-// product of orientations is not in feat.{Forward,NotOriented,Reverse}.
+// DrawAt will panic if the feature pairs being linked both satisfy Orienter and the
+// product of orientations is not in {Forward,NotOriented,Reverse}.
 func (r *Ribbons) DrawAt(ca draw.Canvas, cen vg.Point) {
 	if len(r.Set) == 0 {
 		return
@@ -173,7 +171,7 @@ loop:
 	for _, fp := range r.Set {
 		p := fp.Features()
 		var min, max [2]int
-		for j, loc := range [2]feat.Feature{p[0].Location(), p[1].Location()} {
+		for j, loc := range [2]Feature{p[0].Location(), p[1].Location()} {
 			min[j] = loc.Start()
 			max[j] = loc.End()
 		}
@@ -302,7 +300,7 @@ func (r *Ribbons) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 		for _, fp := range r.Set {
 			p := fp.Features()
 			var min, max [2]int
-			for j, loc := range [2]feat.Feature{p[0].Location(), p[1].Location()} {
+			for j, loc := range [2]Feature{p[0].Location(), p[1].Location()} {
 				if loc != nil {
 					min[j] = loc.Start()
 					max[j] = loc.End()
