@@ -9,6 +9,7 @@ import (
 	"image/color"
 	"math/rand"
 	"reflect"
+	"testing"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/palette"
@@ -17,18 +18,19 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 
 	"github.com/biogo/biogo/feat"
-	"gopkg.in/check.v1"
 )
 
-func (s *S) TestScores(c *check.C) {
+func TestScores(t *testing.T) {
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
+	}
 
-	for i, t := range []struct {
+	for i, test := range []struct {
 		orient   feat.Orientation
 		scores   []Scorer
 		renderer ScoreRenderer
@@ -1595,12 +1597,16 @@ func (s *S) TestScores(c *check.C) {
 		},
 	} {
 		p, err := plot.New()
-		c.Assert(err, check.Equals, nil)
+		if err != nil {
+			t.Fatalf("unexpected error for plot.New: %v", err)
+		}
 
-		b.Set[1].(*fs).orient = t.orient
+		b.Set[1].(*fs).orient = test.orient
 		b.Base = NewGappedArcs(b.Base, b.Set, 0.01)
-		r, err := NewScores(t.scores, b, 40, 75, t.renderer)
-		c.Assert(err, check.Equals, nil)
+		r, err := NewScores(test.scores, b, 40, 75, test.renderer)
+		if err != nil {
+			t.Fatalf("unexpected error for NewScores: %v", err)
+		}
 		p.Add(r)
 
 		p.HideAxes()
@@ -1608,11 +1614,17 @@ func (s *S) TestScores(c *check.C) {
 		tc := &canvas{dpi: defaultDPI}
 		p.Draw(draw.NewCanvas(tc, 300, 300))
 
-		base.append(t.actions...)
-		c.Check(tc.actions, check.DeepEquals, base.actions, check.Commentf("Test %d", i))
-		if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
+		base.append(test.actions...)
+		ok := reflect.DeepEqual(tc.actions, base.actions)
+		if !ok {
+			t.Errorf("unexpected actions for test %d:\ngot :%#v\nwant:%#v", i, tc.actions, base.actions)
+		}
+		if *pics && !ok || *allPics {
 			p.Add(b)
-			c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("scores-%d-%s.svg", i, failure(!ok))), check.Equals, nil)
+			err = p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("scores-%d-%s.svg", i, failure(!ok)))
+			if err != nil {
+				t.Fatalf("unexpected error writing file: %v", err)
+			}
 		}
 	}
 }

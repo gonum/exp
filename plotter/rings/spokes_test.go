@@ -9,32 +9,37 @@ import (
 	"image/color"
 	"math/rand"
 	"reflect"
+	"testing"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"gopkg.in/check.v1"
 )
 
-func (s *S) TestSpokes(c *check.C) {
+func TestSpokes(t *testing.T) {
 	p, err := plot.New()
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for plot.New: %v", err)
+	}
 
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
+	}
 
 	m := randomFeatures(10, b.Set[1].Start(), b.Set[1].End(), true, plotter.DefaultLineStyle)
 	for _, mf := range m {
 		mf.(*fs).location = b.Set[1]
 	}
 	ms, err := NewSpokes(m, b, 73, 78)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewSpokes: %v", err)
+	}
 	ms.LineStyle = plotter.DefaultLineStyle
 	p.Add(ms)
 
@@ -115,9 +120,15 @@ func (s *S) TestSpokes(c *check.C) {
 			{Type: vg.LineComp, Pos: vg.Point{X: 108.52399096374245, Y: 88.0786477226456}, Radius: 0, Start: 0, Angle: 0},
 		}},
 	)
-	c.Check(tc.actions, check.DeepEquals, base.actions)
-	if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
+	ok := reflect.DeepEqual(tc.actions, base.actions)
+	if !ok {
+		t.Errorf("unexpected actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
+	}
+	if *pics && !ok || *allPics {
 		p.Add(b)
-		c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("spokes-%s.svg", failure(!ok))), check.Equals, nil)
+		err = p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("spokes-%s.svg", failure(!ok)))
+		if err != nil {
+			t.Fatalf("unexpected error writing file: %v", err)
+		}
 	}
 }

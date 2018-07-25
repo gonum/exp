@@ -9,6 +9,7 @@ import (
 	"image/color"
 	"math/rand"
 	"reflect"
+	"testing"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -16,10 +17,9 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 
 	"github.com/biogo/biogo/feat"
-	"gopkg.in/check.v1"
 )
 
-func (s *S) TestLinks(c *check.C) {
+func TestLinks(t *testing.T) {
 	const marks = 16
 
 	rand.Seed(1)
@@ -27,9 +27,11 @@ func (s *S) TestLinks(c *check.C) {
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
+	}
 
-	for i, t := range []struct {
+	for i, test := range []struct {
 		ends    [2]feat.Feature
 		bezier  *Bezier
 		actions []interface{}
@@ -230,22 +232,26 @@ func (s *S) TestLinks(c *check.C) {
 		},
 	} {
 		p, err := plot.New()
-		c.Assert(err, check.Equals, nil)
+		if err != nil {
+			t.Fatalf("unexpected error for plot.New: %v", err)
+		}
 
 		var m [2][]feat.Feature
 		rand.Seed(2)
 		for j := range m {
-			m[j] = randomFeatures(marks/2, t.ends[j].Start(), t.ends[j].End(), true, plotter.DefaultLineStyle)
+			m[j] = randomFeatures(marks/2, test.ends[j].Start(), test.ends[j].End(), true, plotter.DefaultLineStyle)
 		}
 		mp := make([]Pair, marks/2)
 		for j := range mp {
-			m[0][j].(*fs).location = t.ends[0]
-			m[1][j].(*fs).location = t.ends[1]
+			m[0][j].(*fs).location = test.ends[0]
+			m[1][j].(*fs).location = test.ends[1]
 			mp[j] = fp{feats: [2]*fs{m[0][j].(*fs), m[1][j].(*fs)}, sty: plotter.DefaultLineStyle}
 		}
 		l, err := NewLinks(mp, [2]ArcOfer{b, b}, [2]vg.Length{70, 70})
-		c.Assert(err, check.Equals, nil)
-		l.Bezier = t.bezier
+		if err != nil {
+			t.Fatalf("unexpected error for NewLinks: %v", err)
+		}
+		l.Bezier = test.bezier
 		l.LineStyle = plotter.DefaultLineStyle
 		p.Add(l)
 
@@ -254,13 +260,21 @@ func (s *S) TestLinks(c *check.C) {
 		tc := &canvas{dpi: defaultDPI}
 		p.Draw(draw.NewCanvas(tc, 300, 300))
 
-		base.append(t.actions...)
-		c.Check(tc.actions, check.DeepEquals, base.actions, check.Commentf("Test %d", i))
-		if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
+		base.append(test.actions...)
+		ok := reflect.DeepEqual(tc.actions, base.actions)
+		if !ok {
+			t.Errorf("unexpected actions for test %d:\ngot :%#v\nwant:%#v", i, tc.actions, base.actions)
+		}
+		if *pics && !ok || *allPics {
 			s, err := NewSpokes(append(m[0], m[1]...), b, 72, 78)
-			c.Assert(err, check.Equals, nil)
+			if err != nil {
+				t.Fatalf("unexpected error for NewSpokes: %v", err)
+			}
 			p.Add(b, s)
-			c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("links-%d-%s.svg", i, failure(!ok))), check.Equals, nil)
+			err = p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("links-%d-%s.svg", i, failure(!ok)))
+			if err != nil {
+				t.Fatalf("unexpected error writing file: %v", err)
+			}
 		}
 	}
 }

@@ -9,18 +9,19 @@ import (
 	"image/color"
 	"math"
 	"reflect"
+	"testing"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"gopkg.in/check.v1"
 )
 
-func (s *S) TestHighlight(c *check.C) {
+func TestHighlight(t *testing.T) {
 	p, err := plot.New()
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for plot.New: %v", err)
+	}
 
 	h := NewHighlight(
 		color.NRGBA{R: 0xf3, G: 0xf3, B: 0x15, A: 0xff},
@@ -53,8 +54,14 @@ func (s *S) TestHighlight(c *check.C) {
 			{Type: vg.CloseComp, Pos: vg.Point{X: 0, Y: 0}, Radius: 0, Start: 0, Angle: 0},
 		}},
 	)
-	c.Check(tc.actions, check.DeepEquals, base.actions)
-	if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
-		c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("highlight-%s.svg", failure(!ok))), check.Equals, nil)
+	ok := reflect.DeepEqual(tc.actions, base.actions)
+	if !ok {
+		t.Errorf("unexpected actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
+	}
+	if *pics && !ok || *allPics {
+		err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("highlight-%s.svg", failure(!ok)))
+		if err != nil {
+			t.Fatalf("unexpected error writing file: %v", err)
+		}
 	}
 }

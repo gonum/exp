@@ -9,6 +9,7 @@ import (
 	"image/color"
 	"math/rand"
 	"reflect"
+	"testing"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -16,20 +17,23 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 
 	"github.com/biogo/biogo/feat"
-	"gopkg.in/check.v1"
 )
 
-func (s *S) TestLabelsBlocks(c *check.C) {
+func TestLabelsBlocks(t *testing.T) {
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
+	}
 	font, err := vg.MakeFont("Helvetica", 10)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
+	}
 
-	for i, t := range []struct {
+	for i, test := range []struct {
 		feats     []feat.Feature
 		placement TextPlacement
 		actions   []interface{}
@@ -126,12 +130,16 @@ func (s *S) TestLabelsBlocks(c *check.C) {
 		},
 	} {
 		p, err := plot.New()
-		c.Assert(err, check.Equals, nil)
+		if err != nil {
+			t.Fatalf("unexpected error for plot.New: %v", err)
+		}
 
-		l, err := NewLabels(b, 110, NameLabels(t.feats)...)
-		c.Assert(err, check.Equals, nil)
+		l, err := NewLabels(b, 110, NameLabels(test.feats)...)
+		if err != nil {
+			t.Fatalf("unexpected error for NewLabels: %v", err)
+		}
 		l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
-		l.Placement = t.placement
+		l.Placement = test.placement
 		p.Add(l)
 
 		p.HideAxes()
@@ -139,16 +147,22 @@ func (s *S) TestLabelsBlocks(c *check.C) {
 		tc := &canvas{dpi: defaultDPI}
 		p.Draw(draw.NewCanvas(tc, 300, 300))
 
-		base.append(t.actions...)
-		c.Check(tc.actions, check.DeepEquals, base.actions, check.Commentf("Test %d", i))
-		if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
+		base.append(test.actions...)
+		ok := reflect.DeepEqual(tc.actions, base.actions)
+		if !ok {
+			t.Errorf("unexpected actions for test %d:\ngot :%#v\nwant:%#v", i, tc.actions, base.actions)
+		}
+		if *pics && !ok || *allPics {
 			p.Add(b)
-			c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("labels-%d-%s.svg", i, failure(!ok))), check.Equals, nil)
+			err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("labels-%d-%s.svg", i, failure(!ok)))
+			if err != nil {
+				t.Fatalf("unexpected error writing file: %v", err)
+			}
 		}
 	}
 }
 
-func (s *S) TestLabelsArcs(c *check.C) {
+func TestLabelsArcs(t *testing.T) {
 	a := Arc{Theta: -0.031415926535897934, Phi: -1.7009436868899361} // This is feature0 from the blocks test.
 	h := NewHighlight(
 		color.NRGBA{R: 243, G: 243, B: 21, A: 128},
@@ -158,9 +172,11 @@ func (s *S) TestLabelsArcs(c *check.C) {
 	h.LineStyle = plotter.DefaultLineStyle
 
 	font, err := vg.MakeFont("Helvetica", 10)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
+	}
 
-	for i, t := range []struct {
+	for i, test := range []struct {
 		arc       Arcer
 		label     Label
 		placement TextPlacement
@@ -225,12 +241,16 @@ func (s *S) TestLabelsArcs(c *check.C) {
 		},
 	} {
 		p, err := plot.New()
-		c.Assert(err, check.Equals, nil)
+		if err != nil {
+			t.Fatalf("unexpected error for plot.New: %v", err)
+		}
 
-		l, err := NewLabels(t.arc, 110, t.label)
-		c.Assert(err, check.Equals, nil)
+		l, err := NewLabels(test.arc, 110, test.label)
+		if err != nil {
+			t.Fatalf("unexpected error for NewLabels: %v", err)
+		}
 		l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
-		l.Placement = t.placement
+		l.Placement = test.placement
 		p.Add(l)
 
 		p.HideAxes()
@@ -238,39 +258,55 @@ func (s *S) TestLabelsArcs(c *check.C) {
 		tc := &canvas{dpi: defaultDPI}
 		p.Draw(draw.NewCanvas(tc, 300, 300))
 
-		base.append(t.actions...)
-		c.Check(tc.actions, check.DeepEquals, base.actions, check.Commentf("Test %d", i))
-		if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
+		base.append(test.actions...)
+		ok := reflect.DeepEqual(tc.actions, base.actions)
+		if !ok {
+			t.Errorf("unexpected actions for test %d:\ngot :%#v\nwant:%#v", i, tc.actions, base.actions)
+		}
+		if *pics && !ok || *allPics {
 			p.Add(h)
-			c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("labels-%d-%s.svg", i, failure(!ok))), check.Equals, nil)
+			err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("labelsarcs-%d-%s.svg", i, failure(!ok)))
+			if err != nil {
+				t.Fatalf("unexpected error writing file: %v", err)
+			}
 		}
 	}
 }
 
-func (s *S) TestLabelSpokes(c *check.C) {
+func TestLabelSpokes(t *testing.T) {
 	p, err := plot.New()
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for plot.New: %v", err)
+	}
 
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
+	}
 
 	m := randomFeatures(10, b.Set[1].Start(), b.Set[1].End(), true, plotter.DefaultLineStyle)
 	for _, mf := range m {
 		mf.(*fs).location = b.Set[1]
 	}
 	ms, err := NewSpokes(m, b, 73, 78)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewSpokes: %v", err)
+	}
 	ms.LineStyle = plotter.DefaultLineStyle
 
 	font, err := vg.MakeFont("Helvetica", 10)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
+	}
 
 	l, err := NewLabels(ms, 125, NameLabels([]feat.Feature{m[1], m[5], m[9]})...)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewLabels: %v", err)
+	}
 	l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
 	l.Placement = Radial
 	p.Add(l)
@@ -296,9 +332,14 @@ func (s *S) TestLabelSpokes(c *check.C) {
 		rotate{angle: 4.113415457874245},
 		fillString{font: "Helvetica", size: 10, x: -105.27790643446565, y: 35.27356020294578, str: "feature9"},
 		pop{})
-	c.Check(tc.actions, check.DeepEquals, base.actions)
-	if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
-		p.Add(b, ms)
-		c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("labelspokes-%s.svg", failure(!ok))), check.Equals, nil)
+	ok := reflect.DeepEqual(tc.actions, base.actions)
+	if !ok {
+		t.Errorf("unexpected actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
+	}
+	if *pics && !ok || *allPics {
+		err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("labelspokes-%s.svg", failure(!ok)))
+		if err != nil {
+			t.Fatalf("unexpected error writing file: %v", err)
+		}
 	}
 }

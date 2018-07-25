@@ -9,6 +9,7 @@ import (
 	"image/color"
 	"math/rand"
 	"reflect"
+	"testing"
 
 	"github.com/biogo/biogo/feat"
 
@@ -16,20 +17,22 @@ import (
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
-
-	"gopkg.in/check.v1"
 )
 
-func (s *S) TestBlocks(c *check.C) {
+func TestBlocks(t *testing.T) {
 	p, err := plot.New()
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for plot.New: %v", err)
+	}
 
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
+	}
 	b.LineStyle = plotter.DefaultLineStyle
 	b.Color = color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}
 	p.Add(b)
@@ -89,23 +92,33 @@ func (s *S) TestBlocks(c *check.C) {
 			{Type: vg.CloseComp, Pos: vg.Point{X: 0, Y: 0}, Radius: 0, Start: 0, Angle: 0},
 		}},
 	)
-	c.Check(tc.actions, check.DeepEquals, base.actions)
-	if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
-		c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("blocks-%s.svg", failure(!ok))), check.Equals, nil)
+	ok := reflect.DeepEqual(tc.actions, base.actions)
+	if !ok {
+		t.Errorf("unexpected actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
+	}
+	if *pics && !ok || *allPics {
+		err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("blocks-%s.svg", failure(!ok)))
+		if err != nil {
+			t.Fatalf("unexpected error writing file: %v", err)
+		}
 	}
 }
 
-func (s *S) TestBlocksScale(c *check.C) {
+func TestBlocksScale(t *testing.T) {
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for plot.New: %v", err)
+	}
 	font, err := vg.MakeFont("Helvetica", 5)
-	c.Assert(err, check.Equals, nil)
+	if err != nil {
+		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
+	}
 
-	for i, t := range []struct {
+	for i, test := range []struct {
 		feats   []feat.Feature
 		grid    draw.LineStyle
 		inner   vg.Length
@@ -635,17 +648,21 @@ func (s *S) TestBlocksScale(c *check.C) {
 		},
 	} {
 		p, err := plot.New()
-		c.Assert(err, check.Equals, nil)
+		if err != nil {
+			t.Fatalf("unexpected error for plot.New: %v", err)
+		}
 
-		s, err := NewScale(t.feats, b, 110)
-		c.Assert(err, check.Equals, nil)
+		s, err := NewScale(test.feats, b, 110)
+		if err != nil {
+			t.Fatalf("unexpected error for NewScale: %v", err)
+		}
 		s.LineStyle = plotter.DefaultLineStyle
 		s.Tick.Length = 3
 		s.Tick.LineStyle = plotter.DefaultLineStyle
 		s.Tick.Label = draw.TextStyle{Color: color.Gray16{0}, Font: font}
-		s.Grid.LineStyle = t.grid
-		s.Grid.Inner = t.inner
-		s.Grid.Outer = t.outer
+		s.Grid.LineStyle = test.grid
+		s.Grid.Inner = test.inner
+		s.Grid.Outer = test.outer
 		p.Add(s)
 
 		p.HideAxes()
@@ -653,11 +670,17 @@ func (s *S) TestBlocksScale(c *check.C) {
 		tc := &canvas{dpi: defaultDPI}
 		p.Draw(draw.NewCanvas(tc, 300, 300))
 
-		base.append(t.actions...)
-		c.Check(tc.actions, check.DeepEquals, base.actions, check.Commentf("Test %d", i))
-		if ok := reflect.DeepEqual(tc.actions, base.actions); *pics && !ok || *allPics {
+		base.append(test.actions...)
+		ok := reflect.DeepEqual(tc.actions, base.actions)
+		if !ok {
+			t.Errorf("unexpected actions for test %d:\ngot :%#v\nwant:%#v", i, tc.actions, base.actions)
+		}
+		if *pics && !ok || *allPics {
 			p.Add(b)
-			c.Assert(p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("scale-%d-%s.svg", i, failure(!ok))), check.Equals, nil)
+			err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("scale-%d-%s.svg", i, failure(!ok)))
+			if err != nil {
+				t.Fatalf("unexpected error writing file: %v", err)
+			}
 		}
 	}
 }
