@@ -179,7 +179,7 @@ func (r *Sail) DrawAt(ca draw.Canvas, cen vg.Point) {
 	var i, j int
 	for i, j = 0, 0; i < len(r.Set); i, j = i+1, j+1 {
 		f := r.Set[i]
-		var min, max int
+		var min, max float64
 		loc := f.Location()
 		if loc != nil {
 			min = loc.Start()

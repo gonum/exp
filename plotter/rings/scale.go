@@ -97,12 +97,12 @@ func (r *Scale) DrawAt(ca draw.Canvas, cen vg.Point) {
 		scale := arc.Phi / Angle(max-min)
 
 		// These loops are split to reduce the amount of style changing between elements.
-		marks := r.Tick.Marker.Ticks(float64(f.Start()), float64(f.End()))
+		marks := r.Tick.Marker.Ticks(f.Start(), f.End())
 
 		if r.Grid.Inner != r.Grid.Outer && r.Grid.LineStyle.Color != nil && r.Grid.LineStyle.Width != 0 {
 			ca.SetLineStyle(r.Grid.LineStyle)
 			for _, mark := range marks {
-				iv := int(mark.Value)
+				iv := mark.Value
 				if iv < f.Start() || iv > f.End() {
 					continue
 				}
@@ -131,7 +131,7 @@ func (r *Scale) DrawAt(ca draw.Canvas, cen vg.Point) {
 		if r.Tick.LineStyle.Color != nil && r.Tick.LineStyle.Width != 0 && r.Tick.Length != 0 {
 			ca.SetLineStyle(r.LineStyle)
 			for _, mark := range marks {
-				iv := int(mark.Value)
+				iv := mark.Value
 				if iv < f.Start() || iv > f.End() {
 					continue
 				}
@@ -154,7 +154,7 @@ func (r *Scale) DrawAt(ca draw.Canvas, cen vg.Point) {
 
 		if r.Tick.Label.Color != nil {
 			for _, mark := range marks {
-				iv := int(mark.Value)
+				iv := mark.Value
 				if iv < f.Start() || iv > f.End() || mark.IsMinor() {
 					continue
 				}

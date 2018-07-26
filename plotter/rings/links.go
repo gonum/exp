@@ -72,7 +72,7 @@ loop:
 	for _, fp := range r.Set {
 		p := fp.Features()
 		loc := [2]Feature{p[0].Location(), p[1].Location()}
-		var min, max [2]int
+		var min, max [2]float64
 		for j, l := range loc {
 			min[j] = l.Start()
 			max[j] = l.End()
@@ -145,7 +145,7 @@ func (r *Links) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 		for _, fp := range r.Set {
 			p := fp.Features()
 			loc := [2]Feature{p[0].Location(), p[1].Location()}
-			var min, max [2]int
+			var min, max [2]float64
 			for j, l := range loc {
 				min[j] = l.Start()
 				max[j] = l.End()

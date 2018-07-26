@@ -32,7 +32,7 @@ func failure(f bool) string {
 
 // fs is a Feature implementation for testing.
 type fs struct {
-	start, end int
+	start, end float64
 	name       string
 	location   Feature
 	orient     Orientation
@@ -40,8 +40,8 @@ type fs struct {
 	scores     []float64
 }
 
-func (f *fs) Start() int                { return f.start }
-func (f *fs) End() int                  { return f.end }
+func (f *fs) Start() float64            { return f.start }
+func (f *fs) End() float64              { return f.end }
 func (f *fs) Name() string              { return f.name }
 func (f *fs) Location() Feature         { return f.location }
 func (f *fs) Orientation() Orientation  { return f.orient }
@@ -67,13 +67,15 @@ func (p fp) LineStyle() draw.LineStyle {
 	return p.sty
 }
 
-func randomFeatures(n, min, max int, single bool, sty draw.LineStyle) []Feature {
+func randomFeatures(n int, min, max float64, single bool, sty draw.LineStyle) []Feature {
 	data := make([]Feature, n)
 	for i := range data {
-		start := rand.Intn(max-min) + min
-		var end int
+		// Intn is used here to avoid drastic random
+		// sequence changes at this stage.
+		start := float64(rand.Intn(int(max-min))) + min
+		var end float64
 		if !single {
-			end = rand.Intn(max - start)
+			end = float64(rand.Intn(int(max - start)))
 		}
 		data[i] = &fs{
 			start: start,
@@ -92,8 +94,8 @@ func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []Scorer {
 	s := make([]Scorer, n)
 	for i := 0; i < n; i++ {
 		cs := &fs{
-			start:    f.Start() + i*(lengthOf(f)/n),
-			end:      f.Start() + (i+1)*(lengthOf(f)/n),
+			start:    f.Start() + float64(i)*(lengthOf(f)/float64(n)),
+			end:      f.Start() + float64(i+1)*(lengthOf(f)/float64(n)),
 			name:     fmt.Sprintf("%s#%d", f.Name(), i),
 			location: f,
 			scores:   make([]float64, m),

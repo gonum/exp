@@ -170,7 +170,7 @@ func (r *Ribbons) DrawAt(ca draw.Canvas, cen vg.Point) {
 loop:
 	for _, fp := range r.Set {
 		p := fp.Features()
-		var min, max [2]int
+		var min, max [2]float64
 		for j, loc := range [2]Feature{p[0].Location(), p[1].Location()} {
 			min[j] = loc.Start()
 			max[j] = loc.End()
@@ -299,7 +299,7 @@ func (r *Ribbons) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 	loop:
 		for _, fp := range r.Set {
 			p := fp.Features()
-			var min, max [2]int
+			var min, max [2]float64
 			for j, loc := range [2]Feature{p[0].Location(), p[1].Location()} {
 				if loc != nil {
 					min[j] = loc.Start()

@@ -185,15 +185,15 @@ func main() {
 }
 
 type fs struct {
-	start, end int
+	start, end float64
 	name       string
 	location   rings.Feature
 	orient     rings.Orientation
 	style      draw.LineStyle
 }
 
-func (f *fs) Start() int                     { return f.start }
-func (f *fs) End() int                       { return f.end }
+func (f *fs) Start() float64                 { return f.start }
+func (f *fs) End() float64                   { return f.end }
 func (f *fs) Name() string                   { return f.name }
 func (f *fs) Location() rings.Feature        { return f.location }
 func (f *fs) Orientation() rings.Orientation { return f.orient }
@@ -218,17 +218,19 @@ func (p fp) LineStyle() draw.LineStyle {
 	return p.sty
 }
 
-func lengthOf(f rings.Feature) int {
+func lengthOf(f rings.Feature) float64 {
 	return f.End() - f.Start()
 }
 
-func randomFeatures(n, min, max int, single bool, sty draw.LineStyle) []rings.Feature {
+func randomFeatures(n int, min, max float64, single bool, sty draw.LineStyle) []rings.Feature {
 	data := make([]rings.Feature, n)
 	for i := range data {
-		start := rand.Intn(max-min) + min
-		var end int
+		// Intn is used here to avoid drastic random
+		// sequence changes at this stage.
+		start := float64(rand.Intn(int(max-min))) + min
+		var end float64
 		if !single {
-			end = rand.Intn(max - start)
+			end = float64(rand.Intn(int(max - start)))
 		}
 		data[i] = &fs{
 			start: start,

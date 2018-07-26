@@ -101,7 +101,7 @@ func NewGappedArcs(base Arcer, fs []Feature, gap float64) Arcs {
 
 	var total float64
 	for _, f := range fs {
-		total += float64(lengthOf(f))
+		total += lengthOf(f)
 	}
 
 	arc := base.Arc()
