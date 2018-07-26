@@ -64,59 +64,25 @@ func TestScores(t *testing.T) {
 			orient: Forward,
 			scores: []Scorer{
 				&fs{
-					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{1},
+					start:  b.Set[1].Start(),
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					name:   fmt.Sprintf("%s#0", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{3},
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					name:   fmt.Sprintf("%s#1", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					end:      b.Set[1].End(),
-					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{2},
-				},
-			},
-			renderer: &Trace{
-				LineStyles: []draw.LineStyle{func() draw.LineStyle {
-					sty := plotter.DefaultLineStyle
-					sty.Color = color.Gray{0}
-					return sty
-				}()},
-				Join: true,
-			},
-		},
-		{
-			orient: Forward,
-			scores: []Scorer{
-				&fs{
-					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{1},
-				},
-				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3 + 1,
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{3},
-				},
-				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					end:      b.Set[1].End(),
-					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{2},
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					end:    b.Set[1].End(),
+					name:   fmt.Sprintf("%s#2", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{2},
 				},
 			},
 			renderer: &Trace{
@@ -132,25 +98,59 @@ func TestScores(t *testing.T) {
 			orient: Forward,
 			scores: []Scorer{
 				&fs{
-					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{1},
+					start:  b.Set[1].Start(),
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					name:   fmt.Sprintf("%s#0", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{3},
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/3 + 1,
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					name:   fmt.Sprintf("%s#1", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2 + 1,
-					end:      b.Set[1].End(),
-					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{2},
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					end:    b.Set[1].End(),
+					name:   fmt.Sprintf("%s#2", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{2},
+				},
+			},
+			renderer: &Trace{
+				LineStyles: []draw.LineStyle{func() draw.LineStyle {
+					sty := plotter.DefaultLineStyle
+					sty.Color = color.Gray{0}
+					return sty
+				}()},
+				Join: true,
+			},
+		},
+		{
+			orient: Forward,
+			scores: []Scorer{
+				&fs{
+					start:  b.Set[1].Start(),
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					name:   fmt.Sprintf("%s#0", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{1},
+				},
+				&fs{
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					name:   fmt.Sprintf("%s#1", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{3},
+				},
+				&fs{
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/2 + 1,
+					end:    b.Set[1].End(),
+					name:   fmt.Sprintf("%s#2", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{2},
 				},
 			},
 			renderer: &Trace{
@@ -166,59 +166,25 @@ func TestScores(t *testing.T) {
 			orient: Backward,
 			scores: []Scorer{
 				&fs{
-					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{1},
+					start:  b.Set[1].Start(),
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					name:   fmt.Sprintf("%s#0", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{3},
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					name:   fmt.Sprintf("%s#1", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					end:      b.Set[1].End(),
-					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{2},
-				},
-			},
-			renderer: &Trace{
-				LineStyles: []draw.LineStyle{func() draw.LineStyle {
-					sty := plotter.DefaultLineStyle
-					sty.Color = color.Gray{0}
-					return sty
-				}()},
-				Join: true,
-			},
-		},
-		{
-			orient: Backward,
-			scores: []Scorer{
-				&fs{
-					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{1},
-				},
-				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3 + 1,
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{3},
-				},
-				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					end:      b.Set[1].End(),
-					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{2},
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					end:    b.Set[1].End(),
+					name:   fmt.Sprintf("%s#2", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{2},
 				},
 			},
 			renderer: &Trace{
@@ -234,25 +200,59 @@ func TestScores(t *testing.T) {
 			orient: Backward,
 			scores: []Scorer{
 				&fs{
-					start:    b.Set[1].Start(),
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					name:     fmt.Sprintf("%s#0", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{1},
+					start:  b.Set[1].Start(),
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					name:   fmt.Sprintf("%s#0", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{1},
 				},
 				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
-					end:      b.Set[1].Start() + lengthOf(b.Set[1])/2,
-					name:     fmt.Sprintf("%s#1", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{3},
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/3 + 1,
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					name:   fmt.Sprintf("%s#1", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{3},
 				},
 				&fs{
-					start:    b.Set[1].Start() + lengthOf(b.Set[1])/2 + 1,
-					end:      b.Set[1].End(),
-					name:     fmt.Sprintf("%s#2", b.Set[1].Name()),
-					location: b.Set[1],
-					scores:   []float64{2},
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					end:    b.Set[1].End(),
+					name:   fmt.Sprintf("%s#2", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{2},
+				},
+			},
+			renderer: &Trace{
+				LineStyles: []draw.LineStyle{func() draw.LineStyle {
+					sty := plotter.DefaultLineStyle
+					sty.Color = color.Gray{0}
+					return sty
+				}()},
+				Join: true,
+			},
+		},
+		{
+			orient: Backward,
+			scores: []Scorer{
+				&fs{
+					start:  b.Set[1].Start(),
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					name:   fmt.Sprintf("%s#0", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{1},
+				},
+				&fs{
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/3,
+					end:    b.Set[1].Start() + lengthOf(b.Set[1])/2,
+					name:   fmt.Sprintf("%s#1", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{3},
+				},
+				&fs{
+					start:  b.Set[1].Start() + lengthOf(b.Set[1])/2 + 1,
+					end:    b.Set[1].End(),
+					name:   fmt.Sprintf("%s#2", b.Set[1].Name()),
+					parent: b.Set[1],
+					scores: []float64{2},
 				},
 			},
 			renderer: &Trace{

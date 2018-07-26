@@ -171,7 +171,7 @@ loop:
 	for _, fp := range r.Set {
 		p := fp.Features()
 		var min, max [2]float64
-		for j, loc := range [2]Feature{p[0].Location(), p[1].Location()} {
+		for j, loc := range [2]Feature{p[0].Parent(), p[1].Parent()} {
 			min[j] = loc.Start()
 			max[j] = loc.End()
 		}
@@ -184,9 +184,9 @@ loop:
 				continue loop
 			}
 
-			arc, err := r.Ends[j].ArcOf(f.Location(), f)
+			arc, err := r.Ends[j].ArcOf(f.Parent(), f)
 			if err != nil {
-				panic(fmt.Sprint("rings: no arc for feature location:", err))
+				panic(fmt.Sprint("rings: no arc for parent:", err))
 			}
 
 			angles[j*2] = Normalize(arc.Theta)
@@ -300,7 +300,7 @@ func (r *Ribbons) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 		for _, fp := range r.Set {
 			p := fp.Features()
 			var min, max [2]float64
-			for j, loc := range [2]Feature{p[0].Location(), p[1].Location()} {
+			for j, loc := range [2]Feature{p[0].Parent(), p[1].Parent()} {
 				if loc != nil {
 					min[j] = loc.Start()
 					max[j] = loc.End()
@@ -313,9 +313,9 @@ func (r *Ribbons) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 					continue loop
 				}
 
-				arc, err := r.Ends[j].ArcOf(f.Location(), f)
+				arc, err := r.Ends[j].ArcOf(f.Parent(), f)
 				if err != nil {
-					panic(fmt.Sprint("rings: no arc for feature location:", err))
+					panic(fmt.Sprint("rings: no arc for parent:", err))
 				}
 				angles[j*2] = Normalize(arc.Theta)
 				angles[j*2+1] = Normalize(arc.Theta + arc.Phi)

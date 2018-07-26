@@ -69,7 +69,7 @@ func NewScores(fs []Scorer, base ArcOfer, inner, outer vg.Length, renderer Score
 		if f.End() < f.Start() {
 			return nil, errors.New("rings: inverted feature")
 		}
-		if loc := f.Location(); loc != nil {
+		if loc := f.Parent(); loc != nil {
 			if f.Start() < loc.Start() || f.Start() > loc.End() {
 				return nil, errors.New("rings: feature out of range")
 			}
@@ -108,7 +108,7 @@ func (r *Scores) DrawAt(ca draw.Canvas, cen vg.Point) {
 
 	r.Renderer.Configure(ca, cen, r.Base, r.Inner, r.Outer, r.Min, r.Max)
 	for _, f := range r.Set {
-		loc := f.Location()
+		loc := f.Parent()
 		min := loc.Start()
 		max := loc.End()
 
@@ -118,7 +118,7 @@ func (r *Scores) DrawAt(ca draw.Canvas, cen vg.Point) {
 
 		arc, err := r.Base.ArcOf(loc, f)
 		if err != nil {
-			panic(fmt.Sprint("rings: no arc for feature location:", err))
+			panic(fmt.Sprint("rings: no arc for parent:", err))
 		}
 		r.Renderer.Render(arc, f)
 	}
@@ -339,5 +339,5 @@ func (t *Trace) Close() {
 }
 
 func adjacent(a, b Feature) bool {
-	return a.Location() == b.Location() && a.Start() == b.End() || b.Start() == a.End()
+	return a.Parent() == b.Parent() && a.Start() == b.End() || b.Start() == a.End()
 }

@@ -89,7 +89,7 @@ func main() {
 
 	m := randomFeatures(400, bs.Set[1].Start(), bs.Set[1].End(), true, sty)
 	for _, mf := range m {
-		mf.(*fs).location = bs.Set[1]
+		mf.(*fs).parent = bs.Set[1]
 	}
 	ms, err := rings.NewSpokes(m, bs, 73, 78)
 	if err != nil {
@@ -109,12 +109,12 @@ func main() {
 			feats: [2]*fs{
 				{
 					start: bs.Set[1].Start(), end: bs.Set[1].Start() + lengthOf(bs.Set[1])/4,
-					orient: rings.Backward, location: bs.Set[1],
+					orient: rings.Backward, parent: bs.Set[1],
 					style: redSty,
 				},
 				{
 					start: bs.Set[2].Start() + 7*lengthOf(bs.Set[2])/8, end: bs.Set[2].End(),
-					orient: rings.Forward, location: bs.Set[2],
+					orient: rings.Forward, parent: bs.Set[2],
 					style: blueSty,
 				},
 			},
@@ -135,17 +135,17 @@ func main() {
 	sf := []rings.Feature{
 		&fs{
 			start: bs.Set[0].Start() + 2*lengthOf(bs.Set[0])/5, end: bs.Set[0].End() - 2*lengthOf(bs.Set[0])/5,
-			orient: rings.NotOriented, location: bs.Set[0],
+			orient: rings.NotOriented, parent: bs.Set[0],
 			style: redSty,
 		},
 		&fs{
 			start: bs.Set[1].Start() + 2*lengthOf(bs.Set[1])/5, end: bs.Set[1].End() - 2*lengthOf(bs.Set[1])/5,
-			orient: rings.NotOriented, location: bs.Set[1],
+			orient: rings.NotOriented, parent: bs.Set[1],
 			style: redSty,
 		},
 		&fs{
 			start: bs.Set[2].Start() + 2*lengthOf(bs.Set[2])/5, end: bs.Set[2].End() - 2*lengthOf(bs.Set[2])/5,
-			orient: rings.Backward, location: bs.Set[2],
+			orient: rings.Backward, parent: bs.Set[2],
 			style: blueSty,
 		},
 	}
@@ -187,7 +187,7 @@ func main() {
 type fs struct {
 	start, end float64
 	name       string
-	location   rings.Feature
+	parent     rings.Feature
 	orient     rings.Orientation
 	style      draw.LineStyle
 }
@@ -195,7 +195,7 @@ type fs struct {
 func (f *fs) Start() float64                 { return f.start }
 func (f *fs) End() float64                   { return f.end }
 func (f *fs) Name() string                   { return f.name }
-func (f *fs) Location() rings.Feature        { return f.location }
+func (f *fs) Parent() rings.Feature          { return f.parent }
 func (f *fs) Orientation() rings.Orientation { return f.orient }
 func (f *fs) LineStyle() draw.LineStyle      { return f.style }
 

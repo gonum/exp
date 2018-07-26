@@ -29,7 +29,7 @@ func TestSpokes(t *testing.T) {
 
 	m := randomFeatures(10, b.Set[1].Start(), b.Set[1].End(), true, plotter.DefaultLineStyle)
 	for _, mf := range m {
-		mf.(*fs).location = b.Set[1]
+		mf.(*fs).parent = b.Set[1]
 	}
 	ms, err := NewSpokes(m, b, 73, 78)
 	if err != nil {

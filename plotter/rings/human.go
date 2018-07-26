@@ -98,17 +98,17 @@ type chromosome struct {
 	feat.Feature
 }
 
-func (c chromosome) Start() float64          { return float64(c.Feature.Start()) }
-func (c chromosome) End() float64            { return float64(c.Feature.End()) }
-func (c chromosome) Location() rings.Feature { return nil }
+func (c chromosome) Start() float64        { return float64(c.Feature.Start()) }
+func (c chromosome) End() float64          { return float64(c.Feature.End()) }
+func (c chromosome) Parent() rings.Feature { return nil }
 
 type colorBand struct {
 	*genome.Band
 }
 
-func (b colorBand) Start() float64          { return float64(b.Band.Start()) }
-func (b colorBand) End() float64            { return float64(b.Band.End()) }
-func (b colorBand) Location() rings.Feature { return chromosome{b.Band.Location()} }
+func (b colorBand) Start() float64        { return float64(b.Band.Start()) }
+func (b colorBand) End() float64          { return float64(b.Band.End()) }
+func (b colorBand) Parent() rings.Feature { return chromosome{b.Band.Location()} }
 
 func (b colorBand) FillColor() color.Color {
 	switch b.Giemsa {

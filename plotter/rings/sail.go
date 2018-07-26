@@ -180,7 +180,7 @@ func (r *Sail) DrawAt(ca draw.Canvas, cen vg.Point) {
 	for i, j = 0, 0; i < len(r.Set); i, j = i+1, j+1 {
 		f := r.Set[i]
 		var min, max float64
-		loc := f.Location()
+		loc := f.Parent()
 		if loc != nil {
 			min = loc.Start()
 			max = loc.End()
@@ -193,7 +193,7 @@ func (r *Sail) DrawAt(ca draw.Canvas, cen vg.Point) {
 		af[j].Feature = f
 		arc, err := r.Base.ArcOf(loc, f)
 		if err != nil {
-			panic(fmt.Sprint("rings: no arc for feature location:", err))
+			panic(fmt.Sprint("rings: no arc for parent:", err))
 		}
 		af[j].angles[0] = Normalize(arc.Theta)
 		af[j].angles[1] = Normalize(arc.Theta + arc.Phi)
@@ -293,7 +293,7 @@ func (r *Sail) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 		var i, j int
 		for i, j = 0, 0; i < len(r.Set); i, j = i+1, j+1 {
 			f := r.Set[i]
-			loc := f.Location()
+			loc := f.Parent()
 			min := loc.Start()
 			max := loc.End()
 			if f.Start() < min || f.End() > max {
@@ -304,7 +304,7 @@ func (r *Sail) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 			af[j].Feature = f
 			arc, err := r.Base.ArcOf(loc, f)
 			if err != nil {
-				panic(fmt.Sprint("rings: no arc for feature location:", err))
+				panic(fmt.Sprint("rings: no arc for parent:", err))
 			}
 			af[j].angles[0] = Normalize(arc.Theta)
 			af[j].angles[1] = Normalize(arc.Theta + arc.Phi)

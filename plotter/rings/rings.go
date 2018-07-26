@@ -39,15 +39,15 @@ type LineStyleFunc func(interface{}) draw.LineStyle
 // assumptions whether coordinates of such features are comparable.
 type Feature interface {
 	// Start and End indicate the position of the feature within the
-	// containing Location's coordinate system.
+	// containing Parent's coordinate system.
 	Start() float64
 	End() float64
 
 	// Name returns the name of the feature.
 	Name() string
 
-	// Location returns the reference feature on which the feature is located.
-	Location() Feature
+	// Parent returns the reference feature on which the feature is located.
+	Parent() Feature
 }
 
 func lengthOf(f Feature) float64 {

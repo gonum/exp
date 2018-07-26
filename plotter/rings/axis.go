@@ -79,13 +79,13 @@ func (r *Axis) drawAt(ca draw.Canvas, cen vg.Point, fs []Scorer, base ArcOfer, i
 		scale = (outer - inner) / vg.Length(max-min)
 	)
 	for _, f := range fs {
-		locMap[f.Location()] = struct{}{}
+		locMap[f.Parent()] = struct{}{}
 	}
 	if r.Grid.Color != nil && r.Grid.Width != 0 {
 		for loc := range locMap {
 			arc, err := base.ArcOf(loc, nil)
 			if err != nil {
-				panic(fmt.Sprint("rings: no arc for feature location:", err))
+				panic(fmt.Sprint("rings: no arc for parent:", err))
 			}
 
 			ca.SetLineStyle(r.Grid)

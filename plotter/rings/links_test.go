@@ -57,8 +57,8 @@ func TestLinks(t *testing.T) {
 		}
 		mp := make([]Pair, marks/2)
 		for j := range mp {
-			m[0][j].(*fs).location = test.ends[0]
-			m[1][j].(*fs).location = test.ends[1]
+			m[0][j].(*fs).parent = test.ends[0]
+			m[1][j].(*fs).parent = test.ends[1]
 			mp[j] = fp{feats: [2]*fs{m[0][j].(*fs), m[1][j].(*fs)}, sty: plotter.DefaultLineStyle}
 		}
 		l, err := NewLinks(mp, [2]ArcOfer{b, b}, [2]vg.Length{70, 70})

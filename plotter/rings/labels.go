@@ -141,14 +141,14 @@ func (r *Labels) DrawAt(ca draw.Canvas, cen vg.Point) {
 		)
 		switch l := l.(type) {
 		case locater:
-			arc, err = r.Base.ArcOf(l.location().Location(), l.location())
+			arc, err = r.Base.ArcOf(l.location().Parent(), l.location())
 		case Feature:
-			arc, err = r.Base.ArcOf(l.Location(), l)
+			arc, err = r.Base.ArcOf(l.Parent(), l)
 		default:
 			arc, err = r.Base.ArcOf(nil, nil)
 		}
 		if err != nil {
-			panic(fmt.Sprint("rings: no arc for feature location:", err))
+			panic(fmt.Sprint("rings: no arc for parent:", err))
 		}
 
 		angle := arc.Theta + arc.Phi/2

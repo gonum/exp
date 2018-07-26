@@ -52,7 +52,7 @@ func NewScale(fs []Feature, base ArcOfer, r vg.Length) (*Scale, error) {
 		if f.End() < f.Start() {
 			return nil, errors.New("rings: inverted feature")
 		}
-		if loc := f.Location(); loc != nil {
+		if loc := f.Parent(); loc != nil {
 			if f.Start() < loc.Start() || f.Start() > loc.End() {
 				return nil, errors.New("rings: feature out of range")
 			}
@@ -92,7 +92,7 @@ func (r *Scale) DrawAt(ca draw.Canvas, cen vg.Point) {
 
 		arc, err := r.Base.ArcOf(f, nil)
 		if err != nil {
-			panic(fmt.Sprint("rings: no arc for feature location:", err))
+			panic(fmt.Sprint("rings: no arc for parent:", err))
 		}
 		scale := arc.Phi / Angle(max-min)
 

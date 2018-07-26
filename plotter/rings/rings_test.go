@@ -34,7 +34,7 @@ func failure(f bool) string {
 type fs struct {
 	start, end float64
 	name       string
-	location   Feature
+	parent     Feature
 	orient     Orientation
 	style      draw.LineStyle
 	scores     []float64
@@ -43,7 +43,7 @@ type fs struct {
 func (f *fs) Start() float64            { return f.start }
 func (f *fs) End() float64              { return f.end }
 func (f *fs) Name() string              { return f.name }
-func (f *fs) Location() Feature         { return f.location }
+func (f *fs) Parent() Feature           { return f.parent }
 func (f *fs) Orientation() Orientation  { return f.orient }
 func (f *fs) LineStyle() draw.LineStyle { return f.style }
 func (f *fs) Scores() []float64         { return f.scores }
@@ -94,11 +94,11 @@ func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []Scorer {
 	s := make([]Scorer, n)
 	for i := 0; i < n; i++ {
 		cs := &fs{
-			start:    f.Start() + float64(i)*(lengthOf(f)/float64(n)),
-			end:      f.Start() + float64(i+1)*(lengthOf(f)/float64(n)),
-			name:     fmt.Sprintf("%s#%d", f.Name(), i),
-			location: f,
-			scores:   make([]float64, m),
+			start:  f.Start() + float64(i)*(lengthOf(f)/float64(n)),
+			end:    f.Start() + float64(i+1)*(lengthOf(f)/float64(n)),
+			name:   fmt.Sprintf("%s#%d", f.Name(), i),
+			parent: f,
+			scores: make([]float64, m),
 		}
 		for j := range cs.scores {
 			cs.scores[j] = fn(i, j)

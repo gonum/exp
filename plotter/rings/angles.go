@@ -142,7 +142,7 @@ func (a Arcs) ArcOf(loc, f Feature) (Arc, error) {
 	switch {
 	case loc != nil && f != nil:
 		if !contains(loc, f) {
-			return arcNaN, errors.New("rings: location is not parent of feature")
+			return arcNaN, errors.New("rings: returned parent does not contain feature")
 		}
 		if f.Start() < loc.Start() || f.Start() > loc.End() {
 			return arcNaN, errors.New("rings: feature out of range")
@@ -174,7 +174,7 @@ func contains(loc, f Feature) bool {
 		return true
 	}
 	for q := f; q != nil; {
-		q = q.Location()
+		q = q.Parent()
 		if q == loc {
 			return true
 		}
@@ -183,7 +183,7 @@ func contains(loc, f Feature) bool {
 }
 
 func (a Arcs) containingArcOf(f Feature) (Arc, bool) {
-	for q := f; q != nil; q = q.Location() {
+	for q := f; q != nil; q = q.Parent() {
 		arc, ok := a.Arcs[q]
 		if ok {
 			return arc, ok

@@ -48,7 +48,7 @@ func NewBlocks(fs []Feature, base ArcOfer, inner, outer vg.Length) (*Blocks, err
 		if f.End() < f.Start() {
 			return nil, errors.New("rings: inverted feature")
 		}
-		if loc := f.Location(); loc != nil {
+		if loc := f.Parent(); loc != nil {
 			if f.Start() < loc.Start() || f.Start() > loc.End() {
 				return nil, errors.New("rings: feature out of range")
 			}
@@ -99,9 +99,9 @@ func (r *Blocks) DrawAt(ca draw.Canvas, cen vg.Point) {
 	for _, f := range r.Set {
 		pa = pa[:0]
 
-		arc, err := r.Base.ArcOf(f.Location(), f)
+		arc, err := r.Base.ArcOf(f.Parent(), f)
 		if err != nil {
-			panic(fmt.Sprintf("rings: no arc for feature location: %v", err))
+			panic(fmt.Sprintf("rings: no arc for parent: %v", err))
 		}
 
 		pa.Move(cen.Add(Rectangular(arc.Theta, r.Inner)))
@@ -152,7 +152,7 @@ type featureOrienter interface {
 
 // globalOrientation returns the orientation of a feature depending on it parent features' orientations.
 func globalOrientation(f featureOrienter) Orientation {
-	if fo, ok := f.Location().(featureOrienter); ok {
+	if fo, ok := f.Parent().(featureOrienter); ok {
 		return globalOrientation(fo) * f.Orientation()
 	}
 	return f.Orientation()

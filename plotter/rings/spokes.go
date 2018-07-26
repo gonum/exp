@@ -46,7 +46,7 @@ func NewSpokes(fs []Feature, base ArcOfer, inner, outer vg.Length) (*Spokes, err
 		if f.End()-f.Start() > 1 {
 			return nil, errors.New("rings: mark longer than one position")
 		}
-		if f.Start() < f.Location().Start() || f.Start() > f.Location().End() {
+		if f.Start() < f.Parent().Start() || f.Start() > f.Parent().End() {
 			return nil, errors.New("rings: mark out of range")
 		}
 		if _, err := base.ArcOf(nil, f); err != nil {
@@ -72,7 +72,7 @@ func (r *Spokes) DrawAt(ca draw.Canvas, cen vg.Point) {
 	for _, f := range r.Set {
 		pa = pa[:0]
 
-		loc := f.Location()
+		loc := f.Parent()
 		min := loc.Start()
 		max := loc.End()
 
@@ -82,7 +82,7 @@ func (r *Spokes) DrawAt(ca draw.Canvas, cen vg.Point) {
 
 		arc, err := r.Base.ArcOf(loc, f)
 		if err != nil {
-			panic(fmt.Sprintf("rings: no arc for feature location: %v\n%v", err, f))
+			panic(fmt.Sprintf("rings: no arc for parent: %v\n%v", err, f))
 		}
 
 		pa.Move(cen.Add(Rectangular(arc.Theta, r.Inner)))

@@ -71,7 +71,7 @@ func (r *Links) DrawAt(ca draw.Canvas, cen vg.Point) {
 loop:
 	for _, fp := range r.Set {
 		p := fp.Features()
-		loc := [2]Feature{p[0].Location(), p[1].Location()}
+		loc := [2]Feature{p[0].Parent(), p[1].Parent()}
 		var min, max [2]float64
 		for j, l := range loc {
 			min[j] = l.Start()
@@ -84,9 +84,9 @@ loop:
 				continue loop
 			}
 
-			arc, err := r.Ends[j].ArcOf(f.Location(), f)
+			arc, err := r.Ends[j].ArcOf(f.Parent(), f)
 			if err != nil {
-				panic(fmt.Sprint("rings: no arc for feature location:", err))
+				panic(fmt.Sprint("rings: no arc for parent:", err))
 			}
 			angles[j] = Normalize(arc.Theta)
 		}
@@ -144,7 +144,7 @@ func (r *Links) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 	loop:
 		for _, fp := range r.Set {
 			p := fp.Features()
-			loc := [2]Feature{p[0].Location(), p[1].Location()}
+			loc := [2]Feature{p[0].Parent(), p[1].Parent()}
 			var min, max [2]float64
 			for j, l := range loc {
 				min[j] = l.Start()
@@ -157,9 +157,9 @@ func (r *Links) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
 					continue loop
 				}
 
-				arc, err := r.Ends[j].ArcOf(f.Location(), f)
+				arc, err := r.Ends[j].ArcOf(f.Parent(), f)
 				if err != nil {
-					panic(fmt.Sprint("rings: no arc for feature location:", err))
+					panic(fmt.Sprint("rings: no arc for parent:", err))
 				}
 				angles[j] = Normalize(arc.Theta)
 			}
