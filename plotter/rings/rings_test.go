@@ -107,52 +107,6 @@ func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []Scorer {
 	return s
 }
 
-// base represents the common output from a gonum/plot plot draw operation.
-var base = newCanvas(
-	72,
-	[]interface{}{
-		setColor{col: color.Gray16{Y: 0xffff}},
-		fill{path: vg.Path{
-			{Type: vg.MoveComp, Pos: vg.Point{X: 0, Y: 0}, Radius: 0, Start: 0, Angle: 0},
-			{Type: vg.LineComp, Pos: vg.Point{X: 300, Y: 0}, Radius: 0, Start: 0, Angle: 0},
-			{Type: vg.LineComp, Pos: vg.Point{X: 300, Y: 300}, Radius: 0, Start: 0, Angle: 0},
-			{Type: vg.LineComp, Pos: vg.Point{X: 0, Y: 300}, Radius: 0, Start: 0, Angle: 0},
-			{Type: vg.CloseComp, Pos: vg.Point{X: 0, Y: 0}, Radius: 0, Start: 0, Angle: 0},
-		}},
-		setColor{col: color.Gray16{Y: 0x0}},
-		setWidth{w: 0},
-		setLineDash{dashes: []vg.Length(nil), offsets: 0},
-		stroke{path: vg.Path{
-			{Type: vg.MoveComp, Pos: vg.Point{X: 5, Y: 0}, Radius: 0, Start: 0, Angle: 0},
-			{Type: vg.LineComp, Pos: vg.Point{X: 300, Y: 0}, Radius: 0, Start: 0, Angle: 0},
-		}},
-		setColor{col: color.Gray16{Y: 0x0}},
-		setWidth{w: 0},
-		setLineDash{dashes: []vg.Length(nil), offsets: 0},
-		stroke{path: vg.Path{
-			{Type: vg.MoveComp, Pos: vg.Point{X: 0, Y: 5}, Radius: 0, Start: 0, Angle: 0},
-			{Type: vg.LineComp, Pos: vg.Point{X: 0, Y: 300}, Radius: 0, Start: 0, Angle: 0},
-		}},
-	},
-)
-
-func TestNew(t *testing.T) {
-	p, err := plot.New()
-	if err != nil {
-		t.Errorf("unexpected error for plot.New(): %v", err)
-	}
-
-	p.HideAxes()
-
-	tc := &canvas{dpi: defaultDPI}
-	p.Draw(draw.NewCanvas(tc, 300, 300))
-
-	base.append()
-	if !reflect.DeepEqual(tc.actions, base.actions) {
-		t.Errorf("unexpected base actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
-	}
-}
-
 // checkImage compares the plot in p to the image in testdata/name_golden.png.
 // If regen is true the plot in p is first saved to testdata/name_golden.png.
 func checkImage(t *testing.T, name string, p *plot.Plot, regen bool) {
