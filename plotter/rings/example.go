@@ -10,8 +10,9 @@ import (
 	"flag"
 	"fmt"
 	"image/color"
-	"math/rand"
 	"os"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/exp/plotter/rings"
 	"gonum.org/v1/plot"
@@ -39,7 +40,7 @@ func init() {
 func floatPtr(f float64) *float64 { return &f }
 
 func main() {
-	rand.Seed(int64(0))
+	rand.Seed(0)
 
 	p, err := plot.New()
 	if err != nil {

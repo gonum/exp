@@ -11,10 +11,11 @@ import (
 	"image"
 	"image/color"
 	"io/ioutil"
-	"math/rand"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/vg"

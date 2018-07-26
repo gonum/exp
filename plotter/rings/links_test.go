@@ -6,8 +6,9 @@ package rings
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
+
+	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
