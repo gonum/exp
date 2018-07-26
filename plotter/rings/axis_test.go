@@ -277,8 +277,9 @@ func TestScoresAxis(t *testing.T) {
 		if !ok {
 			t.Errorf("unexpected actions for test %d:\ngot :%#v\nwant:%#v", i, tc.actions, base.actions)
 		}
+		p.Add(b)
+		checkImage(t, fmt.Sprintf("axis-%d", i), p, *allPics)
 		if *pics && !ok || *allPics {
-			p.Add(b)
 			err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("axis-%d-%s.svg", i, failure(!ok)))
 			if err != nil {
 				t.Fatalf("unexpected error writing file: %v", err)

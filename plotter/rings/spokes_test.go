@@ -124,8 +124,9 @@ func TestSpokes(t *testing.T) {
 	if !ok {
 		t.Errorf("unexpected actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
 	}
+	p.Add(b)
+	checkImage(t, "spokes", p, *allPics)
 	if *pics && !ok || *allPics {
-		p.Add(b)
 		err = p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("spokes-%s.svg", failure(!ok)))
 		if err != nil {
 			t.Fatalf("unexpected error writing file: %v", err)

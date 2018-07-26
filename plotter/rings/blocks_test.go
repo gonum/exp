@@ -94,6 +94,7 @@ func TestBlocks(t *testing.T) {
 	if !ok {
 		t.Errorf("unexpected actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
 	}
+	checkImage(t, "blocks", p, *allPics)
 	if *pics && !ok || *allPics {
 		err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("blocks-%s.svg", failure(!ok)))
 		if err != nil {
@@ -673,8 +674,9 @@ func TestBlocksScale(t *testing.T) {
 		if !ok {
 			t.Errorf("unexpected actions for test %d:\ngot :%#v\nwant:%#v", i, tc.actions, base.actions)
 		}
+		p.Add(b)
+		checkImage(t, fmt.Sprintf("scale-%d", i), p, *allPics)
 		if *pics && !ok || *allPics {
-			p.Add(b)
 			err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("scale-%d-%s.svg", i, failure(!ok)))
 			if err != nil {
 				t.Fatalf("unexpected error writing file: %v", err)

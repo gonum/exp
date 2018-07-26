@@ -58,6 +58,7 @@ func TestHighlight(t *testing.T) {
 	if !ok {
 		t.Errorf("unexpected actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
 	}
+	checkImage(t, "highlight", p, *allPics)
 	if *pics && !ok || *allPics {
 		err := p.Save(vg.Length(300), vg.Length(300), fmt.Sprintf("highlight-%s.svg", failure(!ok)))
 		if err != nil {

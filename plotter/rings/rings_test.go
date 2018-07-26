@@ -5,10 +5,14 @@
 package rings
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"image"
 	"image/color"
+	"io/ioutil"
 	"math/rand"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -147,4 +151,54 @@ func TestNew(t *testing.T) {
 	if !reflect.DeepEqual(tc.actions, base.actions) {
 		t.Errorf("unexpected base actions:\ngot :%#v\nwant:%#v", tc.actions, base.actions)
 	}
+}
+
+// checkImage compares the plot in p to the image in testdata/name_golden.png.
+// If regen is true the plot in p is first saved to testdata/name_golden.png.
+func checkImage(t *testing.T, name string, p *plot.Plot, regen bool) {
+	path := filepath.Join("testdata", name+"_golden.png")
+	w, err := p.WriterTo(vg.Length(300), vg.Length(300), "png")
+	var buf bytes.Buffer
+	_, err = w.WriteTo(&buf)
+	if err != nil {
+		t.Fatalf("unexpected error writing plot: %v", err)
+	}
+	got := buf.Bytes()
+	if regen {
+		err = ioutil.WriteFile(path, got, 0664)
+		if err != nil {
+			t.Fatalf("unexpected error writing golden file: %v", err)
+		}
+		// Fallthrough rather than returning just
+		// to confirm we have written correctly.
+	}
+	gold, err := ioutil.ReadFile(path)
+	if err != nil {
+		t.Fatalf("unexpected error reading golden file: %v", err)
+	}
+	ok, err := equalImage(got, gold)
+	if err != nil {
+		t.Errorf("failed to compare image for %s: %v", path, err)
+	}
+	if !ok {
+		t.Errorf("image mismatch for %q", name)
+		// TODO(kortschak): Add image diffing.
+		err = ioutil.WriteFile(filepath.Join("testdata", name+"_failed.png"), got, 0664)
+		if err != nil {
+			t.Fatalf("unexpected error writing failed file: %v", err)
+		}
+	}
+}
+
+// TODO(kortschak): Use cmpimg when rings lives in plot.
+func equalImage(raw1, raw2 []byte) (bool, error) {
+	v1, _, err := image.Decode(bytes.NewReader(raw1))
+	if err != nil {
+		return false, err
+	}
+	v2, _, err := image.Decode(bytes.NewReader(raw2))
+	if err != nil {
+		return false, err
+	}
+	return reflect.DeepEqual(v1, v2), nil
 }
