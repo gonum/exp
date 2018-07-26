@@ -72,6 +72,6 @@ func TestLinks(t *testing.T) {
 		p.HideAxes()
 		p.Add(b)
 
-		checkImage(t, fmt.Sprintf("links-%d", i), p, *allPics)
+		checkImage(t, fmt.Sprintf("links-%d", i), p, *regen)
 	}
 }

@@ -83,6 +83,6 @@ func TestScoresAxis(t *testing.T) {
 		p.HideAxes()
 		p.Add(b)
 
-		checkImage(t, fmt.Sprintf("axis-%d", i), p, *allPics)
+		checkImage(t, fmt.Sprintf("axis-%d", i), p, *regen)
 	}
 }

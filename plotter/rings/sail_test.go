@@ -180,6 +180,6 @@ func TestSail(t *testing.T) {
 		p.HideAxes()
 		p.Add(b)
 
-		checkImage(t, fmt.Sprintf("sail-%d", i), p, *allPics)
+		checkImage(t, fmt.Sprintf("sail-%d", i), p, *regen)
 	}
 }

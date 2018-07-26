@@ -304,6 +304,6 @@ func TestScores(t *testing.T) {
 		p.HideAxes()
 		p.Add(b)
 
-		checkImage(t, fmt.Sprintf("scores-%d", i), p, *allPics)
+		checkImage(t, fmt.Sprintf("scores-%d", i), p, *regen)
 	}
 }

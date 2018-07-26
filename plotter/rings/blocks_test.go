@@ -36,7 +36,7 @@ func TestBlocks(t *testing.T) {
 	p.Add(b)
 	p.HideAxes()
 
-	checkImage(t, "blocks", p, *allPics)
+	checkImage(t, "blocks", p, *regen)
 }
 
 func TestBlocksScale(t *testing.T) {
@@ -90,6 +90,6 @@ func TestBlocksScale(t *testing.T) {
 		p.HideAxes()
 		p.Add(b)
 
-		checkImage(t, fmt.Sprintf("scale-%d", i), p, *allPics)
+		checkImage(t, fmt.Sprintf("scale-%d", i), p, *regen)
 	}
 }

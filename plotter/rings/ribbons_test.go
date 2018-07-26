@@ -242,6 +242,6 @@ func TestRibbons(t *testing.T) {
 		p.HideAxes()
 		p.Add(b)
 
-		checkImage(t, fmt.Sprintf("ribbons-%d", i), p, *allPics)
+		checkImage(t, fmt.Sprintf("ribbons-%d", i), p, *regen)
 	}
 }
