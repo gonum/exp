@@ -26,11 +26,6 @@ type ArcOfer interface {
 	ArcOf(loc, f Feature) (Arc, error)
 }
 
-// Point represents a 2-D point.
-type Point struct {
-	X, Y float64
-}
-
 // Normalize returns the angle corresponding to theta in the range [0, 2*math.Pi).
 func Normalize(theta Angle) Angle { return Angle(math.Mod(float64(theta)+2*math.Pi, 2*math.Pi)) }
 

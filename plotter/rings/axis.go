@@ -69,15 +69,11 @@ type TickConfig struct {
 // drawAt renders the axis at cen in the specified drawing area, according to the
 // Axis configuration.
 func (r *Axis) drawAt(ca draw.Canvas, cen vg.Point, fs []Scorer, base ArcOfer, inner, outer vg.Length, min, max float64) {
+	var pa vg.Path
+	var marks []plot.Tick
+	scale := (outer - inner) / vg.Length(max-min)
+
 	locMap := make(map[Feature]struct{})
-
-	var (
-		pa vg.Path
-
-		marks []plot.Tick
-
-		scale = (outer - inner) / vg.Length(max-min)
-	)
 	for _, f := range fs {
 		locMap[f.Parent()] = struct{}{}
 	}
