@@ -158,29 +158,31 @@ func TestSail(t *testing.T) {
 			twist:    Individual | Flat,
 		},
 	} {
-		p, err := plot.New()
-		if err != nil {
-			t.Fatalf("unexpected error for plot.New: %v", err)
-		}
+		t.Run(fmt.Sprintf("sail-%d", i), func(t *testing.T) {
+			p, err := plot.New()
+			if err != nil {
+				t.Fatalf("unexpected error for plot.New: %v", err)
+			}
 
-		for j, o := range test.orient {
-			b.Set[j].(*fs).orient = o
-		}
-		b.Base = NewGappedArcs(b.Base, b.Set, 0.01)
+			for j, o := range test.orient {
+				b.Set[j].(*fs).orient = o
+			}
+			b.Base = NewGappedArcs(b.Base, b.Set, 0.01)
 
-		r, err := NewSail(test.ends, b, 70)
-		if err != nil {
-			t.Fatalf("unexpected error for NewSail: %v", err)
-		}
-		r.Bezier = &Bezier{Segments: test.segments}
-		r.Twist = test.twist
-		r.LineStyle = plotter.DefaultLineStyle
-		r.Color = color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}
+			r, err := NewSail(test.ends, b, 70)
+			if err != nil {
+				t.Fatalf("unexpected error for NewSail: %v", err)
+			}
+			r.Bezier = &Bezier{Segments: test.segments}
+			r.Twist = test.twist
+			r.LineStyle = plotter.DefaultLineStyle
+			r.Color = color.RGBA{R: 0xc4, G: 0x18, B: 0x80, A: 0xff}
 
-		p.Add(r)
-		p.HideAxes()
-		p.Add(b)
+			p.Add(r)
+			p.HideAxes()
+			p.Add(b)
 
-		checkImage(t, fmt.Sprintf("sail-%d", i), p, *regen)
+			checkImage(t, p, *regen)
+		})
 	}
 }

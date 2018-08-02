@@ -22,9 +22,9 @@ type Twist uint
 const (
 	None       Twist = 0         // None indicates no explicit twist.
 	Flat       Twist = 1 << iota // Render feature connections without twist.
-	Individual                   // Allow a feature or feature pair to define its ribbon twist.
-	Twisted                      // Render feature connections with twist.
-	Reverse                      // Reverse inverts all twist behaviour.
+	Individual                   // Individual allows a feature or feature pair to define its ribbon twist.
+	Twisted                      // Twisted specifies that feature connections render with twist.
+	Invert                       // Invert inverts all twist behaviour.
 )
 
 // ColorFunc allows dynamic assignment of color to objects based on passed parameters.
@@ -34,9 +34,10 @@ type ColorFunc func(interface{}) color.Color
 type LineStyleFunc func(interface{}) draw.LineStyle
 
 // Feature is a Range whose coordinates are defined relative to a feature
-// location. Start and End return the coordinates of the feature relative to
-// its location which can be nil. In the latter case callers should make no
-// assumptions whether coordinates of such features are comparable.
+// location/parent. Start and End return the coordinates of the feature
+// relative to its parent which can be nil. In the latter case callers
+// should make no assumptions whether coordinates of such features are
+// comparable.
 type Feature interface {
 	// Start and End indicate the position of the feature within the
 	// containing Parent's coordinate system.
@@ -59,7 +60,7 @@ type Conformationer interface {
 	Conformation() Conformation
 }
 
-// Conformation describes whether a feaature is linear are circular.
+// Conformation describes whether a feature is linear or circular.
 type Conformation int8
 
 func (c Conformation) String() string {

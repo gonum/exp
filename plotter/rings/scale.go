@@ -22,7 +22,7 @@ type Scale struct {
 	// Base defines the targets of the rendered blocks.
 	Base ArcOfer
 
-	// Radius define the radius of the axis.
+	// Radius defines the radius of the axis.
 	Radius vg.Length
 
 	// LineStyle is the style of the axis line.

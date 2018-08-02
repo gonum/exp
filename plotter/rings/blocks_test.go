@@ -37,7 +37,7 @@ func TestBlocks(t *testing.T) {
 	p.Add(b)
 	p.HideAxes()
 
-	checkImage(t, "blocks", p, *regen)
+	checkImage(t, p, *regen)
 }
 
 func TestBlocksScale(t *testing.T) {
@@ -70,27 +70,29 @@ func TestBlocksScale(t *testing.T) {
 			outer: b.Outer + 5,
 		},
 	} {
-		p, err := plot.New()
-		if err != nil {
-			t.Fatalf("unexpected error for plot.New: %v", err)
-		}
+		t.Run(fmt.Sprintf("scale-%d", i), func(t *testing.T) {
+			p, err := plot.New()
+			if err != nil {
+				t.Fatalf("unexpected error for plot.New: %v", err)
+			}
 
-		s, err := NewScale(test.feats, b, 110)
-		if err != nil {
-			t.Fatalf("unexpected error for NewScale: %v", err)
-		}
-		s.LineStyle = plotter.DefaultLineStyle
-		s.Tick.Length = 3
-		s.Tick.LineStyle = plotter.DefaultLineStyle
-		s.Tick.Label = draw.TextStyle{Color: color.Gray16{0}, Font: font}
-		s.Grid.LineStyle = test.grid
-		s.Grid.Inner = test.inner
-		s.Grid.Outer = test.outer
+			s, err := NewScale(test.feats, b, 110)
+			if err != nil {
+				t.Fatalf("unexpected error for NewScale: %v", err)
+			}
+			s.LineStyle = plotter.DefaultLineStyle
+			s.Tick.Length = 3
+			s.Tick.LineStyle = plotter.DefaultLineStyle
+			s.Tick.Label = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+			s.Grid.LineStyle = test.grid
+			s.Grid.Inner = test.inner
+			s.Grid.Outer = test.outer
 
-		p.Add(s)
-		p.HideAxes()
-		p.Add(b)
+			p.Add(s)
+			p.HideAxes()
+			p.Add(b)
 
-		checkImage(t, fmt.Sprintf("scale-%d", i), p, *regen)
+			checkImage(t, p, *regen)
+		})
 	}
 }

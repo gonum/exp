@@ -11,6 +11,7 @@ import (
 	"image"
 	"image/color"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -23,13 +24,6 @@ import (
 )
 
 var regen = flag.Bool("regen", false, "Uses the current state to regenerate the test data.")
-
-func failure(f bool) string {
-	if f {
-		return "fail"
-	}
-	return "ok"
-}
 
 // fs is a Feature implementation for testing.
 type fs struct {
@@ -111,7 +105,8 @@ func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []Scorer {
 
 // checkImage compares the plot in p to the image in testdata/name_golden.png.
 // If regen is true the plot in p is first saved to testdata/name_golden.png.
-func checkImage(t *testing.T, name string, p *plot.Plot, regen bool) {
+func checkImage(t *testing.T, p *plot.Plot, regen bool) {
+	name := filepath.FromSlash(t.Name())
 	path := filepath.Join("testdata", name+"_golden.png")
 	w, err := p.WriterTo(vg.Length(300), vg.Length(300), "png")
 	var buf bytes.Buffer
@@ -121,6 +116,11 @@ func checkImage(t *testing.T, name string, p *plot.Plot, regen bool) {
 	}
 	got := buf.Bytes()
 	if regen {
+		err = os.Mkdir(filepath.Dir(path), 0775)
+		if err != nil && !os.IsExist(err) {
+			t.Fatalf("failed to created testdata subdir: %v", err)
+			return
+		}
 		err = ioutil.WriteFile(path, got, 0664)
 		if err != nil {
 			t.Fatalf("unexpected error writing golden file: %v", err)

@@ -46,33 +46,35 @@ func TestLinks(t *testing.T) {
 			},
 		},
 	} {
-		p, err := plot.New()
-		if err != nil {
-			t.Fatalf("unexpected error for plot.New: %v", err)
-		}
+		t.Run(fmt.Sprintf("links-%d", i), func(t *testing.T) {
+			p, err := plot.New()
+			if err != nil {
+				t.Fatalf("unexpected error for plot.New: %v", err)
+			}
 
-		var m [2][]Feature
-		rand.Seed(2)
-		for j := range m {
-			m[j] = randomFeatures(marks/2, test.ends[j].Start(), test.ends[j].End(), true, plotter.DefaultLineStyle)
-		}
-		mp := make([]Pair, marks/2)
-		for j := range mp {
-			m[0][j].(*fs).parent = test.ends[0]
-			m[1][j].(*fs).parent = test.ends[1]
-			mp[j] = fp{feats: [2]*fs{m[0][j].(*fs), m[1][j].(*fs)}, sty: plotter.DefaultLineStyle}
-		}
-		l, err := NewLinks(mp, [2]ArcOfer{b, b}, [2]vg.Length{70, 70})
-		if err != nil {
-			t.Fatalf("unexpected error for NewLinks: %v", err)
-		}
-		l.Bezier = test.bezier
-		l.LineStyle = plotter.DefaultLineStyle
+			var m [2][]Feature
+			rand.Seed(2)
+			for j := range m {
+				m[j] = randomFeatures(marks/2, test.ends[j].Start(), test.ends[j].End(), true, plotter.DefaultLineStyle)
+			}
+			mp := make([]Pair, marks/2)
+			for j := range mp {
+				m[0][j].(*fs).parent = test.ends[0]
+				m[1][j].(*fs).parent = test.ends[1]
+				mp[j] = fp{feats: [2]*fs{m[0][j].(*fs), m[1][j].(*fs)}, sty: plotter.DefaultLineStyle}
+			}
+			l, err := NewLinks(mp, [2]ArcOfer{b, b}, [2]vg.Length{70, 70})
+			if err != nil {
+				t.Fatalf("unexpected error for NewLinks: %v", err)
+			}
+			l.Bezier = test.bezier
+			l.LineStyle = plotter.DefaultLineStyle
 
-		p.Add(l)
-		p.HideAxes()
-		p.Add(b)
+			p.Add(l)
+			p.HideAxes()
+			p.Add(b)
 
-		checkImage(t, fmt.Sprintf("links-%d", i), p, *regen)
+			checkImage(t, p, *regen)
+		})
 	}
 }

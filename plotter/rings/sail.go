@@ -31,8 +31,8 @@ type Sail struct {
 
 	// Twist indicates how feature orientation should be rendered.
 	//
-	// None indicates no explicit twist; sail ends are draw so that the start positions
-	// each feature and the end positions of each feature are connected by Bézier curves.
+	// None indicates no explicit twist; sail ends are drawn so that the start
+	// and end positions of each feature are connected by Bézier curves.
 	// Thus if features are numbered in order of their appearance along an arc:
 	//
 	//  f₀.Start -arc-> f₀.End -Bézier-> f₁.End -arc-> f₁.Start -Bézier-> ... f₀.Start
@@ -105,7 +105,7 @@ func (af angleFeats) Less(i, j int) bool {
 }
 func (af angleFeats) Swap(i, j int) { af[i], af[j] = af[j], af[i] }
 
-// twist returns alters the sail twist depending on the relative orientation
+// twist alters the sail twist depending on the relative orientation
 // of the provided feature and the Twist flags of the receiver.
 func (r *Sail) twist(af []angleFeat) {
 	for i, f := range af {
@@ -155,7 +155,7 @@ func (r *Sail) twist(af []angleFeat) {
 				}
 			}
 		}
-		if r.Twist&Reverse != 0 {
+		if r.Twist&Invert != 0 {
 			// Swap the order of the second pair of points to reverse the order.
 			af[i].angles[0], af[i].angles[1] = af[i].angles[1], af[i].angles[0]
 		}
@@ -165,7 +165,7 @@ func (r *Sail) twist(af []angleFeat) {
 // DrawAt renders the features of a Sail at cen in the specified drawing area,
 // according to the Sail configuration.
 // DrawAt will panic if the feature pairs being linked both satisfy Orienter and the
-// product of orientations is not in {Forward,NotOriented,Reverse}.
+// product of orientations is not in {Forward,NotOriented,Backward}.
 func (r *Sail) DrawAt(ca draw.Canvas, cen vg.Point) {
 	if len(r.Set) == 0 {
 		return

@@ -55,8 +55,8 @@ func NameLabels(fs []Feature) []Labeler {
 // Labels implements rendering of radial labels.
 type Labels struct {
 	// Labels contains the set of labels. Labelers that are Features and are found
-	// in the Base ArcOfer label the identified block with the string returned by
-	// their Name method.
+	// in the Base ArcOfer will label the identified block with the string returned
+	// by their Name method.
 	Labels []Labeler
 
 	// Base describes the ring holding the features to be labeled.
@@ -66,7 +66,7 @@ type Labels struct {
 	// is over-ridden if the Label describing a block is a TextStyler.
 	TextStyle draw.TextStyle
 
-	// Radius define the inner radius of the labels.
+	// Radius defines the inner radius of the labels.
 	Radius vg.Length
 
 	// Placement determines the text rotation and alignment. If Placement is

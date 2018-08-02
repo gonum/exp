@@ -29,8 +29,8 @@ type Ribbons struct {
 
 	// Twist indicates how feature orientation should be rendered.
 	//
-	// None indicates no explicit twist; ribbons are draw so that the start positions
-	// each feature and the end positions of each feature are connected by Bézier curves.
+	// None indicates no explicit twist; ribbons are drawn so that the start
+	// and end positions of each feature are connected by Bézier curves.
 	//
 	//  f₀.Start -arc-> f₀.End -Bézier-> f₁.End -arc-> f₁.Start -Bézier-> f₀.Start
 	//
@@ -92,7 +92,7 @@ func NewRibbons(fp []Pair, ends [2]ArcOfer, r [2]vg.Length) (*Ribbons, error) {
 	}, nil
 }
 
-// twist returns alters the ribbon twist depending on the relative orientation
+// twist alters the ribbon twist depending on the relative orientation
 // of the provided features and the Twist flags of the receiver.
 func (r *Ribbons) twist(angles *[4]Angle, fp Pair) {
 	p := fp.Features()
@@ -148,7 +148,7 @@ func (r *Ribbons) twist(angles *[4]Angle, fp Pair) {
 			}
 		}
 	}
-	if r.Twist&Reverse != 0 {
+	if r.Twist&Invert != 0 {
 		// Swap the order of the second pair of points to reverse the order.
 		angles[2], angles[3] = angles[3], angles[2]
 	}
@@ -157,7 +157,7 @@ func (r *Ribbons) twist(angles *[4]Angle, fp Pair) {
 // DrawAt renders the feature pairs of a Ribbons at cen in the specified drawing area,
 // according to the Ribbons configuration.
 // DrawAt will panic if the feature pairs being linked both satisfy Orienter and the
-// product of orientations is not in {Forward,NotOriented,Reverse}.
+// product of orientations is not in {Forward,NotOriented,Backward}.
 func (r *Ribbons) DrawAt(ca draw.Canvas, cen vg.Point) {
 	if len(r.Set) == 0 {
 		return

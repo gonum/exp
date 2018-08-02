@@ -68,22 +68,24 @@ func TestScoresAxis(t *testing.T) {
 			},
 		},
 	} {
-		p, err := plot.New()
-		if err != nil {
-			t.Fatalf("unexpected error for plot.New: %v", err)
-		}
+		t.Run(fmt.Sprintf("axis-%d", i), func(t *testing.T) {
+			p, err := plot.New()
+			if err != nil {
+				t.Fatalf("unexpected error for plot.New: %v", err)
+			}
 
-		b.Set[1].(*fs).orient = test.orient
+			b.Set[1].(*fs).orient = test.orient
 
-		r, err := NewScores(test.scores, b, 40, 75, test.renderer)
-		if err != nil {
-			t.Fatalf("unexpected error for NewScores: %v", err)
-		}
+			r, err := NewScores(test.scores, b, 40, 75, test.renderer)
+			if err != nil {
+				t.Fatalf("unexpected error for NewScores: %v", err)
+			}
 
-		p.Add(r)
-		p.HideAxes()
-		p.Add(b)
+			p.Add(r)
+			p.HideAxes()
+			p.Add(b)
 
-		checkImage(t, fmt.Sprintf("axis-%d", i), p, *regen)
+			checkImage(t, p, *regen)
+		})
 	}
 }

@@ -16,7 +16,7 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 )
 
-// Scorer describes features that can provided scored values.
+// Scorer describes features that can provide scored values.
 type Scorer interface {
 	Feature
 	Scores() []float64

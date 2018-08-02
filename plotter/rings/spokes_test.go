@@ -42,5 +42,5 @@ func TestSpokes(t *testing.T) {
 	p.HideAxes()
 	p.Add(b)
 
-	checkImage(t, "spokes", p, *regen)
+	checkImage(t, p, *regen)
 }

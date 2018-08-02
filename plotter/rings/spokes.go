@@ -13,7 +13,7 @@ import (
 	"gonum.org/v1/plot/vg/draw"
 )
 
-// Blocks implements rendering of Features representing 0 or 1 length features as radial lines.
+// Spokes implements rendering of Features representing 0 or 1 length features as radial lines.
 type Spokes struct {
 	// Set holds a collection of features to render.
 	Set []Feature

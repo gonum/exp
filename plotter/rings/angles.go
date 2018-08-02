@@ -122,7 +122,7 @@ func (a Arcs) Arc() Arc { return a.Base }
 
 // ArcOf returns the arc of a feature in the context of the provided location.
 //
-// The behaviour of ArcOf depends on the the nil status of loc and f:
+// The behaviour of ArcOf depends on the nil status of loc and f:
 //
 //  - if both loc and f are non-nil, f must have a sub-feature relationship with loc,
 //    and the returned arc will be the arc of f.

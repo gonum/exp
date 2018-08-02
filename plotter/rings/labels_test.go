@@ -56,23 +56,25 @@ func TestLabelsBlocks(t *testing.T) {
 			placement: Horizontal,
 		},
 	} {
-		p, err := plot.New()
-		if err != nil {
-			t.Fatalf("unexpected error for plot.New: %v", err)
-		}
+		t.Run(fmt.Sprintf("labels-%d", i), func(t *testing.T) {
+			p, err := plot.New()
+			if err != nil {
+				t.Fatalf("unexpected error for plot.New: %v", err)
+			}
 
-		l, err := NewLabels(b, 110, NameLabels(test.feats)...)
-		if err != nil {
-			t.Fatalf("unexpected error for NewLabels: %v", err)
-		}
-		l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
-		l.Placement = test.placement
+			l, err := NewLabels(b, 110, NameLabels(test.feats)...)
+			if err != nil {
+				t.Fatalf("unexpected error for NewLabels: %v", err)
+			}
+			l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+			l.Placement = test.placement
 
-		p.Add(l)
-		p.HideAxes()
-		p.Add(b)
+			p.Add(l)
+			p.HideAxes()
+			p.Add(b)
 
-		checkImage(t, fmt.Sprintf("labels-%d", i), p, *regen)
+			checkImage(t, p, *regen)
+		})
 	}
 }
 
@@ -121,23 +123,25 @@ func TestLabelsArcs(t *testing.T) {
 			placement: Horizontal,
 		},
 	} {
-		p, err := plot.New()
-		if err != nil {
-			t.Fatalf("unexpected error for plot.New: %v", err)
-		}
+		t.Run(fmt.Sprintf("labelsarcs-%d", i), func(t *testing.T) {
+			p, err := plot.New()
+			if err != nil {
+				t.Fatalf("unexpected error for plot.New: %v", err)
+			}
 
-		l, err := NewLabels(test.arc, 110, test.label)
-		if err != nil {
-			t.Fatalf("unexpected error for NewLabels: %v", err)
-		}
-		l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
-		l.Placement = test.placement
+			l, err := NewLabels(test.arc, 110, test.label)
+			if err != nil {
+				t.Fatalf("unexpected error for NewLabels: %v", err)
+			}
+			l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+			l.Placement = test.placement
 
-		p.Add(l)
-		p.HideAxes()
-		p.Add(h)
+			p.Add(l)
+			p.HideAxes()
+			p.Add(h)
 
-		checkImage(t, fmt.Sprintf("labelsarcs-%d", i), p, *regen)
+			checkImage(t, p, *regen)
+		})
 	}
 }
 
@@ -181,5 +185,5 @@ func TestLabelSpokes(t *testing.T) {
 	p.Add(l)
 	p.HideAxes()
 
-	checkImage(t, "labelspokes", p, *regen)
+	checkImage(t, p, *regen)
 }
