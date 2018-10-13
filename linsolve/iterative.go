@@ -80,7 +80,7 @@ func defaultSettings(s *Settings, dim int) {
 		s.Tolerance = defaultTolerance
 	}
 	if s.MaxIterations == 0 {
-		s.MaxIterations = 2 * dim
+		s.MaxIterations = 4 * dim
 	}
 	if s.PreconSolve == nil {
 		s.PreconSolve = NoPreconditioner
