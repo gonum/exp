@@ -17,7 +17,26 @@ func TestDefaultMethodDefaultSettings(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
-	testCases = append(testCases, unsymTestCases(rnd)...)
+	testCases = append(testCases,
+		nonsym3x3(),
+		nonsymTridiag(100),
+		newGreenbaum54(1, 1, rnd),
+		newGreenbaum54(1, 2, rnd),
+		newGreenbaum54(2, 4, rnd),
+		newGreenbaum54(10, 0, rnd),
+		newGreenbaum54(10, 20, rnd),
+		newGreenbaum54(50, 3, rnd),
+		newGreenbaum73(16, 16, rnd),
+		newPDENonsymmetric(16, 16, rnd),
+		newPDEYang47(16, 16, rnd),
+		newPDEYang48(16, 16, rnd),
+		newPDEYang49(16, 16, rnd),
+		newPDEYang410(16, 16, rnd),
+		newPDEYang412(16, 16, rnd),
+		newPDEYang413(16, 16, rnd),
+		newPDEYang414(16, 16, rnd),
+		newPDEYang415(16, 16, rnd),
+	)
 	for _, tc := range testCases {
 		testMethodWithSettings(t, nil, nil, tc)
 	}
@@ -42,11 +61,126 @@ func TestCGDefaultSettings(t *testing.T) {
 	}
 }
 
+func TestBCG(t *testing.T) {
+	rnd := rand.New(rand.NewSource(1))
+
+	testCases := spdTestCases(rnd)
+	testCases = append(testCases,
+		nonsym3x3(),
+		nonsymTridiag(100),
+		newGreenbaum54(1, 1, rnd),
+		newGreenbaum54(1, 2, rnd),
+		newGreenbaum54(2, 4, rnd),
+		newGreenbaum54(10, 0, rnd),
+		newGreenbaum54(10, 20, rnd),
+		newGreenbaum54(50, 3, rnd),
+		newGreenbaum73(16, 16, rnd),
+		newPDEYang47(16, 16, rnd),
+		newPDEYang48(16, 16, rnd),
+		newPDEYang410(16, 16, rnd),
+		newPDEYang413(16, 16, rnd),
+		newPDEYang414(16, 16, rnd),
+		newPDEYang415(16, 16, rnd),
+	)
+	for _, tc := range testCases {
+		s := newTestSettings(rnd, tc)
+		s.Tolerance = 1e-10
+		testMethodWithSettings(t, &BCG{}, s, tc)
+	}
+}
+
+func TestBCGDefaultSettings(t *testing.T) {
+	rnd := rand.New(rand.NewSource(1))
+
+	testCases := spdTestCases(rnd)
+	testCases = append(testCases,
+		nonsym3x3(),
+		nonsymTridiag(100),
+		newGreenbaum54(1, 1, rnd),
+		newGreenbaum54(1, 2, rnd),
+		newGreenbaum54(2, 4, rnd),
+		newGreenbaum54(10, 0, rnd),
+		newGreenbaum54(10, 20, rnd),
+		newGreenbaum54(50, 3, rnd),
+		newGreenbaum73(16, 16, rnd),
+		newPDENonsymmetric(16, 16, rnd),
+		newPDEYang47(16, 16, rnd),
+		newPDEYang48(16, 16, rnd),
+		newPDEYang410(16, 16, rnd),
+		newPDEYang413(16, 16, rnd),
+		newPDEYang414(16, 16, rnd),
+		newPDEYang415(16, 16, rnd),
+	)
+	for _, tc := range testCases {
+		testMethodWithSettings(t, &BCG{}, nil, tc)
+	}
+}
+
+func TestBCGSTAB(t *testing.T) {
+	rnd := rand.New(rand.NewSource(1))
+
+	testCases := spdTestCases(rnd)
+	testCases = append(testCases,
+		nonsym3x3(),
+		nonsymTridiag(100),
+		newGreenbaum54(1, 1, rnd),
+		newGreenbaum54(1, 2, rnd),
+		newGreenbaum54(2, 4, rnd),
+		newGreenbaum54(10, 0, rnd),
+		newGreenbaum54(10, 20, rnd),
+		newGreenbaum54(50, 3, rnd),
+		newGreenbaum73(16, 16, rnd),
+	)
+	for _, tc := range testCases {
+		s := newTestSettings(rnd, tc)
+		testMethodWithSettings(t, &BCGSTAB{}, s, tc)
+	}
+}
+
+func TestBCGSTABDefaultSettings(t *testing.T) {
+	rnd := rand.New(rand.NewSource(1))
+
+	testCases := spdTestCases(rnd)
+	testCases = append(testCases,
+		nonsym3x3(),
+		nonsymTridiag(100),
+		newGreenbaum54(1, 1, rnd),
+		newGreenbaum54(1, 2, rnd),
+		newGreenbaum54(2, 4, rnd),
+		newGreenbaum54(10, 0, rnd),
+		newGreenbaum54(10, 20, rnd),
+		newGreenbaum54(50, 3, rnd),
+		newGreenbaum73(16, 16, rnd),
+	)
+	for _, tc := range testCases {
+		testMethodWithSettings(t, &BCGSTAB{}, nil, tc)
+	}
+}
+
 func TestGMRES(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
-	testCases = append(testCases, unsymTestCases(rnd)...)
+	testCases = append(testCases,
+		nonsym3x3(),
+		nonsymTridiag(100),
+		newGreenbaum54(1, 1, rnd),
+		newGreenbaum54(1, 2, rnd),
+		newGreenbaum54(2, 4, rnd),
+		newGreenbaum54(10, 0, rnd),
+		newGreenbaum54(10, 20, rnd),
+		newGreenbaum54(50, 3, rnd),
+		newGreenbaum73(16, 16, rnd),
+		newPDENonsymmetric(16, 16, rnd),
+		newPDEYang47(16, 16, rnd),
+		newPDEYang48(16, 16, rnd),
+		newPDEYang49(16, 16, rnd),
+		newPDEYang410(16, 16, rnd),
+		newPDEYang412(16, 16, rnd),
+		newPDEYang413(16, 16, rnd),
+		newPDEYang414(16, 16, rnd),
+		newPDEYang415(16, 16, rnd),
+	)
 	for _, tc := range testCases {
 		s := newTestSettings(rnd, tc)
 		testMethodWithSettings(t, &GMRES{}, s, tc)
@@ -57,7 +191,26 @@ func TestGMRESDefaultSettings(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
-	testCases = append(testCases, unsymTestCases(rnd)...)
+	testCases = append(testCases,
+		nonsym3x3(),
+		nonsymTridiag(100),
+		newGreenbaum54(1, 1, rnd),
+		newGreenbaum54(1, 2, rnd),
+		newGreenbaum54(2, 4, rnd),
+		newGreenbaum54(10, 0, rnd),
+		newGreenbaum54(10, 20, rnd),
+		newGreenbaum54(50, 3, rnd),
+		newGreenbaum73(16, 16, rnd),
+		newPDENonsymmetric(16, 16, rnd),
+		newPDEYang47(16, 16, rnd),
+		newPDEYang48(16, 16, rnd),
+		newPDEYang49(16, 16, rnd),
+		newPDEYang410(16, 16, rnd),
+		newPDEYang412(16, 16, rnd),
+		newPDEYang413(16, 16, rnd),
+		newPDEYang414(16, 16, rnd),
+		newPDEYang415(16, 16, rnd),
+	)
 	for _, tc := range testCases {
 		testMethodWithSettings(t, &GMRES{}, nil, tc)
 	}
@@ -92,14 +245,14 @@ func newTestSettings(rnd *rand.Rand, tc testCase) *Settings {
 		InitX:         initX,
 		Dst:           dst,
 		Tolerance:     tc.tol,
-		MaxIterations: 3 * n,
+		MaxIterations: 5 * n,
 		PreconSolve:   tc.PreconSolve,
 		Work:          work,
 	}
 }
 
 func testMethodWithSettings(t *testing.T, m Method, s *Settings, tc testCase) {
-	wantTol := 1e-11
+	wantTol := 1e-9
 	if s == nil {
 		// The default value of Settings.Tolerance is not as low as the tolerance in
 		// individual test cases, therefore we must use a higher tolerance for
@@ -129,7 +282,7 @@ func testMethodWithSettings(t *testing.T, m Method, s *Settings, tc testCase) {
 		return
 	}
 
-	if result.Stats.Iterations > s.MaxIterations {
+	if s.MaxIterations > 0 && result.Stats.Iterations > s.MaxIterations {
 		t.Errorf("%v: Result.Stats.Iterations greater than Settings.MaxIterations", tc.name)
 	}
 

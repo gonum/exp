@@ -64,29 +64,8 @@ func spdTestCases(rnd *rand.Rand) []testCase {
 		newGreenbaum41(24, 0.001, 1, 0.6, rnd),
 		newGreenbaum41(24, 0.001, 1, 0.8, rnd),
 		newGreenbaum41(24, 0.001, 1, 1, rnd),
-		newPoisson1D(32, rnd),
-		newPoisson2D(32, 32, rnd),
-	}
-}
-
-func unsymTestCases(rnd *rand.Rand) []testCase {
-	return []testCase{
-		newGreenbaum54(1, 1, rnd),
-		newGreenbaum54(1, 2, rnd),
-		newGreenbaum54(2, 4, rnd),
-		newGreenbaum54(10, 0, rnd),
-		newGreenbaum54(10, 20, rnd),
-		newGreenbaum54(50, 3, rnd),
-		newGreenbaum73(16, 16, rnd),
-		newPDENonsymmetric(16, 16, rnd),
-		newPDEYang47(16, 16, rnd),
-		newPDEYang48(16, 16, rnd),
-		newPDEYang49(16, 16, rnd),
-		newPDEYang410(16, 16, rnd),
-		newPDEYang412(16, 16, rnd),
-		newPDEYang413(16, 16, rnd),
-		newPDEYang414(16, 16, rnd),
-		newPDEYang415(16, 16, rnd),
+		newPoisson1D(32, random(rnd)),
+		newPoisson2D(32, 32, one),
 	}
 }
 
@@ -108,7 +87,7 @@ func newRandomSPD(n int, rnd *rand.Rand) testCase {
 	// Generate the right-hand side.
 	b := make([]float64, n)
 	for i := range b {
-		b[i] = rnd.NormFloat64()
+		b[i] = 1 / math.Sqrt(float64(n))
 	}
 	// Compute the solution using the Cholesky factorization.
 	var chol mat.Cholesky
@@ -155,7 +134,7 @@ func newRandomDiagonal(n int, rnd *rand.Rand) testCase {
 	// Generate the right-hand side.
 	b := make([]float64, n)
 	for i := range b {
-		b[i] = rnd.NormFloat64()
+		b[i] = 1 / math.Sqrt(float64(n))
 	}
 	// Compute the reference solution.
 	want := make([]float64, n)
@@ -240,12 +219,70 @@ func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 	}
 }
 
+func nonsym3x3() testCase {
+	return testCase{
+		name: "nonsym 3x3",
+		mulVecTo: func(dst []float64, trans bool, x []float64) {
+			A := mat.NewDense(3, 3, []float64{
+				5, -1, 3,
+				-1, 2, -2,
+				3, -2, 3,
+			})
+			dstvec := mat.NewVecDense(3, dst)
+			if trans {
+				dstvec.MulVec(A.T(), mat.NewVecDense(3, x))
+			} else {
+				dstvec.MulVec(A, mat.NewVecDense(3, x))
+			}
+		},
+		b:    []float64{7, -1, 4},
+		diag: []float64{5, 2, -3},
+		tol:  defaultTol,
+		want: []float64{1, 1, 1},
+	}
+}
+
+func nonsymTridiag(n int) testCase {
+	A := triplet.NewMatrix(n, n)
+	for i := 0; i < n; i++ {
+		if i > 0 {
+			A.Append(i, i-1, -2)
+		}
+		A.Append(i, i, 4)
+		if i < n-1 {
+			A.Append(i, i+1, -1)
+		}
+	}
+	b := make([]float64, n)
+	for i := range b {
+		switch i {
+		case 0:
+			b[i] = 3
+		default:
+			b[i] = 1
+		case n - 1:
+			b[i] = 2
+		}
+	}
+	want := make([]float64, n)
+	for i := range want {
+		want[i] = 1
+	}
+	return testCase{
+		name:     fmt.Sprintf("Nonsym tridiag n=%v", n),
+		mulVecTo: A.MulVecTo,
+		b:        b,
+		tol:      defaultTol,
+		want:     want,
+	}
+}
+
 // newPoisson1D returns a test case that arises from a finite-difference discretization
 // of the Poisson equation
 //  - ∂_x ∂_x u = f
 // on the interval [0,1].
-func newPoisson1D(nx int, rnd *rand.Rand) testCase {
-	tc := newPDE(nx, 1, negOne, nil, zero, nil, zero, random(rnd))
+func newPoisson1D(nx int, f func(float64, float64) float64) testCase {
+	tc := newPDE(nx, 1, negOne, nil, zero, nil, zero, f)
 	tc.name = fmt.Sprintf("Poisson 1D nx=%v", nx)
 	return tc
 }
@@ -254,8 +291,8 @@ func newPoisson1D(nx int, rnd *rand.Rand) testCase {
 // of the Poisson equation
 //  - Δu = f
 // on the unit square [0,1]×[0,1].
-func newPoisson2D(nx, ny int, rnd *rand.Rand) testCase {
-	tc := newPDE(nx, ny, negOne, negOne, zero, zero, zero, random(rnd))
+func newPoisson2D(nx, ny int, f func(float64, float64) float64) testCase {
+	tc := newPDE(nx, ny, negOne, negOne, zero, zero, zero, f)
 	tc.name = fmt.Sprintf("Poisson 2D nx=%v,ny=%v", nx, ny)
 	tc.tol = 1e-14
 	return tc
@@ -383,6 +420,14 @@ func newPDENonsymmetric(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny, one, one, henk, zero, dhenkdx, random(rnd))
 	tc.name = fmt.Sprintf("PDE Nonsymmetric nx=%v,ny=%v", nx, ny)
 	return tc
+}
+
+func henk(x, y float64) float64 {
+	return 20 * math.Exp(3.5*(x*x+y*y))
+}
+
+func dhenkdx(x, y float64) float64 {
+	return 70 * x * math.Exp(3.5*(x*x+y*y))
 }
 
 // newPDEYang47 returns a test case that arises from a finite-difference discretization
@@ -718,12 +763,4 @@ func random(rnd *rand.Rand) func(_, _ float64) float64 {
 	return func(_, _ float64) float64 {
 		return rnd.NormFloat64()
 	}
-}
-
-func henk(x, y float64) float64 {
-	return 20 * math.Exp(3.5*(x*x+y*y))
-}
-
-func dhenkdx(x, y float64) float64 {
-	return 70 * x * math.Exp(3.5*(x*x+y*y))
 }
