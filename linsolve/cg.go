@@ -47,6 +47,7 @@ func (cg *CG) Init(dim int) {
 // operations:
 //  MulVec
 //  PreconSolve
+//  CheckResidual
 //  MajorIteration
 func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 	switch cg.resume {

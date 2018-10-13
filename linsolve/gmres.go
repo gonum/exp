@@ -63,13 +63,7 @@ type givens struct {
 	c, s float64
 }
 
-// Init implements the Method interface. It will command the following
-// operations:
-//  MulVec
-//  PreconSolve
-//  CheckResidualNorm
-//  ComputeResidual
-//  MajorIteration
+// Init implements the Method interface.
 func (g *GMRES) Init(dim int) {
 	if dim <= 0 {
 		panic("gmres: dimension not positive")
@@ -105,7 +99,14 @@ func (g *GMRES) Init(dim int) {
 	g.resume = 1
 }
 
-// Iterate implements the Method interface.
+// Iterate implements the Method interface. It will command the following
+// operations:
+//  MulVec
+//  PreconSolve
+//  CheckResidualNorm
+//  ComputeResidual
+//  MajorIteration
+//  NoOperation
 func (g *GMRES) Iterate(ctx *Context) (Operation, error) {
 	switch g.resume {
 	case 1:
