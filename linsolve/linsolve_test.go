@@ -44,32 +44,6 @@ func (tc *testCase) PreconSolve(dst *mat.VecDense, trans bool, rhs mat.Vector) e
 	return nil
 }
 
-func spdTestCases(rnd *rand.Rand) []testCase {
-	return []testCase{
-		newRandomSPD(1, rnd),
-		newRandomSPD(2, rnd),
-		newRandomSPD(3, rnd),
-		newRandomSPD(4, rnd),
-		newRandomSPD(5, rnd),
-		newRandomSPD(10, rnd),
-		newRandomSPD(20, rnd),
-		newRandomSPD(50, rnd),
-		newRandomDiagonal(2, rnd),
-		newRandomDiagonal(3, rnd),
-		newRandomDiagonal(4, rnd),
-		newRandomDiagonal(5, rnd),
-		newRandomDiagonal(10, rnd),
-		newRandomDiagonal(20, rnd),
-		newRandomDiagonal(50, rnd),
-		newGreenbaum41(24, 0.001, 1, 0.4, rnd),
-		newGreenbaum41(24, 0.001, 1, 0.6, rnd),
-		newGreenbaum41(24, 0.001, 1, 0.8, rnd),
-		newGreenbaum41(24, 0.001, 1, 1, rnd),
-		newPoisson1D(32, random(rnd)),
-		newPoisson2D(32, 32, one),
-	}
-}
-
 // newRandomSPD returns a test case with a random symmetric positive-definite
 // matrix of order n, and a random right-hand side.
 func newRandomSPD(n int, rnd *rand.Rand) testCase {
@@ -211,7 +185,7 @@ func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 		name:     fmt.Sprintf("Greenbaum 4.1 n=%v,d_1=%v,d_n=%v,rho=%v", n, d1, dn, rho),
 		mulVecTo: mulVecTo,
 		b:        b,
-		tol:      defaultTol,
+		tol:      1e-11,
 		diag:     diag,
 		want:     want,
 	}

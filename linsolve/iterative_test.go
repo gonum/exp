@@ -14,6 +14,32 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+func spdTestCases(rnd *rand.Rand) []testCase {
+	return []testCase{
+		newRandomSPD(1, rnd),
+		newRandomSPD(2, rnd),
+		newRandomSPD(3, rnd),
+		newRandomSPD(4, rnd),
+		newRandomSPD(5, rnd),
+		newRandomSPD(10, rnd),
+		newRandomSPD(20, rnd),
+		newRandomSPD(50, rnd),
+		newRandomDiagonal(2, rnd),
+		newRandomDiagonal(3, rnd),
+		newRandomDiagonal(4, rnd),
+		newRandomDiagonal(5, rnd),
+		newRandomDiagonal(10, rnd),
+		newRandomDiagonal(20, rnd),
+		newRandomDiagonal(50, rnd),
+		newGreenbaum41(24, 0.001, 1, 0.4, rnd),
+		newGreenbaum41(24, 0.001, 1, 0.6, rnd),
+		newGreenbaum41(24, 0.001, 1, 0.8, rnd),
+		newGreenbaum41(24, 0.001, 1, 1, rnd),
+		newPoisson1D(32, random(rnd)),
+		newPoisson2D(32, 32, one),
+	}
+}
+
 func TestDefaultMethodDefaultSettings(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
@@ -59,6 +85,25 @@ func TestCGDefaultSettings(t *testing.T) {
 	testCases := spdTestCases(rnd)
 	for _, tc := range testCases {
 		testMethodWithSettings(t, &CG{}, nil, tc)
+	}
+}
+
+func TestMINRES(t *testing.T) {
+	rnd := rand.New(rand.NewSource(1))
+
+	testCases := spdTestCases(rnd)
+	for _, tc := range testCases {
+		s := newTestSettings(rnd, tc)
+		testMethodWithSettings(t, &MINRES{}, s, tc)
+	}
+}
+
+func TestMINRESDefaultSettings(t *testing.T) {
+	rnd := rand.New(rand.NewSource(1))
+
+	testCases := spdTestCases(rnd)
+	for _, tc := range testCases {
+		testMethodWithSettings(t, &MINRES{}, nil, tc)
 	}
 }
 
