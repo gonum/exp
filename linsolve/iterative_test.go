@@ -40,6 +40,14 @@ func spdTestCases(rnd *rand.Rand) []testCase {
 	}
 }
 
+func indefTestCases(rnd *rand.Rand) []testCase {
+	return []testCase{
+		newGreenbaum41(10, -1, 5, 1, rnd),
+		newGreenbaum41(100, -5, 5, 1, rnd),
+		newGreenbaum41(100, -5, 1, 1, rnd),
+	}
+}
+
 func TestDefaultMethodDefaultSettings(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
@@ -92,6 +100,7 @@ func TestMINRES(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
+	testCases = append(testCases, indefTestCases(rnd)...)
 	for _, tc := range testCases {
 		s := newTestSettings(rnd, tc)
 		testMethodWithSettings(t, &MINRES{}, s, tc)
@@ -102,6 +111,7 @@ func TestMINRESDefaultSettings(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
+	testCases = append(testCases, indefTestCases(rnd)...)
 	for _, tc := range testCases {
 		testMethodWithSettings(t, &MINRES{}, nil, tc)
 	}
@@ -302,7 +312,7 @@ func testMethodWithSettings(t *testing.T, m Method, s *Settings, tc testCase) {
 		// The default value of Settings.Tolerance is not as low as the tolerance in
 		// individual test cases, therefore we must use a higher tolerance for
 		// the expected accuracy of the computed solution.
-		wantTol = 1e-7
+		wantTol = 1e-6
 	}
 
 	n := len(tc.b)
