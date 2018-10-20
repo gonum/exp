@@ -156,19 +156,6 @@ func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 	a := make([]float64, n*n)
 	testlapack.Dlagsy(n, 0, d, a, n, rnd, make([]float64, 2*n))
 	A := mat.NewSymDense(n, a)
-	// Generate the right-hand side.
-	b := make([]float64, n)
-	for i := range b {
-		b[i] = rnd.NormFloat64()
-	}
-	// Compute the solution using the Cholesky factorization.
-	var chol mat.Cholesky
-	ok := chol.Factorize(A)
-	if !ok {
-		panic("bad test matrix")
-	}
-	want := make([]float64, n)
-	chol.SolveVecTo(mat.NewVecDense(n, want), mat.NewVecDense(n, b))
 	// Matrix-vector multiplication.
 	mulVecTo := func(dst *mat.VecDense, _ bool, x mat.Vector) {
 		if dst.Len() != n || x.Len() != n {
@@ -176,16 +163,27 @@ func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 		}
 		dst.MulVec(A, x)
 	}
-	// Store the diagonal for preconditioning.
-	diag := make([]float64, n)
-	for i := range diag {
-		diag[i] = A.At(i, i)
+	// Generate a reference solution.
+	want := make([]float64, n)
+	for i := range want {
+		want[i] = 1 + float64(i%3)
+	}
+	// Compute the corresponding right-hand side.
+	b := make([]float64, n)
+	mulVecTo(b, false, want)
+	// If SPD, store the diagonal for preconditioning.
+	var diag []float64
+	if d1 > 0 {
+		diag = make([]float64, n)
+		for i := range diag {
+			diag[i] = A.At(i, i)
+		}
 	}
 	return testCase{
 		name:     fmt.Sprintf("Greenbaum 4.1 n=%v,d_1=%v,d_n=%v,rho=%v", n, d1, dn, rho),
 		mulVecTo: mulVecTo,
 		b:        b,
-		tol:      1e-11,
+		tol:      1e-12,
 		diag:     diag,
 		want:     want,
 	}
