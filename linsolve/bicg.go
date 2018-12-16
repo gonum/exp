@@ -22,14 +22,14 @@ import (
 //    for Iterative Methods (2nd ed.) (pp. 19-20). Philadelphia, PA: SIAM.
 //    Retrieved from http://www.netlib.org/templates/templates.pdf
 type BiCG struct {
-	first  bool
-	resume int
+	p, pt []float64
+	rt    []float64
+	z, zt []float64
 
 	rho, rhoPrev float64
 
-	rt    []float64
-	z, zt []float64
-	p, pt []float64
+	first  bool
+	resume int
 }
 
 // Init initializes the data for a linear solve. See the Method interface for more details.
@@ -38,11 +38,11 @@ func (b *BiCG) Init(dim int) {
 		panic("bicg: dimension not positive")
 	}
 
+	b.p = reuse(b.p, dim)
+	b.pt = reuse(b.pt, dim)
 	b.rt = reuse(b.rt, dim)
 	b.z = reuse(b.z, dim)
 	b.zt = reuse(b.zt, dim)
-	b.p = reuse(b.p, dim)
-	b.pt = reuse(b.pt, dim)
 
 	b.first = true
 	b.resume = 1

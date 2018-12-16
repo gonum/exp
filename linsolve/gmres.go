@@ -38,11 +38,8 @@ type GMRES struct {
 	// a problem-dependent value less than n.
 	Restart int
 
-	m  int
-	s  []float64
-	y  []float64
-	av []float64
-
+	// m is the used value of Restart.
+	m int
 	// vt is an (m+1)×n matrix. It corresponds to V^T in
 	// standard descriptions of GMRES. Its rows form an orthonormal basis of the
 	// Krylov subspace.
@@ -53,6 +50,10 @@ type GMRES struct {
 	// givs holds Givens rotations that are used to reduce H to
 	// upper-triangular form.
 	givs []givens
+
+	av []float64
+	s  []float64
+	y  []float64
 
 	k      int // Loop variable for inner iterations.
 	resume int
@@ -77,10 +78,6 @@ func (g *GMRES) Init(dim int) {
 		panic("gmres: invalid value of Restart")
 	}
 
-	g.s = reuse(g.s, g.m+1)
-	g.y = reuse(g.y, dim)
-	g.av = reuse(g.av, dim)
-
 	ldv := dim
 	g.vt = reuse(g.vt, (g.m+1)*ldv)
 	ldh := g.m + 1
@@ -95,6 +92,10 @@ func (g *GMRES) Init(dim int) {
 			g.givs[i].s = 0
 		}
 	}
+
+	g.s = reuse(g.s, g.m+1)
+	g.y = reuse(g.y, dim)
+	g.av = reuse(g.av, dim)
 
 	g.resume = 1
 }
