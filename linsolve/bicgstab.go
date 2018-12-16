@@ -5,7 +5,6 @@
 package linsolve
 
 import (
-	"errors"
 	"math"
 
 	"gonum.org/v1/gonum/floats"
@@ -69,9 +68,9 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 			copy(b.rt, ctx.Residual)
 		}
 		b.rho = floats.Dot(b.rt, ctx.Residual)
-		if math.Abs(b.rho) < rhoBreakdownTol {
+		if math.Abs(b.rho) < breakdownTol {
 			b.resume = 0
-			return NoOperation, errors.New("bicgstab: rho breakdown")
+			return NoOperation, &BreakdownError{math.Abs(b.rho), breakdownTol}
 		}
 		if b.first {
 			b.first = false
@@ -97,7 +96,7 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		rtv := floats.Dot(b.rt, b.v)
 		if rtv == 0 {
 			b.resume = 0
-			return NoOperation, errors.New("bicgstab: breakdown")
+			return NoOperation, &BreakdownError{}
 		}
 		b.alpha = b.rho / rtv
 		// Form the residual and X so that we can check for tolerance early.
@@ -128,9 +127,9 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		b.resume = 7
 		return CheckResidual, nil
 	case 7:
-		if !ctx.Converged && math.Abs(b.omega) < omegaBreakdownTol {
+		if !ctx.Converged && math.Abs(b.omega) < breakdownTol {
 			b.resume = 0
-			return NoOperation, errors.New("bicgstab: omega breakdown")
+			return NoOperation, &BreakdownError{math.Abs(b.omega), breakdownTol}
 		}
 		b.rhoPrev = b.rho
 		b.resume = 1
