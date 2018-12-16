@@ -32,7 +32,7 @@ type CG struct {
 	resume int
 }
 
-// Init implements the Method interface.
+// Init initializes the data for a linear solve. See the Method interface for more details.
 func (cg *CG) Init(dim int) {
 	if dim <= 0 {
 		panic("cg: dimension not positive")
@@ -43,8 +43,9 @@ func (cg *CG) Init(dim int) {
 	cg.resume = 1
 }
 
-// Iterate implements the Method interface. It will command the following
-// operations:
+// Iterate performs an iteration of the linear solve. See the Method interface for more details.
+//
+// CG will command the following operations:
 //  MulVec
 //  PreconSolve
 //  CheckResidual

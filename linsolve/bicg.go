@@ -14,7 +14,7 @@ import (
 // BiCG implements the Bi-Conjugate Gradient method with
 // preconditioning for solving systems of linear equations
 //  A*x = b,
-// where A is a square, generally nonsymmetric matrix.
+// where A is a square, possibly nonsymmetric matrix.
 //
 // References:
 //  - Barrett, R. et al. (1994). Section 2.3.5 BiConjugate Gradient (BiCG).
@@ -32,7 +32,7 @@ type BiCG struct {
 	p, pt []float64
 }
 
-// Init implements the Method interface.
+// Init initializes the data for a linear solve. See the Method interface for more details.
 func (b *BiCG) Init(dim int) {
 	if dim <= 0 {
 		panic("bicg: dimension not positive")
@@ -48,8 +48,9 @@ func (b *BiCG) Init(dim int) {
 	b.resume = 1
 }
 
-// Iterate implements the Method interface. It will command the following
-// operations:
+// Iterate performs an iteration of the linear solve. See the Method interface for more details.
+//
+// BiCG will command the following operations:
 //  MulVec
 //  MulVec|Trans
 //  PreconSolve
