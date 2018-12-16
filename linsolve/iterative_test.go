@@ -116,7 +116,7 @@ func TestBiCGDefaultSettings(t *testing.T) {
 	}
 }
 
-func TestBCGSTAB(t *testing.T) {
+func TestBiCGStab(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
@@ -133,11 +133,11 @@ func TestBCGSTAB(t *testing.T) {
 	)
 	for _, tc := range testCases {
 		s := newTestSettings(rnd, tc)
-		testMethodWithSettings(t, &BCGSTAB{}, s, tc)
+		testMethodWithSettings(t, &BiCGStab{}, s, tc)
 	}
 }
 
-func TestBCGSTABDefaultSettings(t *testing.T) {
+func TestBiCGStabDefaultSettings(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
@@ -153,7 +153,7 @@ func TestBCGSTABDefaultSettings(t *testing.T) {
 		newGreenbaum73(16, 16, rnd),
 	)
 	for _, tc := range testCases {
-		testMethodWithSettings(t, &BCGSTAB{}, nil, tc)
+		testMethodWithSettings(t, &BiCGStab{}, nil, tc)
 	}
 }
 
