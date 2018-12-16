@@ -130,7 +130,7 @@ func newRandomDiagonal(n int, rnd *rand.Rand) testCase {
 		a[i] = 1 + 10*rnd.Float64()
 		diag[i] = a[i]
 	}
-	A := mat.NewDiagonal(n, a)
+	A := mat.NewDiagDense(n, a)
 	// Generate the right-hand side.
 	b := make([]float64, n)
 	for i := range b {
