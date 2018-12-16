@@ -6,6 +6,7 @@ package linsolve
 
 import "fmt"
 
+// BreakdownError signifies that a breakdown occured and the method cannot continue.
 type BreakdownError struct {
 	Value     float64
 	Tolerance float64
