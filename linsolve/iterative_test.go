@@ -61,7 +61,7 @@ func TestCGDefaultSettings(t *testing.T) {
 	}
 }
 
-func TestBCG(t *testing.T) {
+func TestBiCG(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
@@ -85,11 +85,11 @@ func TestBCG(t *testing.T) {
 	for _, tc := range testCases {
 		s := newTestSettings(rnd, tc)
 		s.Tolerance = 1e-10
-		testMethodWithSettings(t, &BCG{}, s, tc)
+		testMethodWithSettings(t, &BiCG{}, s, tc)
 	}
 }
 
-func TestBCGDefaultSettings(t *testing.T) {
+func TestBiCGDefaultSettings(t *testing.T) {
 	rnd := rand.New(rand.NewSource(1))
 
 	testCases := spdTestCases(rnd)
@@ -112,7 +112,7 @@ func TestBCGDefaultSettings(t *testing.T) {
 		newPDEYang415(16, 16, rnd),
 	)
 	for _, tc := range testCases {
-		testMethodWithSettings(t, &BCG{}, nil, tc)
+		testMethodWithSettings(t, &BiCG{}, nil, tc)
 	}
 }
 

@@ -158,7 +158,7 @@ const (
 	// Machine epsilon.
 	eps = 1.0 / (1 << 53)
 
-	// Tolerances for BCG and BCGSTAB methods.
+	// Tolerances for BiCG and BCGSTAB methods.
 	rhoBreakdownTol   = eps * eps
 	omegaBreakdownTol = eps * eps
 )
