@@ -11,7 +11,7 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-// BCGSTAB implements the BiConjugate Gradient Stabilized method with
+// BiCGStab implements the BiConjugate Gradient Stabilized method with
 // preconditioning for solving systems of linear equations
 //  A*x = b,
 // where A is a square, generally nonsymmetric matrix.
@@ -22,7 +22,7 @@ import (
 //    In Templates for the Solution of Linear Systems: Building Blocks
 //    for Iterative Methods (2nd ed.) (pp. 24-25). Philadelphia, PA: SIAM.
 //    Retrieved from http://www.netlib.org/templates/templates.pdf
-type BCGSTAB struct {
+type BiCGStab struct {
 	first  bool
 	resume int
 
@@ -39,9 +39,9 @@ type BCGSTAB struct {
 }
 
 // Init implements the Method interface.
-func (b *BCGSTAB) Init(dim int) {
+func (b *BiCGStab) Init(dim int) {
 	if dim <= 0 {
-		panic("bcgstab: dimension not positive")
+		panic("bicgstab: dimension not positive")
 	}
 
 	b.rt = reuse(b.rt, dim)
@@ -62,7 +62,7 @@ func (b *BCGSTAB) Init(dim int) {
 //  CheckResidual
 //  MajorIteration
 //  NoOperation
-func (b *BCGSTAB) Iterate(ctx *Context) (Operation, error) {
+func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 	switch b.resume {
 	case 1:
 		if b.first {
@@ -71,7 +71,7 @@ func (b *BCGSTAB) Iterate(ctx *Context) (Operation, error) {
 		b.rho = floats.Dot(b.rt, ctx.Residual)
 		if math.Abs(b.rho) < rhoBreakdownTol {
 			b.resume = 0
-			return NoOperation, errors.New("bcgstab: rho breakdown")
+			return NoOperation, errors.New("bicgstab: rho breakdown")
 		}
 		if b.first {
 			b.first = false
@@ -97,7 +97,7 @@ func (b *BCGSTAB) Iterate(ctx *Context) (Operation, error) {
 		rtv := floats.Dot(b.rt, b.v)
 		if rtv == 0 {
 			b.resume = 0
-			return NoOperation, errors.New("bcgstab: breakdown")
+			return NoOperation, errors.New("bicgstab: breakdown")
 		}
 		b.alpha = b.rho / rtv
 		// Form the residual and X so that we can check for tolerance early.
@@ -132,13 +132,13 @@ func (b *BCGSTAB) Iterate(ctx *Context) (Operation, error) {
 	case 8:
 		if !ctx.Converged && math.Abs(b.omega) < omegaBreakdownTol {
 			b.resume = 0
-			return NoOperation, errors.New("bcgstab: omega breakdown")
+			return NoOperation, errors.New("bicgstab: omega breakdown")
 		}
 		b.rhoPrev = b.rho
 		b.resume = 1
 		return MajorIteration, nil
 
 	default:
-		panic("bcgstab: Init not called")
+		panic("bicgstab: Init not called")
 	}
 }
