@@ -63,7 +63,7 @@ type givens struct {
 	c, s float64
 }
 
-// Init implements the Method interface.
+// Init initializes the data for a linear solve. See the Method interface for more details.
 func (g *GMRES) Init(dim int) {
 	if dim <= 0 {
 		panic("gmres: dimension not positive")
@@ -99,8 +99,9 @@ func (g *GMRES) Init(dim int) {
 	g.resume = 1
 }
 
-// Iterate implements the Method interface. It will command the following
-// operations:
+// Iterate performs an iteration of the linear solve. See the Method interface for more details.
+//
+// GMRES will command the following operations:
 //  MulVec
 //  PreconSolve
 //  CheckResidualNorm

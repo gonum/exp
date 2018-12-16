@@ -14,7 +14,7 @@ import (
 // BiCGStab implements the BiConjugate Gradient Stabilized method with
 // preconditioning for solving systems of linear equations
 //  A*x = b,
-// where A is a square, generally nonsymmetric matrix.
+// where A is a square, possibly nonsymmetric matrix.
 //
 //
 // References:
@@ -38,7 +38,7 @@ type BiCGStab struct {
 	shat []float64
 }
 
-// Init implements the Method interface.
+// Init initializes the data for a linear solve. See the Method interface for more details.
 func (b *BiCGStab) Init(dim int) {
 	if dim <= 0 {
 		panic("bicgstab: dimension not positive")
@@ -55,8 +55,9 @@ func (b *BiCGStab) Init(dim int) {
 	b.resume = 1
 }
 
-// Iterate implements the Method interface. It will command the following
-// operations:
+// Iterate performs an iteration of the linear solve. See the Method interface for more details.
+//
+// BiCGStab will command the following operations:
 //  MulVec
 //  PreconSolve
 //  CheckResidual
@@ -88,7 +89,7 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		return PreconSolve, nil
 	case 2:
 		copy(b.phat, ctx.Dst)
-		// Compute A * p^_i.
+		// Compute A * \hat{p}_i.
 		copy(ctx.Src, b.phat)
 		b.resume = 3
 		return MulVec, nil
@@ -118,7 +119,7 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		return PreconSolve, nil
 	case 6:
 		copy(b.shat, ctx.Dst)
-		// Compute A * s^_i.
+		// Compute A * \hat{s}_i.
 		copy(ctx.Src, b.shat)
 		b.resume = 7
 		return MulVec, nil
