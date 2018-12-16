@@ -4,6 +4,17 @@
 
 package linsolve
 
+import "fmt"
+
+type BreakdownError struct {
+	Value     float64
+	Tolerance float64
+}
+
+func (e *BreakdownError) Error() string {
+	return fmt.Sprintf("linsolve: breakdown, value=%v tolerance=%v", e.Value, e.Tolerance)
+}
+
 // Method is an iterative method that produces a sequence of vectors that
 // converge to the solution of the system of linear equations
 //  A x = b,
@@ -158,7 +169,6 @@ const (
 	// Machine epsilon.
 	eps = 1.0 / (1 << 53)
 
-	// Tolerances for BiCG and BiCGStab methods.
-	rhoBreakdownTol   = eps * eps
-	omegaBreakdownTol = eps * eps
+	// Breakdown tolerance for BiCG and BiCGStab methods.
+	breakdownTol = eps * eps
 )

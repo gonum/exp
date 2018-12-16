@@ -5,7 +5,6 @@
 package linsolve
 
 import (
-	"errors"
 	"math"
 
 	"gonum.org/v1/gonum/floats"
@@ -77,9 +76,9 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 	case 3:
 		copy(b.zt, ctx.Dst)
 		b.rho = floats.Dot(b.z, b.rt)
-		if math.Abs(b.rho) < rhoBreakdownTol {
+		if math.Abs(b.rho) < breakdownTol {
 			b.resume = 0
-			return NoOperation, errors.New("bicg: rho breakdown")
+			return NoOperation, &BreakdownError{math.Abs(b.rho), breakdownTol}
 		}
 		if b.first {
 			copy(b.p, b.z)
