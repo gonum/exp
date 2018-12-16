@@ -16,7 +16,6 @@ import (
 //  A*x = b,
 // where A is a square, possibly nonsymmetric matrix.
 //
-//
 // References:
 //  - Barrett, R. et al. (1994). Section 2.3.8 BiConjugate Gradient Stabilized (Bi-CGSTAB).
 //    In Templates for the Solution of Linear Systems: Building Blocks
@@ -108,29 +107,27 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		return CheckResidual, nil
 	case 4:
 		if ctx.Converged {
-			b.resume = 5
+			b.resume = 0
 			return MajorIteration, nil
 		}
-		fallthrough
-	case 5:
 		// Solve M^{-1} * r_i.
 		copy(ctx.Src, ctx.Residual)
-		b.resume = 6
+		b.resume = 5
 		return PreconSolve, nil
-	case 6:
+	case 5:
 		copy(b.shat, ctx.Dst)
 		// Compute A * \hat{s}_i.
 		copy(ctx.Src, b.shat)
-		b.resume = 7
+		b.resume = 6
 		return MulVec, nil
-	case 7:
+	case 6:
 		copy(b.t, ctx.Dst)
 		b.omega = floats.Dot(b.t, ctx.Residual) / floats.Dot(b.t, b.t)
 		floats.AddScaled(ctx.X, b.omega, b.shat)
 		floats.AddScaled(ctx.Residual, -b.omega, b.t)
-		b.resume = 8
+		b.resume = 7
 		return CheckResidual, nil
-	case 8:
+	case 7:
 		if !ctx.Converged && math.Abs(b.omega) < omegaBreakdownTol {
 			b.resume = 0
 			return NoOperation, errors.New("bicgstab: omega breakdown")
