@@ -23,19 +23,19 @@ import (
 //    for Iterative Methods (2nd ed.) (pp. 24-25). Philadelphia, PA: SIAM.
 //    Retrieved from http://www.netlib.org/templates/templates.pdf
 type BiCGStab struct {
-	first  bool
-	resume int
+	p    []float64
+	phat []float64
+	rt   []float64
+	shat []float64
+	t    []float64
+	v    []float64
 
 	rho, rhoPrev float64
 	alpha        float64
 	omega        float64
 
-	rt   []float64
-	v    []float64
-	t    []float64
-	p    []float64
-	phat []float64
-	shat []float64
+	first  bool
+	resume int
 }
 
 // Init initializes the data for a linear solve. See the Method interface for more details.
@@ -44,12 +44,12 @@ func (b *BiCGStab) Init(dim int) {
 		panic("bicgstab: dimension not positive")
 	}
 
-	b.rt = reuse(b.rt, dim)
 	b.p = reuse(b.p, dim)
-	b.v = reuse(b.v, dim)
-	b.t = reuse(b.t, dim)
 	b.phat = reuse(b.phat, dim)
+	b.rt = reuse(b.rt, dim)
 	b.shat = reuse(b.shat, dim)
+	b.t = reuse(b.t, dim)
+	b.v = reuse(b.v, dim)
 
 	b.first = true
 	b.resume = 1

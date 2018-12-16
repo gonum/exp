@@ -24,9 +24,9 @@ import (
 //  - Málek, J. and Strakoš, Z. (2015). Preconditioning and the Conjugate Gradient
 //    Method in the Context of Solving PDEs. Philadelphia, PA: SIAM.
 type CG struct {
-	rho, rhoPrev float64
-
 	p []float64
+
+	rho, rhoPrev float64
 
 	first  bool
 	resume int
