@@ -11,7 +11,7 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-// BCG implements the Bi-Conjugate Gradient method with
+// BiCG implements the Bi-Conjugate Gradient method with
 // preconditioning for solving systems of linear equations
 //  A*x = b,
 // where A is a square, generally nonsymmetric matrix.
@@ -21,7 +21,7 @@ import (
 //    In Templates for the Solution of Linear Systems: Building Blocks
 //    for Iterative Methods (2nd ed.) (pp. 19-20). Philadelphia, PA: SIAM.
 //    Retrieved from http://www.netlib.org/templates/templates.pdf
-type BCG struct {
+type BiCG struct {
 	first  bool
 	resume int
 
@@ -33,9 +33,9 @@ type BCG struct {
 }
 
 // Init implements the Method interface.
-func (b *BCG) Init(dim int) {
+func (b *BiCG) Init(dim int) {
 	if dim <= 0 {
-		panic("bcg: dimension not positive")
+		panic("bicg: dimension not positive")
 	}
 
 	b.rt = reuse(b.rt, dim)
@@ -57,7 +57,7 @@ func (b *BCG) Init(dim int) {
 //  CheckResidual
 //  MajorIteration
 //  NoOperation
-func (b *BCG) Iterate(ctx *Context) (Operation, error) {
+func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 	switch b.resume {
 	case 1:
 		if b.first {
@@ -78,7 +78,7 @@ func (b *BCG) Iterate(ctx *Context) (Operation, error) {
 		b.rho = floats.Dot(b.z, b.rt)
 		if math.Abs(b.rho) < rhoBreakdownTol {
 			b.resume = 0
-			return NoOperation, errors.New("bcg: rho breakdown")
+			return NoOperation, errors.New("bicg: rho breakdown")
 		}
 		if b.first {
 			copy(b.p, b.z)
@@ -115,6 +115,6 @@ func (b *BCG) Iterate(ctx *Context) (Operation, error) {
 		return MajorIteration, nil
 
 	default:
-		panic("bcg: Init not called")
+		panic("bicg: Init not called")
 	}
 }
