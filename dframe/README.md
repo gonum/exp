@@ -36,7 +36,7 @@ A few data frame-like implementations in Go have also been investigated:
 
 Some inspiration from this previous body of work will be drawn, both in terms of API and performance hindsight.
 
-### API
+### dframe
 
 The main type should be:
 
@@ -46,10 +46,82 @@ package dframe
 type Frame struct {
 	// contains filtered or unexported fields
 }
+
+// Err returns the first error encountered during operations on a Frame.
+func (df Frame) Err() error { ... }
+
+// NumRows returns the number of rows of this Frame.
+func (df Frame) NumRows() int
+
+// NumCols returns the number of columns of this Frame.
+func (df Frame) NumCols() int
+
+// Column returns the i-th column of this Frame.
+func (df Frame) Column(i int) *array.Column
+
+// ColumnNames returns the list of column names of this Frame.
+func (df Frame) ColumnNames() []string
 ```
 
 It is expected to build `dframe.Frame` on top of `arrow/array.Interface` and/or `arrow/tensor.Interface` to re-use the SIMD optimized operations and zero-copy optimization that are implemented within these packages.
 Using Arrow should also allow seamless interoperability with other data wrangling systems, possibly written in other languages than Go.
+
+`tobgu/qframe` presents a `QFrame` type that is essentially immutable.
+Operations on a `QFrame`, such as copying columns, dropping columns, sorting them or applying some kind of operation on columns, return a new `QFrame`, leaving the original untouched.
+
+Arrow uses a ref-counting mechanism for all the types that involve memory allocation (mainly to address workloads involving memory allocated on a GPGPU, by a SQL database or a mmap-file.)
+This ref-counting mechanism is presented to the user as a pair of methods `Retain/Release` that resp. increment and decrement that reference count.
+At first, it would seem this mechanism would prevent to expose an API with "chained methods", as the intermediate `Frame` would be "leaked":
+
+```go
+o := df.Slice(0, 10).Select("col1", "col2").Apply("col1 + col2")
+```
+
+If we want an immutable `Frame`, the code above should be rewritten as:
+
+```go
+sli := df.Slice(0, 10)
+defer sli.Release()
+
+sel := sli.Select("col1", "col2")
+defer sel.Release()
+
+o := sel.Apply("col1 + col2")
+defer o.Release()
+```
+It is not clear (to me!) yet whether an immutable `Frame` makes much sense in Go and with this ref-counting mechanism coming from Arrow.
+
+But, immutable or not, one could recoup the nice "chained methods" API by introducing a `dframe.Tx` transaction:
+
+```go
+func (df *Frame) Exec(f func(tx *Tx) error) error
+
+func example(df *dframe.Frame) {
+	err := df.Exec(func(tx *dframe.Tx) error {
+		tx.Slice(0, 10).Select("col1", "col2").Apply("col1 + col2")
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+Or, without a "chained methods" API:
+
+```go
+func example(df *dframe.Frame) {
+	err := df.Exec(func(tx *dframe.Tx) error {
+		tx.Slice(0, 10)
+		tx.Select("col1", "col2")
+		tx.Apply("col1 + col2")
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
 
 ```go
 // Open opens an already existing Frame using the provided driver technology,
@@ -59,8 +131,30 @@ Using Arrow should also allow seamless interoperability with other data wranglin
 func Open(drv, src string) (*Frame, error) { ... }
 
 // Create creates a new Frame, using the provided driver technology
-func Create(drv, dst string, schema *arrow.Schema) (*Frame, error) { ... }
+func Create(drv, dst string, schema *arrow.Schema, opts ...Option) (*Frame, error) { ... }
 
 // New creates a new in-memory data frame with the provided memory schema.
-func New(schema *arrow.Schema) (*Frame, error) { ... }
+func New(schema *arrow.Schema, opts ...Option) (*Frame, error) { ... }
+
+// FromTable creates a new data frame from the provided arrow table.
+func FromTable(tbl arrow.Table, opts ...Option) (*Frame, error) { ... }
 ```
+
+### Operations
+
+One should be able to carry the following operations on a `dframe.Frame`:
+
+```go
+/// Slice returns a new Frame consisting of rows from beg to end-1.
+//
+// The returned Frame must be Release()'d after use.
+func (df *Frame) Slice(beg, end int) *Frame
+
+// Drop 
+```
+
+- retrieve the list of columns that a `Frame` is made of,
+- create new columns that are the result of an operation on a set of already existing columns of that `Frame`,
+- drop columns from a `Frame`
+- append new data to a `Frame`,
+- select a subset of columns from a `Frame`
