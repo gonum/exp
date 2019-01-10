@@ -101,7 +101,9 @@ func FromTable(tbl array.Table, opts ...Option) (*Frame, error) {
 
 	df.cols = make([]array.Column, tbl.NumCols())
 	for i := range df.cols {
-		df.cols[i] = *tbl.Column(i).NewSlice(0, -1)
+		col := tbl.Column(i)
+		end := int64(col.Len())
+		df.cols[i] = *col.NewSlice(0, end)
 	}
 
 	return df, nil

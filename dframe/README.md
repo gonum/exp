@@ -48,19 +48,19 @@ type Frame struct {
 }
 
 // Err returns the first error encountered during operations on a Frame.
-func (df Frame) Err() error { ... }
+func (df *Frame) Err() error { ... }
 
 // NumRows returns the number of rows of this Frame.
-func (df Frame) NumRows() int
+func (df *Frame) NumRows() int
 
 // NumCols returns the number of columns of this Frame.
-func (df Frame) NumCols() int
+func (df *Frame) NumCols() int
 
 // Column returns the i-th column of this Frame.
-func (df Frame) Column(i int) *array.Column
+func (df *Frame) Column(i int) *array.Column
 
 // ColumnNames returns the list of column names of this Frame.
-func (df Frame) ColumnNames() []string
+func (df *Frame) ColumnNames() []string
 ```
 
 It is expected to build `dframe.Frame` on top of `arrow/array.Interface` and/or `arrow/tensor.Interface` to re-use the SIMD optimized operations and zero-copy optimization that are implemented within these packages.
@@ -144,17 +144,8 @@ func FromTable(tbl array.Table, opts ...Option) (*Frame, error) { ... }
 
 One should be able to carry the following operations on a `dframe.Frame`:
 
-```go
-/// Slice returns a new Frame consisting of rows from beg to end-1.
-//
-// The returned Frame must be Release()'d after use.
-func (df *Frame) Slice(beg, end int) *Frame
-
-// Drop 
-```
-
 - retrieve the list of columns that a `Frame` is made of,
 - create new columns that are the result of an operation on a set of already existing columns of that `Frame`,
 - drop columns from a `Frame`
-- append new data to a `Frame`,
+- append new data to a `Frame`, (either a new column or a new row)
 - select a subset of columns from a `Frame`
