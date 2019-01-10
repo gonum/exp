@@ -35,6 +35,134 @@ type Frame struct {
 	rows int64
 }
 
+type Map map[string]interface{}
+
+// FromMem creates a new data frame from the provided in-memory data.
+func FromMem(cols Map, opts ...Option) (*Frame, error) {
+	var (
+		err    error
+		mem    = memory.NewGoAllocator()
+		arrs   = make([]array.Interface, 0, len(cols))
+		fields = make([]arrow.Field, 0, len(cols))
+	)
+
+	for k, v := range cols {
+		func(k string, v interface{}) {
+			var (
+				arr array.Interface
+			)
+			switch v := v.(type) {
+			case []bool:
+				bld := array.NewBooleanBuilder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []int8:
+				bld := array.NewInt8Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []int16:
+				bld := array.NewInt16Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []int32:
+				bld := array.NewInt32Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []int64:
+				bld := array.NewInt64Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []uint8:
+				bld := array.NewUint8Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []uint16:
+				bld := array.NewUint16Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []uint32:
+				bld := array.NewUint32Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []uint64:
+				bld := array.NewUint64Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []float32:
+				bld := array.NewFloat32Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []float64:
+				bld := array.NewFloat64Builder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			case []string:
+				bld := array.NewStringBuilder(mem)
+				defer bld.Release()
+
+				bld.AppendValues(v, nil)
+				arr = bld.NewArray()
+
+			default:
+				if err == nil {
+					err = errors.Errorf("dframe: invalid data type for %q (%T)", k, v)
+					return
+				}
+			}
+
+			arrs = append(arrs, arr)
+			fields = append(fields, arrow.Field{Name: k, Type: arr.DataType()})
+
+		}(k, v)
+	}
+
+	defer func() {
+		for i := range arrs {
+			arrs[i].Release()
+		}
+	}()
+
+	if err != nil {
+		return nil, err
+	}
+
+	schema := arrow.NewSchema(fields, nil)
+	return FromArrays(schema, arrs, opts...)
+}
+
 // FromArrays creates a new data frame from the provided schema and arrays.
 func FromArrays(schema *arrow.Schema, arrs []array.Interface, opts ...Option) (*Frame, error) {
 	df := &Frame{

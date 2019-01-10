@@ -288,3 +288,56 @@ func ExampleFrame_fromFrame() {
 	// rec[0]["f2-f64"]: [4 5 6 7 8]
 	// rec[0]["fx-f64"]: [4 5 6 7 8]
 }
+
+func ExampleFrame_fromMem() {
+	df, err := dframe.FromMem(dframe.Map{
+		"f1-i32": []int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+		"f2-f64": []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer df.Release()
+
+	fmt.Printf("cols: %v\n", df.ColumnNames())
+
+	sub, err := dframe.FromFrame(df, func(tx *dframe.Tx) error {
+		tx.Drop("f1-i32")
+		tx.Copy("fx-f64", "f2-f64")
+		tx.Slice(3, 8)
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer sub.Release()
+
+	fmt.Printf("sub:  %v\n", sub.ColumnNames())
+	fmt.Printf("cols: %v\n", df.ColumnNames())
+
+	for i, df := range []*dframe.Frame{df, sub} {
+		fmt.Printf("--- frame %d ---\n", i)
+		tr := array.NewTableReader(df, -1)
+		defer tr.Release()
+
+		n := 0
+		for tr.Next() {
+			rec := tr.Record()
+			for i, col := range rec.Columns() {
+				fmt.Printf("rec[%d][%q]: %v\n", n, rec.ColumnName(i), col)
+			}
+			n++
+		}
+	}
+
+	// Output:
+	// cols: [f1-i32 f2-f64]
+	// sub:  [f2-f64 fx-f64]
+	// cols: [f1-i32 f2-f64]
+	// --- frame 0 ---
+	// rec[0]["f1-i32"]: [1 2 3 4 5 6 7 8 9 10]
+	// rec[0]["f2-f64"]: [1 2 3 4 5 6 7 8 9 10]
+	// --- frame 1 ---
+	// rec[0]["f2-f64"]: [4 5 6 7 8]
+	// rec[0]["fx-f64"]: [4 5 6 7 8]
+}
