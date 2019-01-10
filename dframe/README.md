@@ -137,7 +137,7 @@ func Create(drv, dst string, schema *arrow.Schema, opts ...Option) (*Frame, erro
 func New(schema *arrow.Schema, opts ...Option) (*Frame, error) { ... }
 
 // FromTable creates a new data frame from the provided arrow table.
-func FromTable(tbl arrow.Table, opts ...Option) (*Frame, error) { ... }
+func FromTable(tbl array.Table, opts ...Option) (*Frame, error) { ... }
 ```
 
 ### Operations
