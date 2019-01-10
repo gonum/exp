@@ -169,6 +169,19 @@ func FromTable(tbl array.Table, opts ...Option) (*Frame, error) {
 	return df, nil
 }
 
+// FromFrame returns a new data frame created by applying the provided
+// transaction on the provided frame.
+func FromFrame(df *Frame, f func(tx *Tx) error) (*Frame, error) {
+	out := df.clone()
+	err := out.Exec(f)
+	if err != nil {
+		out.Release()
+		return nil, err
+	}
+
+	return out, nil
+}
+
 func (df *Frame) validate() error {
 	if len(df.cols) != len(df.schema.Fields()) {
 		return errors.New("dframe: table schema mismatch")

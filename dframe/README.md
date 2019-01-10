@@ -144,6 +144,10 @@ func FromCols(cols []array.Column, opts ...Option) (*Frame, error) { ... }
 
 // FromTable creates a new data frame from the provided arrow table.
 func FromTable(tbl array.Table, opts ...Option) (*Frame, error) { ... }
+
+// FromFrame returns a new data frame created by applying the provided
+// transaction on the provided frame.
+func FromFrame(df *Frame, f func(tx *Tx) error) (*Frame, error) { ... }
 ```
 
 ### Operations
@@ -155,3 +159,5 @@ One should be able to carry the following operations on a `dframe.Frame`:
 - drop columns from a `Frame`
 - append new data to a `Frame`, (either a new column or a new row)
 - select a subset of columns from a `Frame`
+- create different versions of a `Frame: _e.g._ create `sub` from `Frame` `df` where `sub` is a subset of `df`.
+
