@@ -13,7 +13,6 @@
 package dframe
 
 import (
-	"fmt"
 	"sync"
 	"sync/atomic"
 
@@ -36,7 +35,65 @@ type Frame struct {
 	rows int64
 }
 
-// FromCols creates a new data frame from the provided columns.
+// FromArrays creates a new data frame from the provided schema and arrays.
+func FromArrays(schema *arrow.Schema, arrs []array.Interface, opts ...Option) (*Frame, error) {
+	df := &Frame{
+		refs:   1,
+		mem:    memory.NewGoAllocator(),
+		schema: schema,
+		rows:   -1,
+	}
+
+	for _, opt := range opts {
+		err := opt(df)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if df.rows < 0 {
+		switch len(arrs) {
+		case 0:
+			df.rows = 0
+		default:
+			df.rows = int64(arrs[0].Len())
+		}
+	}
+
+	if df.schema == nil {
+		return nil, errors.Errorf("dframe: nil schema")
+	}
+
+	if len(df.schema.Fields()) != len(arrs) {
+		return nil, errors.Errorf("dframe: inconsistent schema/arrays")
+	}
+
+	for i, arr := range arrs {
+		ft := df.schema.Field(i)
+		if arr.DataType() != ft.Type {
+			return nil, errors.Errorf("dframe: column %q is inconsitent with schema", ft.Name)
+		}
+
+		if int64(arr.Len()) < df.rows {
+			return nil, errors.Errorf("dframe: column %q expected length >= %d but got length %d", ft.Name, df.rows, arr.Len())
+		}
+	}
+
+	df.cols = make([]array.Column, len(arrs))
+	for i := range arrs {
+		func(i int) {
+			chunk := array.NewChunked(arrs[i].DataType(), []array.Interface{arrs[i]})
+			defer chunk.Release()
+
+			col := array.NewColumn(df.schema.Field(i), chunk)
+			df.cols[i] = *col
+		}(i)
+	}
+
+	return df, nil
+}
+
+// FromCols creates a new data frame from the provided schema and columns.
 func FromCols(cols []array.Column, opts ...Option) (*Frame, error) {
 	df := &Frame{
 		refs: 1,
@@ -61,7 +118,7 @@ func FromCols(cols []array.Column, opts ...Option) (*Frame, error) {
 		}
 	}
 
-	if df.schema == nil {
+	{
 		fields := make([]arrow.Field, len(cols))
 		for i, col := range cols {
 			fields[i].Name = col.Name()
@@ -74,7 +131,10 @@ func FromCols(cols []array.Column, opts ...Option) (*Frame, error) {
 	// note we retain the columns after having validated the data frame
 	// in case the validation fails and panics (and would otherwise leak
 	// a ref-count on the columns.)
-	df.validate()
+	err := df.validate()
+	if err != nil {
+		return nil, err
+	}
 
 	for i := range df.cols {
 		df.cols[i].Retain()
@@ -109,19 +169,20 @@ func FromTable(tbl array.Table, opts ...Option) (*Frame, error) {
 	return df, nil
 }
 
-func (df *Frame) validate() {
+func (df *Frame) validate() error {
 	if len(df.cols) != len(df.schema.Fields()) {
-		panic(errors.New("dframe: table schema mismatch"))
+		return errors.New("dframe: table schema mismatch")
 	}
 	for i, col := range df.cols {
 		if !col.Field().Equal(df.schema.Field(i)) {
-			panic(fmt.Errorf("dframe: column field %q is inconsistent with schema", col.Name()))
+			return errors.Errorf("dframe: column field %q is inconsistent with schema", col.Name())
 		}
 
 		if int64(col.Len()) < df.rows {
-			panic(fmt.Errorf("dframe: column %q expected length >= %d but got length %d", col.Name(), df.rows, col.Len()))
+			return errors.Errorf("dframe: column %q expected length >= %d but got length %d", col.Name(), df.rows, col.Len())
 		}
 	}
+	return nil
 }
 
 // Option configures an aspect of a data frame.
@@ -296,8 +357,14 @@ func (tx *Tx) Copy(dst, src string) *Tx {
 	return tx
 }
 
+// Slice creates a new frame consisting of rows[beg:end].
 func (tx *Tx) Slice(beg, end int) *Tx {
 	if tx.err != nil {
+		return tx
+	}
+
+	if int64(end) > tx.df.rows || beg > end {
+		tx.err = errors.Errorf("dframe: index out of range")
 		return tx
 	}
 
@@ -311,6 +378,7 @@ func (tx *Tx) Slice(beg, end int) *Tx {
 	}
 
 	tx.df.cols = cols
+	tx.df.rows = int64(end - beg)
 	return tx
 }
 
