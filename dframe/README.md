@@ -51,16 +51,16 @@ type Frame struct {
 func (df *Frame) Err() error { ... }
 
 // NumRows returns the number of rows of this Frame.
-func (df *Frame) NumRows() int
+func (df *Frame) NumRows() int { ... }
 
 // NumCols returns the number of columns of this Frame.
-func (df *Frame) NumCols() int
+func (df *Frame) NumCols() int { ... }
 
 // Column returns the i-th column of this Frame.
-func (df *Frame) Column(i int) *array.Column
+func (df *Frame) Column(i int) *array.Column { ... }
 
 // ColumnNames returns the list of column names of this Frame.
-func (df *Frame) ColumnNames() []string
+func (df *Frame) ColumnNames() []string { ... }
 ```
 
 It is expected to build `dframe.Frame` on top of `arrow/array.Interface` and/or `arrow/tensor.Interface` to re-use the SIMD optimized operations and zero-copy optimization that are implemented within these packages.
