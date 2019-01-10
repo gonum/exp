@@ -425,3 +425,7 @@ func (tx *Tx) Drop(cols ...string) *Tx {
 	tx.df.schema = sc
 	return tx
 }
+
+var (
+	_ array.Table = (*Frame)(nil)
+)
