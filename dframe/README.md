@@ -137,7 +137,7 @@ func Create(drv, dst string, schema *arrow.Schema, opts ...Option) (*Frame, erro
 func New(schema *arrow.Schema, opts ...Option) (*Frame, error) { ... }
 
 // FromMem creates a new data frame from the provided in-memory data.
-func FromMem(cols Map, opts ...Option) (*Frame, error) { ... }
+func FromMem(dict Dict, opts ...Option) (*Frame, error) { ... }
 
 // FromArrays creates a new data frame from the provided schema and arrays.
 func FromArrays(schema *arrow.Schema, arrs []array.Interface, opts ...Option) (*Frame, error) { ... }

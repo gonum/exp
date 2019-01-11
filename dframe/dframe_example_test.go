@@ -290,7 +290,7 @@ func ExampleFrame_fromFrame() {
 }
 
 func ExampleFrame_fromMem() {
-	df, err := dframe.FromMem(dframe.Map{
+	df, err := dframe.FromMem(dframe.Dict{
 		"f1-i32": []int32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
 		"f2-f64": []float64{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
 	})

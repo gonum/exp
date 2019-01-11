@@ -35,18 +35,19 @@ type Frame struct {
 	rows int64
 }
 
-type Map map[string]interface{}
+// Dict is a map of string to array of data.
+type Dict map[string]interface{}
 
 // FromMem creates a new data frame from the provided in-memory data.
-func FromMem(cols Map, opts ...Option) (*Frame, error) {
+func FromMem(dict Dict, opts ...Option) (*Frame, error) {
 	var (
 		err    error
 		mem    = memory.NewGoAllocator()
-		arrs   = make([]array.Interface, 0, len(cols))
-		fields = make([]arrow.Field, 0, len(cols))
+		arrs   = make([]array.Interface, 0, len(dict))
+		fields = make([]arrow.Field, 0, len(dict))
 	)
 
-	for k, v := range cols {
+	for k, v := range dict {
 		func(k string, v interface{}) {
 			var (
 				arr array.Interface
