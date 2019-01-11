@@ -92,7 +92,7 @@ defer o.Release()
 It is not clear (to me!) yet whether an immutable `Frame` makes much sense in Go and with this ref-counting mechanism coming from Arrow.
 
 But, immutable or not, the ref-counting mechanism exposed by Arrow needs to be addressed.
-A possible solution is investigated by  introducing a `dframe.Tx` transaction:
+A possible solution is investigated by introducing a `dframe.Tx` transaction:
 
 ```go
 // Exec runs the provided function inside an atomic read/write transaction,
