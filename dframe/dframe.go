@@ -418,6 +418,8 @@ func (df *Frame) ColumnNames() []string {
 	return names
 }
 
+// Exec runs the provided function inside an atomic read-write transaction,
+// applied on this Frame.
 func (df *Frame) Exec(f func(tx *Tx) error) error {
 	df.mu.Lock()
 	defer df.mu.Unlock()
@@ -439,6 +441,27 @@ func (df *Frame) Exec(f func(tx *Tx) error) error {
 
 	df.swap(tx.df)
 	return nil
+}
+
+// RExec runs the provided function inside an atomic read-only transaction,
+// applied on this Frame.
+func (df *Frame) RExec(f func(tx *Tx) error) error {
+	df.mu.RLock()
+	defer df.mu.RUnlock()
+
+	if df.err != nil {
+		return df.err
+	}
+
+	tx := newRTx(df)
+	defer tx.Close()
+
+	err := f(tx)
+	if err != nil {
+		return err
+	}
+
+	return tx.Err()
 }
 
 func (lhs *Frame) swap(rhs *Frame) {
@@ -467,11 +490,17 @@ func (df *Frame) clone() *Frame {
 // Tx represents a read-only or read/write transaction on a data frame.
 type Tx struct {
 	df  *Frame
+	rw  bool // read-write access
 	err error
 }
 
 func newTx(df *Frame) *Tx {
-	tx := &Tx{df: df.clone()}
+	tx := &Tx{df: df.clone(), rw: true}
+	return tx
+}
+
+func newRTx(df *Frame) *Tx {
+	tx := &Tx{df: df.clone(), rw: false}
 	return tx
 }
 
@@ -494,6 +523,11 @@ func (tx *Tx) Err() error {
 // Copy fails if dst already exist.
 func (tx *Tx) Copy(dst, src string) *Tx {
 	if tx.err != nil {
+		return tx
+	}
+
+	if !tx.rw {
+		tx.err = errors.Errorf("dframe: r/w operation on read-only transaction")
 		return tx
 	}
 
@@ -529,6 +563,11 @@ func (tx *Tx) Slice(beg, end int) *Tx {
 		return tx
 	}
 
+	if !tx.rw {
+		tx.err = errors.Errorf("dframe: r/w operation on read-only transaction")
+		return tx
+	}
+
 	if int64(end) > tx.df.rows || beg > end {
 		tx.err = errors.Errorf("dframe: index out of range")
 		return tx
@@ -550,6 +589,11 @@ func (tx *Tx) Slice(beg, end int) *Tx {
 
 func (tx *Tx) Drop(cols ...string) *Tx {
 	if tx.err != nil || len(cols) == 0 {
+		return tx
+	}
+
+	if !tx.rw {
+		tx.err = errors.Errorf("dframe: r/w operation on read-only transaction")
 		return tx
 	}
 

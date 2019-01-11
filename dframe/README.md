@@ -94,7 +94,9 @@ It is not clear (to me!) yet whether an immutable `Frame` makes much sense in Go
 But, immutable or not, one could recoup the nice "chained methods" API by introducing a `dframe.Tx` transaction:
 
 ```go
-func (df *Frame) Exec(f func(tx *Tx) error) error
+// Exec runs the provided function inside an atomic read/write transaction,
+// applied on this Frame.
+func (df *Frame) Exec(f func(tx *Tx) error) error { ... }
 
 func example(df *dframe.Frame) {
 	err := df.Exec(func(tx *dframe.Tx) error {
@@ -151,6 +153,14 @@ func FromTable(tbl array.Table, opts ...Option) (*Frame, error) { ... }
 // FromFrame returns a new data frame created by applying the provided
 // transaction on the provided frame.
 func FromFrame(df *Frame, f func(tx *Tx) error) (*Frame, error) { ... }
+
+// Exec runs the provided function inside an atomic read/write transaction,
+// applied on this Frame.
+func (df *Frame) Exec(f func(tx *Tx) error) error { ... }
+
+// RExec runs the provided function inside an atomic read-only transaction,
+// applied on this Frame.
+func (df *Frame) RExec(f func(tx *Tx) error) error { ... }
 ```
 
 ### Operations
@@ -162,5 +172,5 @@ One should be able to carry the following operations on a `dframe.Frame`:
 - drop columns from a `Frame`
 - append new data to a `Frame`, (either a new column or a new row)
 - select a subset of columns from a `Frame`
-- create different versions of a `Frame: _e.g._ create `sub` from `Frame` `df` where `sub` is a subset of `df`.
+- create different versions of a `Frame`: _e.g._ create `sub` from `Frame` `df` where `sub` is a subset of `df`.
 
