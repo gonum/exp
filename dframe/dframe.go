@@ -137,6 +137,30 @@ func FromMem(dict Dict, opts ...Option) (*Frame, error) {
 				bld.AppendValues(v, nil)
 				arr = bld.NewArray()
 
+			case []uint:
+				bld := array.NewUint64Builder(mem)
+				defer bld.Release()
+
+				vs := make([]uint64, len(v))
+				for i, e := range v {
+					vs[i] = uint64(e)
+				}
+
+				bld.AppendValues(vs, nil)
+				arr = bld.NewArray()
+
+			case []int:
+				bld := array.NewInt64Builder(mem)
+				defer bld.Release()
+
+				vs := make([]int64, len(v))
+				for i, e := range v {
+					vs[i] = int64(e)
+				}
+
+				bld.AppendValues(vs, nil)
+				arr = bld.NewArray()
+
 			default:
 				if err == nil {
 					err = errors.Errorf("dframe: invalid data type for %q (%T)", k, v)
