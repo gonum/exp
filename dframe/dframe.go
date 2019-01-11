@@ -10,7 +10,7 @@
 // Ultimately, dframe should also allow for a good inter-operability with
 // Apache Arrow:
 // - https://godoc.org/github.com/apache/arrow/go/arrow
-package dframe
+package dframe // import "gonum.org/v1/exp/dframe"
 
 import (
 	"sync"
