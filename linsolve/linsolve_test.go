@@ -151,7 +151,7 @@ func newRandomDiagonal(n int, rnd *rand.Rand) testCase {
 		a[i] = 1 + 10*rnd.Float64()
 		diag[i] = a[i]
 	}
-	A := mat.NewDiagonal(n, a)
+	A := mat.NewDiagDense(n, a)
 	// Generate the right-hand side.
 	b := make([]float64, n)
 	for i := range b {
@@ -366,7 +366,7 @@ func newGreenbaum73(nx, ny int, rnd *rand.Rand) testCase {
 		negOne, negOne, // - ∂_x ∂_x u - ∂_y ∂_y u
 		func(x, _ float64) float64 { return 40 * x }, // 40 * x * ∂_x u
 		func(_, y float64) float64 { return 40 * y }, // 40 * y * ∂_y u
-		constant(-100),                               // -100 * u
+		constant(-100), // -100 * u
 		random(rnd))
 	tc.name = fmt.Sprintf("Greenbaum 7.3 nx=%v,ny=%v", nx, ny)
 	return tc
