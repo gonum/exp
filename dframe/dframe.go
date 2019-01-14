@@ -35,6 +35,8 @@ type Frame struct {
 	rows int64
 }
 
+var _ array.Table = (*Frame)(nil)
+
 // Dict is a map of string to array of data.
 type Dict map[string]interface{}
 
@@ -271,14 +273,12 @@ func FromCols(cols []array.Column, opts ...Option) (*Frame, error) {
 		}
 	}
 
-	{
-		fields := make([]arrow.Field, len(cols))
-		for i, col := range cols {
-			fields[i].Name = col.Name()
-			fields[i].Type = col.DataType()
-		}
-		df.schema = arrow.NewSchema(fields, nil)
+	fields := make([]arrow.Field, len(cols))
+	for i, col := range cols {
+		fields[i].Name = col.Name()
+		fields[i].Type = col.DataType()
 	}
+	df.schema = arrow.NewSchema(fields, nil)
 
 	// validate the data frame and its constituents.
 	// note we retain the columns after having validated the data frame
@@ -622,7 +622,3 @@ func (tx *Tx) Drop(cols ...string) *Tx {
 	tx.df.schema = sc
 	return tx
 }
-
-var (
-	_ array.Table = (*Frame)(nil)
-)

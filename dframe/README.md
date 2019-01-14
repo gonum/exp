@@ -70,7 +70,7 @@ Using Arrow should also allow seamless interoperability with other data wranglin
 Operations on a `QFrame`, such as copying columns, dropping columns, sorting them or applying some kind of operation on columns, return a new `QFrame`, leaving the original untouched.
 
 Arrow uses a ref-counting mechanism for all the types that involve memory allocation (mainly to address workloads involving memory allocated on a GPGPU, by a SQL database or a mmap-file.)
-This ref-counting mechanism is presented to the user as a pair of methods `Retain/Release` that resp. increment and decrement that reference count.
+This ref-counting mechanism is presented to the user as a pair of methods `Retain`/`Release` that increment and decrement that reference count.
 At first, it would seem this mechanism would prevent to expose an API with "chained methods", as the intermediate `Frame` would be "leaked":
 
 ```go

@@ -15,7 +15,6 @@ import (
 )
 
 func ExampleFrame_fromTable() {
-
 	pool := memory.NewGoAllocator()
 
 	schema := arrow.NewSchema(
@@ -90,7 +89,6 @@ func ExampleFrame_fromTable() {
 }
 
 func ExampleFrame_fromArrays() {
-
 	pool := memory.NewGoAllocator()
 
 	schema := arrow.NewSchema(
@@ -149,7 +147,6 @@ func ExampleFrame_fromArrays() {
 }
 
 func ExampleFrame_fromCols() {
-
 	pool := memory.NewGoAllocator()
 
 	schema := arrow.NewSchema(
@@ -220,7 +217,6 @@ func ExampleFrame_fromCols() {
 }
 
 func ExampleFrame_fromFrame() {
-
 	pool := memory.NewGoAllocator()
 
 	schema := arrow.NewSchema(

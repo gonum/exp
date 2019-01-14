@@ -49,18 +49,19 @@ func newConfig(n int) *config {
 func FromMatrix(m mat.Matrix, opts ...Option) *dframe.Frame {
 	var (
 		mem = memory.NewGoAllocator()
-		bld = array.NewFloat64Builder(mem)
 
 		r, c   = m.Dims()
 		arrs   = make([]array.Interface, c)
 		fields = make([]arrow.Field, c)
 	)
-	defer bld.Release()
 
 	cfg := newConfig(c)
 	for _, opt := range opts {
 		opt(cfg)
 	}
+
+	bld := array.NewFloat64Builder(mem)
+	defer bld.Release()
 
 	switch m := m.(type) {
 	case mat.RawColViewer:
@@ -99,18 +100,19 @@ func FromMatrix(m mat.Matrix, opts ...Option) *dframe.Frame {
 func FromVector(vec mat.Vector, opts ...Option) *dframe.Frame {
 	var (
 		mem = memory.NewGoAllocator()
-		bld = array.NewFloat64Builder(mem)
 
 		rows   = vec.Len()
 		arrs   = make([]array.Interface, 1)
 		fields = make([]arrow.Field, 1)
 	)
-	defer bld.Release()
 
 	cfg := newConfig(1)
 	for _, opt := range opts {
 		opt(cfg)
 	}
+
+	bld := array.NewFloat64Builder(mem)
+	defer bld.Release()
 
 	switch vec := vec.(type) {
 	case mat.RawColViewer:
