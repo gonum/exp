@@ -63,21 +63,25 @@ func (df *Frame) Column(i int) *array.Column { ... }
 func (df *Frame) ColumnNames() []string { ... }
 ```
 
-It is expected to build `dframe.Frame` on top of `arrow/array.Interface` and/or `arrow/tensor.Interface` to re-use the SIMD optimized operations and zero-copy optimization that are implemented within these packages.
-Using Arrow should also allow seamless interoperability with other data wrangling systems, possibly written in other languages than Go.
+It is expected to build `dframe.Frame` on top of the `arrow/array.Interface`.
+Leveraging [Arrow](https://arrow.apache.org) for `dframe` enables interoperability with many analysis frameworks, possibly written in other languages than Go.
+Arrow arrays are well specified: their memory layout is standardized and the IPC mechanism to send or receive them over the wire is also specified.
+This increases the confidence the data we are writing or the analysis pipelines we build with Arrow could be migrated to something else (another language, another framework) if the need should arise.
+The Go Arrow package is not feature complete yet with regard to the other language implementations (C++, Java.)
+However, the Go implementation already ships with SIMD optimized operations and has the infrastructure for zero-copy support.
 
 `tobgu/qframe` presents a `QFrame` type that is essentially immutable.
 Operations on a `QFrame`, such as copying columns, dropping columns, sorting them or applying some kind of operation on columns, return a new `QFrame`, leaving the original untouched.
 
 Arrow uses a ref-counting mechanism for all the types that involve memory allocation (mainly to address workloads involving memory allocated on a GPGPU, by a SQL database or a mmap-file.)
 This ref-counting mechanism is presented to the user as a pair of methods `Retain`/`Release` that increment and decrement that reference count.
-At first, it would seem this mechanism would prevent to expose an API with "chained methods", as the intermediate `Frame` would be "leaked":
+It would seem this mechanism prevents from exposing an API with "chained methods":
 
 ```go
 o := df.Slice(0, 10).Select("col1", "col2").Apply("col1 + col2")
 ```
-
-If we want an immutable `Frame`, the code above should be rewritten as:
+Each intermediate `Frame` -- the one returned by `Slice`, the one returned by `Select`, ... -- would be "leaked" as it is missing a call to `Release()` to correctly decrement its reference count.
+If we want an immutable `Frame` -- without leaking memory, the code above should instead be rewritten as:
 
 ```go
 sli := df.Slice(0, 10)
@@ -91,8 +95,8 @@ defer o.Release()
 ```
 It is not clear (to me!) yet whether an immutable `Frame` makes much sense in Go and with this ref-counting mechanism coming from Arrow.
 
-But, immutable or not, the ref-counting mechanism exposed by Arrow needs to be addressed.
-A possible solution is investigated by introducing a `dframe.Tx` transaction:
+However, introducing a `dframe.Tx` transaction could tackle the memory leak.
+One can achieve the above goal if one only allows modifications of the underlying `Frame` through a transaction, where all operations are applied to a single temporary `Frame`:
 
 ```go
 // Exec runs the provided function inside an atomic read/write transaction,
@@ -125,6 +129,9 @@ func example(df *dframe.Frame) {
 	}
 }
 ```
+Introducing a transaction has another nice feature: if the set of operations fails for some reason, one can rollback to the original state of the `Frame`.
+
+Finally, with a transaction context, one can build some kind of AST of operations that should be applied to a `Frame` and optionally optimize it behind the scene as one knows the complete set of operations to be carried.
 
 ```go
 // Open opens an already existing Frame using the provided driver technology,
