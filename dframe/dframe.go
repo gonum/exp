@@ -409,13 +409,9 @@ func (df *Frame) Column(i int) *array.Column {
 	return &df.cols[i]
 }
 
-// ColumnNames returns the list of column names of this Frame.
-func (df *Frame) ColumnNames() []string {
-	names := make([]string, df.NumCols())
-	for i := range names {
-		names[i] = df.Column(i).Name()
-	}
-	return names
+// Name returns the name of the i-th column of this Frame.
+func (df *Frame) Name(i int) string {
+	return df.Column(i).Name()
 }
 
 // Exec runs the provided function inside an atomic read-write transaction,

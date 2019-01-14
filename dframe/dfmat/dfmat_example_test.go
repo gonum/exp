@@ -9,9 +9,18 @@ import (
 
 	"github.com/apache/arrow/go/arrow/array"
 
+	"gonum.org/v1/exp/dframe"
 	"gonum.org/v1/exp/dframe/dfmat"
 	"gonum.org/v1/gonum/mat"
 )
+
+func columnNames(df *dframe.Frame) []string {
+	names := make([]string, df.NumCols())
+	for i := range names {
+		names[i] = df.Name(i)
+	}
+	return names
+}
 
 func Example_fromMatrix() {
 	m := mat.NewDense(3, 2, []float64{
@@ -24,7 +33,7 @@ func Example_fromMatrix() {
 		df := dfmat.FromMatrix(m, dfmat.WithNames("x", "y"))
 		defer df.Release()
 
-		fmt.Printf("cols: %v\n", df.ColumnNames())
+		fmt.Printf("cols: %v\n", columnNames(df))
 
 		tr := array.NewTableReader(df, -1)
 		defer tr.Release()
@@ -43,7 +52,7 @@ func Example_fromMatrix() {
 		df := dfmat.FromMatrix(m.T(), dfmat.WithNames("x", "y", "z"))
 		defer df.Release()
 
-		fmt.Printf("cols: %v\n", df.ColumnNames())
+		fmt.Printf("cols: %v\n", columnNames(df))
 
 		tr := array.NewTableReader(df, -1)
 		defer tr.Release()
@@ -78,7 +87,7 @@ func Example_fromVector() {
 	df := dfmat.FromVector(m, dfmat.WithNames("x"))
 	defer df.Release()
 
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	tr := array.NewTableReader(df, -1)
 	defer tr.Release()

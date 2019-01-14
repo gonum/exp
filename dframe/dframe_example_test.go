@@ -14,6 +14,14 @@ import (
 	"gonum.org/v1/exp/dframe"
 )
 
+func columnNames(df *dframe.Frame) []string {
+	names := make([]string, df.NumCols())
+	for i := range names {
+		names[i] = df.Name(i)
+	}
+	return names
+}
+
 func ExampleFrame_fromTable() {
 	pool := memory.NewGoAllocator()
 
@@ -50,7 +58,7 @@ func ExampleFrame_fromTable() {
 	}
 	defer df.Release()
 
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	err = df.Exec(func(tx *dframe.Tx) error {
 		tx.Drop("f1-i32")
@@ -61,7 +69,7 @@ func ExampleFrame_fromTable() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	tr := array.NewTableReader(df, 5)
 	defer tr.Release()
@@ -114,7 +122,7 @@ func ExampleFrame_fromArrays() {
 	}
 	defer df.Release()
 
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	err = df.Exec(func(tx *dframe.Tx) error {
 		tx.Drop("f1-i32")
@@ -125,7 +133,7 @@ func ExampleFrame_fromArrays() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	tr := array.NewTableReader(df, -1)
 	defer tr.Release()
@@ -183,7 +191,7 @@ func ExampleFrame_fromCols() {
 	}
 	defer df.Release()
 
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	err = df.Exec(func(tx *dframe.Tx) error {
 		tx.Drop("f1-i32")
@@ -195,7 +203,7 @@ func ExampleFrame_fromCols() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	tr := array.NewTableReader(df, 5)
 	defer tr.Release()
@@ -242,7 +250,7 @@ func ExampleFrame_fromFrame() {
 	}
 	defer df.Release()
 
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	sub, err := dframe.FromFrame(df, func(tx *dframe.Tx) error {
 		tx.Drop("f1-i32")
@@ -255,8 +263,8 @@ func ExampleFrame_fromFrame() {
 	}
 	defer sub.Release()
 
-	fmt.Printf("sub:  %v\n", sub.ColumnNames())
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("sub:  %v\n", columnNames(sub))
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	for i, df := range []*dframe.Frame{df, sub} {
 		fmt.Printf("--- frame %d ---\n", i)
@@ -295,7 +303,7 @@ func ExampleFrame_fromMem() {
 	}
 	defer df.Release()
 
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	sub, err := dframe.FromFrame(df, func(tx *dframe.Tx) error {
 		tx.Drop("f1-i32")
@@ -308,8 +316,8 @@ func ExampleFrame_fromMem() {
 	}
 	defer sub.Release()
 
-	fmt.Printf("sub:  %v\n", sub.ColumnNames())
-	fmt.Printf("cols: %v\n", df.ColumnNames())
+	fmt.Printf("sub:  %v\n", columnNames(sub))
+	fmt.Printf("cols: %v\n", columnNames(df))
 
 	for i, df := range []*dframe.Frame{df, sub} {
 		fmt.Printf("--- frame %d ---\n", i)
