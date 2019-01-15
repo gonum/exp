@@ -13,6 +13,7 @@
 package dframe // import "gonum.org/v1/exp/dframe"
 
 import (
+	"sort"
 	"sync"
 	"sync/atomic"
 
@@ -49,7 +50,13 @@ func FromMem(dict Dict, opts ...Option) (*Frame, error) {
 		fields = make([]arrow.Field, 0, len(dict))
 	)
 
-	for k, v := range dict {
+	keys := make([]string, 0, len(dict))
+	for k := range dict {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := dict[k]
 		func(k string, v interface{}) {
 			var (
 				arr array.Interface
