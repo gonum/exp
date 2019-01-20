@@ -37,21 +37,14 @@ type Settings struct {
 	Dst []float64
 
 	// Tolerance specifies error tolerance for the final (approximate)
-	// solution produced by the iterative method. If Tolerance is zero, a
-	// default value of 1e-8 will be used, otherwise it must be positive and
-	// less than 1.
-	//
-	// If NormA is not zero, the stopping criterion used will be
-	//  |r_i| < Tolerance * (|A|*|x_i| + |b|),
+	// solution produced by the iterative method. The iteration will be
+	// stopped when
+	//  |r_i| < Tolerance * |b|
 	// where r_i is the residual at i-th iteration.
-	// If NormA is zero (not available), the stopping criterion will be
-	//  |r_i| < Tolerance * |b|.
+	//
+	// If Tolerance is zero, a default value of 1e-8 will be used, otherwise
+	// it must be positive and less than 1.
 	Tolerance float64
-
-	// NormA is an estimate of a norm of the matrix A. For example,
-	// an approximation of the absolute value of the largest entry of A can be
-	// used. Zero value means that the norm is not known.
-	NormA float64
 
 	// MaxIterations is the limit on the number of iterations. If it is
 	// zero, a default value of twice the dimension of the system will be
@@ -248,12 +241,7 @@ func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats 
 			computeResidual(ctx.Residual, a, b, ctx.X, stats)
 		case CheckResidual:
 			rNorm := floats.Norm(ctx.Residual, 2)
-			if settings.NormA != 0 {
-				xNorm := floats.Norm(ctx.X, 2)
-				ctx.Converged = rNorm < settings.Tolerance*(settings.NormA*xNorm+bNorm)
-			} else {
-				ctx.Converged = rNorm < settings.Tolerance*bNorm
-			}
+			ctx.Converged = rNorm < settings.Tolerance*bNorm
 		case MajorIteration:
 			stats.Iterations++
 			if ctx.Converged {
