@@ -54,7 +54,7 @@ func (b *BiCG) Init(dim int) {
 //  MulVec|Trans
 //  PreconSolve
 //  PreconSolve|Trans
-//  CheckResidual
+//  CheckResidualNorm
 //  MajorIteration
 //  NoOperation
 func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
@@ -106,8 +106,9 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 		floats.AddScaled(b.rt, -alpha, b.zt)
 		floats.AddScaled(ctx.X, alpha, b.p)
 		floats.AddScaled(ctx.Residual, -alpha, b.z)
+		ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 		b.resume = 6
-		return CheckResidual, nil
+		return CheckResidualNorm, nil
 	case 6:
 		b.rhoPrev = b.rho
 		b.first = false

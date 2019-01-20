@@ -58,7 +58,7 @@ func (b *BiCGStab) Init(dim int) {
 // BiCGStab will command the following operations:
 //  MulVec
 //  PreconSolve
-//  CheckResidual
+//  CheckResidualNorm
 //  MajorIteration
 //  NoOperation
 func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
@@ -102,8 +102,9 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		// Form the residual and X so that we can check for tolerance early.
 		floats.AddScaled(ctx.X, b.alpha, b.phat)
 		floats.AddScaled(ctx.Residual, -b.alpha, b.v)
+		ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 		b.resume = 4
-		return CheckResidual, nil
+		return CheckResidualNorm, nil
 	case 4:
 		if ctx.Converged {
 			b.resume = 0
@@ -124,8 +125,9 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		b.omega = floats.Dot(b.t, ctx.Residual) / floats.Dot(b.t, b.t)
 		floats.AddScaled(ctx.X, b.omega, b.shat)
 		floats.AddScaled(ctx.Residual, -b.omega, b.t)
+		ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 		b.resume = 7
-		return CheckResidual, nil
+		return CheckResidualNorm, nil
 	case 7:
 		if !ctx.Converged && math.Abs(b.omega) < breakdownTol {
 			b.resume = 0
