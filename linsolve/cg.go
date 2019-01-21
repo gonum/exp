@@ -30,7 +30,6 @@ type CG struct {
 
 	rho, rhoPrev float64
 
-	first  bool
 	resume int
 }
 
@@ -49,7 +48,9 @@ func (cg *CG) Init(x, residual []float64) {
 	cg.r = reuse(cg.r, dim)
 	copy(cg.r, residual)
 	cg.p = reuse(cg.p, dim)
-	cg.first = true
+
+	cg.rhoPrev = 1
+
 	cg.resume = 1
 }
 
@@ -69,13 +70,9 @@ func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 		return PreconSolve, nil
 	case 2:
 		z := ctx.Dst
-		cg.rho = floats.Dot(cg.r, z) // ρ_{i-1} = r_{i-1} · z_{i-1}
-		if cg.first {
-			copy(cg.p, z) // p_1 = z_0
-		} else {
-			beta := cg.rho / cg.rhoPrev             // β_{i-1} = ρ_{i-1} / ρ_{i-2}
-			floats.AddScaledTo(cg.p, z, beta, cg.p) // p_i = z_{i-1} + β p_{i-1}
-		}
+		cg.rho = floats.Dot(cg.r, z)            // ρ_{i-1} = r_{i-1} · z_{i-1}
+		beta := cg.rho / cg.rhoPrev             // β_{i-1} = ρ_{i-1} / ρ_{i-2}
+		floats.AddScaledTo(cg.p, z, beta, cg.p) // p_i = z_{i-1} + β p_{i-1}
 		copy(ctx.Src, cg.p)
 		cg.resume = 3
 		// Compute A * p_i.
@@ -95,7 +92,6 @@ func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 			return MajorIteration, nil
 		}
 		cg.rhoPrev = cg.rho
-		cg.first = false
 		cg.resume = 1
 		return MajorIteration, nil
 
