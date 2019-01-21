@@ -235,7 +235,6 @@ func newTestSettings(rnd *rand.Rand, tc testCase) *Settings {
 	work := NewContext(n)
 	for i := range work.X {
 		work.X[i] = math.NaN()
-		work.Residual[i] = math.NaN()
 		work.Src[i] = math.NaN()
 		work.Dst[i] = math.NaN()
 	}
@@ -300,7 +299,7 @@ func testMethodWithSettings(t *testing.T, m Method, s *Settings, tc testCase) {
 	}
 
 	if s.Work != nil {
-		if floats.HasNaN(s.Work.X) || floats.HasNaN(s.Work.Residual) || floats.HasNaN(s.Work.Src) || floats.HasNaN(s.Work.Dst) {
+		if floats.HasNaN(s.Work.X) || floats.HasNaN(s.Work.Src) || floats.HasNaN(s.Work.Dst) {
 			t.Errorf("%v: Settings.Work was not used", tc.name)
 		}
 	}

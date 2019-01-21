@@ -21,12 +21,13 @@ import (
 //    for Iterative Methods (2nd ed.) (pp. 24-25). Philadelphia, PA: SIAM.
 //    Retrieved from http://www.netlib.org/templates/templates.pdf
 type BiCGStab struct {
-	p    []float64
-	phat []float64
-	rt   []float64
-	shat []float64
-	t    []float64
-	v    []float64
+	x     []float64
+	r, rt []float64
+	p     []float64
+	phat  []float64
+	shat  []float64
+	t     []float64
+	v     []float64
 
 	rho, rhoPrev float64
 	alpha        float64
@@ -37,14 +38,22 @@ type BiCGStab struct {
 }
 
 // Init initializes the data for a linear solve. See the Method interface for more details.
-func (b *BiCGStab) Init(dim int) {
-	if dim <= 0 {
+func (b *BiCGStab) Init(x, residual []float64) {
+	dim := len(x)
+	if dim == 0 {
 		panic("bicgstab: dimension not positive")
 	}
+	if len(residual) != dim {
+		panic("bicgstab: slice length mismatch")
+	}
 
+	b.x = reuse(b.x, dim)
+	copy(b.x, x)
+	b.r = reuse(b.r, dim)
+	copy(b.r, residual)
+	b.rt = reuse(b.rt, dim)
 	b.p = reuse(b.p, dim)
 	b.phat = reuse(b.phat, dim)
-	b.rt = reuse(b.rt, dim)
 	b.shat = reuse(b.shat, dim)
 	b.t = reuse(b.t, dim)
 	b.v = reuse(b.v, dim)
@@ -65,21 +74,21 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 	switch b.resume {
 	case 1:
 		if b.first {
-			copy(b.rt, ctx.Residual)
+			copy(b.rt, b.r)
 		}
-		b.rho = floats.Dot(b.rt, ctx.Residual)
+		b.rho = floats.Dot(b.rt, b.r)
 		if math.Abs(b.rho) < breakdownTol {
 			b.resume = 0
 			return NoOperation, &BreakdownError{math.Abs(b.rho), breakdownTol}
 		}
 		if b.first {
 			b.first = false
-			copy(b.p, ctx.Residual)
+			copy(b.p, b.r)
 		} else {
 			beta := (b.rho / b.rhoPrev) * (b.alpha / b.omega)
 			floats.AddScaled(b.p, -b.omega, b.v)
 			floats.Scale(beta, b.p)
-			floats.Add(b.p, ctx.Residual)
+			floats.Add(b.p, b.r)
 		}
 		// Solve M^{-1} * p_i.
 		copy(ctx.Src, b.p)
@@ -101,8 +110,8 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		b.alpha = b.rho / rtv
 		// Form the residual and X so that we can check for tolerance early.
 		floats.AddScaled(ctx.X, b.alpha, b.phat)
-		floats.AddScaled(ctx.Residual, -b.alpha, b.v)
-		ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
+		floats.AddScaled(b.r, -b.alpha, b.v)
+		ctx.ResidualNorm = floats.Norm(b.r, 2)
 		b.resume = 4
 		return CheckResidualNorm, nil
 	case 4:
@@ -111,7 +120,7 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 			return MajorIteration, nil
 		}
 		// Solve M^{-1} * r_i.
-		copy(ctx.Src, ctx.Residual)
+		copy(ctx.Src, b.r)
 		b.resume = 5
 		return PreconSolve, nil
 	case 5:
@@ -122,10 +131,10 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		return MulVec, nil
 	case 6:
 		copy(b.t, ctx.Dst)
-		b.omega = floats.Dot(b.t, ctx.Residual) / floats.Dot(b.t, b.t)
+		b.omega = floats.Dot(b.t, b.r) / floats.Dot(b.t, b.t)
 		floats.AddScaled(ctx.X, b.omega, b.shat)
-		floats.AddScaled(ctx.Residual, -b.omega, b.t)
-		ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
+		floats.AddScaled(b.r, -b.omega, b.t)
+		ctx.ResidualNorm = floats.Norm(b.r, 2)
 		b.resume = 7
 		return CheckResidualNorm, nil
 	case 7:

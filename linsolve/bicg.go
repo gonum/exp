@@ -21,8 +21,9 @@ import (
 //    for Iterative Methods (2nd ed.) (pp. 19-20). Philadelphia, PA: SIAM.
 //    Retrieved from http://www.netlib.org/templates/templates.pdf
 type BiCG struct {
+	x     []float64
+	r, rt []float64
 	p, pt []float64
-	rt    []float64
 	z, zt []float64
 
 	rho, rhoPrev float64
@@ -32,14 +33,22 @@ type BiCG struct {
 }
 
 // Init initializes the data for a linear solve. See the Method interface for more details.
-func (b *BiCG) Init(dim int) {
-	if dim <= 0 {
+func (b *BiCG) Init(x, residual []float64) {
+	dim := len(x)
+	if dim == 0 {
 		panic("bicg: dimension not positive")
 	}
+	if len(residual) != dim {
+		panic("bicg: slice length mismatch")
+	}
 
+	b.x = reuse(b.x, dim)
+	copy(b.x, x)
+	b.r = reuse(b.r, dim)
+	copy(b.r, residual)
+	b.rt = reuse(b.rt, dim)
 	b.p = reuse(b.p, dim)
 	b.pt = reuse(b.pt, dim)
-	b.rt = reuse(b.rt, dim)
 	b.z = reuse(b.z, dim)
 	b.zt = reuse(b.zt, dim)
 
@@ -61,10 +70,10 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 	switch b.resume {
 	case 1:
 		if b.first {
-			copy(b.rt, ctx.Residual)
+			copy(b.rt, b.r)
 		}
 		// Solve M^{-1} * r_{i-1}.
-		copy(ctx.Src, ctx.Residual)
+		copy(ctx.Src, b.r)
 		b.resume = 2
 		return PreconSolve, nil
 	case 2:
@@ -105,8 +114,8 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 		alpha := b.rho / floats.Dot(b.pt, b.z)
 		floats.AddScaled(b.rt, -alpha, b.zt)
 		floats.AddScaled(ctx.X, alpha, b.p)
-		floats.AddScaled(ctx.Residual, -alpha, b.z)
-		ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
+		floats.AddScaled(b.r, -alpha, b.z)
+		ctx.ResidualNorm = floats.Norm(b.r, 2)
 		b.resume = 6
 		return CheckResidualNorm, nil
 	case 6:

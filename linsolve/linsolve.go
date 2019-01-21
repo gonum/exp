@@ -29,9 +29,12 @@ func (e *BreakdownError) Error() string {
 // enables automation of common operations like checking for convergence and
 // maintaining statistics.
 type Method interface {
-	// Init initializes the method for solving a dim×dim
-	// linear system.
-	Init(dim int)
+	// Init initializes the method for solving an n×n
+	// linear system with an initial estimate x and
+	// the corresponding residual vector.
+	//
+	// Method will not retain x or residual.
+	Init(x, residual []float64)
 
 	// Iterate performs a step in converging to the
 	// solution of a linear system.
@@ -47,19 +50,9 @@ type Method interface {
 // the caller. The caller must not modify Context apart from
 // the commanded Operations.
 type Context struct {
-	// X is the current approximate solution. On the
-	// first call to Method.Iterate, X must contain the
-	// initial estimate. Method will update X with the
-	// current estimate when it commands ComputeResidual
-	// and EndIteration.
+	// X will be set by Method to the current approximate
+	// solution when it commands ComputeResidual and MajorIteration.
 	X []float64
-
-	// Residual is the current residual b-A*x. On the
-	// first call to Method.Iterate Residual must
-	// contain the initial residual. Method will update
-	// it to the current value when it commands
-	// MajorIteration.
-	Residual []float64
 
 	// ResidualNorm is (an estimate of) a norm of
 	// the residual. Method will set it to the current
@@ -84,10 +77,9 @@ func NewContext(n int) *Context {
 		panic("linsolve: context size is not positive")
 	}
 	return &Context{
-		X:        make([]float64, n),
-		Residual: make([]float64, n),
-		Src:      make([]float64, n),
-		Dst:      make([]float64, n),
+		X:   make([]float64, n),
+		Src: make([]float64, n),
+		Dst: make([]float64, n),
 	}
 }
 
@@ -98,7 +90,6 @@ func (ctx *Context) Reset(n int) {
 		panic("linsolve: context size is not positive")
 	}
 	ctx.X = reuse(ctx.X, n)
-	ctx.Residual = reuse(ctx.Residual, n)
 	ctx.Src = reuse(ctx.Src, n)
 	ctx.Dst = reuse(ctx.Dst, n)
 }
@@ -127,8 +118,8 @@ const (
 	// with MulVec and PreconSolve.
 	Trans
 
-	// Compute b-A*x where x is stored in Context.X. The
-	// result must be placed into Context.Residual.
+	// Compute b-A*x where x is stored in Context.X,
+	// and store the result in Context.Dst.
 	ComputeResidual
 
 	// Check convergence using (an estimate of) a
@@ -141,10 +132,10 @@ const (
 
 	// MajorIteration indicates that Method has finished
 	// what it considers to be one iteration. Method
-	// will make sure that Context.X and
-	// Context.Residual are updated. If Context.Converged is true,
-	// the caller must terminate the iterative process,
-	// otherwise it should call Method.Iterate again.
+	// will make sure that Context.X is updated.
+	// If Context.Converged is true, the caller must
+	// terminate the iterative process, otherwise it
+	// should call Method.Iterate again.
 	MajorIteration
 )
 
