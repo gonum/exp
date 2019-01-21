@@ -51,6 +51,7 @@ type GMRES struct {
 	// upper-triangular form.
 	givs []givens
 
+	x  []float64
 	av []float64
 	s  []float64
 	y  []float64
@@ -65,9 +66,13 @@ type givens struct {
 }
 
 // Init initializes the data for a linear solve. See the Method interface for more details.
-func (g *GMRES) Init(dim int) {
-	if dim <= 0 {
+func (g *GMRES) Init(x, residual []float64) {
+	dim := len(x)
+	if dim == 0 {
 		panic("gmres: dimension not positive")
+	}
+	if len(residual) != dim {
+		panic("gmres: slice length mismatch")
 	}
 
 	g.m = g.Restart
@@ -77,6 +82,9 @@ func (g *GMRES) Init(dim int) {
 	if g.m <= 0 || dim < g.m {
 		panic("gmres: invalid value of Restart")
 	}
+
+	g.x = reuse(g.x, dim)
+	copy(g.x, x)
 
 	ldv := dim
 	g.vt = reuse(g.vt, (g.m+1)*ldv)
@@ -95,6 +103,9 @@ func (g *GMRES) Init(dim int) {
 
 	g.s = reuse(g.s, g.m+1)
 	g.y = reuse(g.y, dim)
+	// Use g.y for storing the initial residual to avoid having and
+	// allocating an extra slice.
+	copy(g.y, residual)
 	g.av = reuse(g.av, dim)
 
 	g.resume = 1
@@ -106,13 +117,13 @@ func (g *GMRES) Init(dim int) {
 //  MulVec
 //  PreconSolve
 //  CheckResidualNorm
-//  ComputeResidual
 //  MajorIteration
 //  NoOperation
 func (g *GMRES) Iterate(ctx *Context) (Operation, error) {
 	switch g.resume {
 	case 1:
-		copy(ctx.Src, ctx.Residual)
+		// g.y contains the initial residual.
+		copy(ctx.Src, g.y)
 		g.resume = 2
 		// Solve M^{-1} * r_0.
 		return PreconSolve, nil
@@ -163,15 +174,18 @@ func (g *GMRES) Iterate(ctx *Context) (Operation, error) {
 			g.resume = 3
 			return NoOperation, nil
 		}
-		g.updateSolution(g.k, ctx.X)
+		// Either restart or convergence, we have to update the solution.
+		g.updateSolution(g.k, g.x)
+		copy(ctx.X, g.x)
 		if ctx.Converged {
 			g.resume = 0
 			return MajorIteration, nil
 		}
-		// We are restarting, so we have to compute the residual.
+		// We are restarting, so we have to also compute the residual.
 		g.resume = 7
 		return ComputeResidual, nil
 	case 7:
+		copy(g.y, ctx.Dst)
 		g.resume = 1
 		return MajorIteration, nil
 

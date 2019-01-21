@@ -105,9 +105,6 @@ func checkContext(ctx *Context, dim int) bool {
 	if len(ctx.X) != dim {
 		return false
 	}
-	if len(ctx.Residual) != dim {
-		return false
-	}
 	if len(ctx.Src) != dim {
 		return false
 	}
@@ -177,14 +174,16 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	ctx := s.Work
 	if s.InitX != nil {
 		copy(ctx.X, s.InitX)
-		computeResidual(ctx.Residual, a, b, ctx.X, &stats)
+		// Use ctx.Dst as a temporary storage for the residual.
+		computeResidual(ctx.Dst, a, b, ctx.X, &stats)
 	} else {
 		// Initial x is the zero vector.
 		for i := range ctx.X {
 			ctx.X[i] = 0
 		}
 		// Residual b-A*x is then equal to b.
-		copy(ctx.Residual, b)
+		// Use ctx.Dst as a temporary storage for the residual.
+		copy(ctx.Dst, b)
 	}
 
 	if m == nil {
@@ -192,7 +191,7 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	}
 
 	var err error
-	ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
+	ctx.ResidualNorm = floats.Norm(ctx.Dst, 2)
 	if ctx.ResidualNorm >= s.Tolerance {
 		err = iterate(a, b, s, m, &stats)
 	} else {
@@ -215,9 +214,7 @@ func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats 
 	ctx := settings.Work
 	copy(settings.Dst, ctx.X)
 
-	n := len(b)
-	method.Init(n)
-
+	method.Init(ctx.X, ctx.Dst)
 	for {
 		op, err := method.Iterate(ctx)
 		if err != nil {
@@ -238,17 +235,15 @@ func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats 
 		case CheckResidualNorm:
 			ctx.Converged = ctx.ResidualNorm < settings.Tolerance*bNorm
 		case ComputeResidual:
-			computeResidual(ctx.Residual, a, b, ctx.X, stats)
+			computeResidual(ctx.Dst, a, b, ctx.X, stats)
 		case MajorIteration:
 			stats.Iterations++
 			if ctx.Converged {
 				copy(settings.Dst, ctx.X)
-				ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 				return nil
 			}
 			if stats.Iterations == settings.MaxIterations {
 				copy(settings.Dst, ctx.X)
-				ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
 				return ErrIterationLimit
 			}
 		default:

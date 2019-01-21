@@ -24,6 +24,8 @@ import (
 //  - Málek, J. and Strakoš, Z. (2015). Preconditioning and the Conjugate Gradient
 //    Method in the Context of Solving PDEs. Philadelphia, PA: SIAM.
 type CG struct {
+	x []float64
+	r []float64
 	p []float64
 
 	rho, rhoPrev float64
@@ -33,11 +35,19 @@ type CG struct {
 }
 
 // Init initializes the data for a linear solve. See the Method interface for more details.
-func (cg *CG) Init(dim int) {
-	if dim <= 0 {
+func (cg *CG) Init(x, residual []float64) {
+	dim := len(x)
+	if dim == 0 {
 		panic("cg: dimension not positive")
 	}
+	if len(residual) != dim {
+		panic("cg: slice length mismatch")
+	}
 
+	cg.x = reuse(cg.x, dim)
+	copy(cg.x, x)
+	cg.r = reuse(cg.r, dim)
+	copy(cg.r, residual)
 	cg.p = reuse(cg.p, dim)
 	cg.first = true
 	cg.resume = 1
@@ -53,13 +63,13 @@ func (cg *CG) Init(dim int) {
 func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 	switch cg.resume {
 	case 1:
-		copy(ctx.Src, ctx.Residual)
+		copy(ctx.Src, cg.r)
 		cg.resume = 2
 		// Compute z_{i-1} = M^{-1} * r_{i-1}.
 		return PreconSolve, nil
 	case 2:
 		z := ctx.Dst
-		cg.rho = floats.Dot(ctx.Residual, z) // ρ_{i-1} = r_{i-1} · z_{i-1}
+		cg.rho = floats.Dot(cg.r, z) // ρ_{i-1} = r_{i-1} · z_{i-1}
 		if cg.first {
 			copy(cg.p, z) // p_1 = z_0
 		} else {
@@ -72,13 +82,18 @@ func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 		return MulVec, nil
 	case 3:
 		ap := ctx.Dst
-		alpha := cg.rho / floats.Dot(cg.p, ap)     // α_i = ρ_{i-1} / (p_i · A p_i)
-		floats.AddScaled(ctx.X, alpha, cg.p)       // x_i = x_{i-1} + α p_i
-		floats.AddScaled(ctx.Residual, -alpha, ap) // r_i = r_{i-1} - α A p_i
-		ctx.ResidualNorm = floats.Norm(ctx.Residual, 2)
+		alpha := cg.rho / floats.Dot(cg.p, ap) // α_i = ρ_{i-1} / (p_i · A p_i)
+		floats.AddScaled(cg.x, alpha, cg.p)    // x_i = x_{i-1} + α p_i
+		floats.AddScaled(cg.r, -alpha, ap)     // r_i = r_{i-1} - α A p_i
+		ctx.ResidualNorm = floats.Norm(cg.r, 2)
 		cg.resume = 4
 		return CheckResidualNorm, nil
 	case 4:
+		copy(ctx.X, cg.x)
+		if ctx.Converged {
+			cg.resume = 0
+			return MajorIteration, nil
+		}
 		cg.rhoPrev = cg.rho
 		cg.first = false
 		cg.resume = 1

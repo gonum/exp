@@ -78,14 +78,12 @@ func ExampleCG() {
 	n := sys.A.Symmetric()
 
 	ctx := linsolve.Context{
-		X:        make([]float64, n),
-		Residual: make([]float64, n),
-		Src:      make([]float64, n),
-		Dst:      make([]float64, n),
+		X:   make([]float64, n),
+		Src: make([]float64, n),
+		Dst: make([]float64, n),
 	}
-	copy(ctx.Residual, sys.b)
 
-	if floats.Norm(ctx.Residual, 2) < tol {
+	if floats.Norm(sys.b, 2) < tol {
 		fmt.Println("Initial estimate is sufficiently accurate")
 		return
 	}
@@ -96,7 +94,7 @@ func ExampleCG() {
 		rnorms  []float64
 		cg      linsolve.CG
 	)
-	cg.Init(n)
+	cg.Init(ctx.X, sys.b)
 MainLoop:
 	for {
 		op, err := cg.Iterate(&ctx)
@@ -110,11 +108,12 @@ MainLoop:
 			dst.MulVec(sys.A, mat.NewVecDense(n, ctx.Src))
 		case linsolve.PreconSolve:
 			copy(ctx.Dst, ctx.Src)
+		case linsolve.CheckResidualNorm:
+			rnorms = append(rnorms, ctx.ResidualNorm)
+			ctx.Converged = ctx.ResidualNorm/bnorm < tol
 		case linsolve.MajorIteration:
 			numiter++
-			rnorm := floats.Norm(ctx.Residual, 2) / bnorm
-			rnorms = append(rnorms, rnorm)
-			if rnorm < tol {
+			if ctx.Converged {
 				break MainLoop
 			}
 		}
@@ -126,6 +125,6 @@ MainLoop:
 
 	// Output:
 	// # iterations: 10
-	// Residual history: [0.136572 0.0674303 0.0249177 0.00703348 0.00186369 0.000477831 0.000122098 2.98577e-05 6.44331e-06 5.46512e-07]
+	// Residual history: [0.016233 0.00801479 0.00296172 0.000836001 0.000221519 5.67951e-05 1.45126e-05 3.54889e-06 7.65854e-07 6.49586e-08]
 	// Final solution: [-0.003341 0.006678 0.036530 0.085606 0.152981 0.237072 0.337006 0.447616 0.578244 0.682719 0.920847]
 }
