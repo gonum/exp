@@ -28,7 +28,6 @@ type BiCG struct {
 
 	rho, rhoPrev float64
 
-	first  bool
 	resume int
 }
 
@@ -47,12 +46,14 @@ func (b *BiCG) Init(x, residual []float64) {
 	b.r = reuse(b.r, dim)
 	copy(b.r, residual)
 	b.rt = reuse(b.rt, dim)
+	copy(b.rt, b.r)
 	b.p = reuse(b.p, dim)
 	b.pt = reuse(b.pt, dim)
 	b.z = reuse(b.z, dim)
 	b.zt = reuse(b.zt, dim)
 
-	b.first = true
+	b.rhoPrev = 1
+
 	b.resume = 1
 }
 
@@ -69,9 +70,6 @@ func (b *BiCG) Init(x, residual []float64) {
 func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 	switch b.resume {
 	case 1:
-		if b.first {
-			copy(b.rt, b.r)
-		}
 		// Solve M^{-1} * r_{i-1}.
 		copy(ctx.Src, b.r)
 		b.resume = 2
@@ -89,14 +87,9 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 			b.resume = 0
 			return NoOperation, &BreakdownError{math.Abs(b.rho), breakdownTol}
 		}
-		if b.first {
-			copy(b.p, b.z)
-			copy(b.pt, b.zt)
-		} else {
-			beta := b.rho / b.rhoPrev
-			floats.AddScaledTo(b.p, b.z, beta, b.p)
-			floats.AddScaledTo(b.pt, b.zt, beta, b.pt)
-		}
+		beta := b.rho / b.rhoPrev
+		floats.AddScaledTo(b.p, b.z, beta, b.p)
+		floats.AddScaledTo(b.pt, b.zt, beta, b.pt)
 		// Compute A * p.
 		copy(ctx.Src, b.p)
 		b.resume = 4
@@ -112,8 +105,8 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 		// zt is overwritten and reused.
 		copy(b.zt, ctx.Dst)
 		alpha := b.rho / floats.Dot(b.pt, b.z)
-		floats.AddScaled(b.rt, -alpha, b.zt)
 		floats.AddScaled(ctx.X, alpha, b.p)
+		floats.AddScaled(b.rt, -alpha, b.zt)
 		floats.AddScaled(b.r, -alpha, b.z)
 		ctx.ResidualNorm = floats.Norm(b.r, 2)
 		b.resume = 6
@@ -124,7 +117,6 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 			return MajorIteration, nil
 		}
 		b.rhoPrev = b.rho
-		b.first = false
 		b.resume = 1
 		return MajorIteration, nil
 

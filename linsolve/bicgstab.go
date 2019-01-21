@@ -33,7 +33,6 @@ type BiCGStab struct {
 	alpha        float64
 	omega        float64
 
-	first  bool
 	resume int
 }
 
@@ -52,13 +51,17 @@ func (b *BiCGStab) Init(x, residual []float64) {
 	b.r = reuse(b.r, dim)
 	copy(b.r, residual)
 	b.rt = reuse(b.rt, dim)
+	copy(b.rt, b.r)
 	b.p = reuse(b.p, dim)
 	b.phat = reuse(b.phat, dim)
 	b.shat = reuse(b.shat, dim)
 	b.t = reuse(b.t, dim)
 	b.v = reuse(b.v, dim)
 
-	b.first = true
+	b.rhoPrev = 1
+	b.alpha = 0
+	b.omega = 1
+
 	b.resume = 1
 }
 
@@ -73,23 +76,16 @@ func (b *BiCGStab) Init(x, residual []float64) {
 func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 	switch b.resume {
 	case 1:
-		if b.first {
-			copy(b.rt, b.r)
-		}
 		b.rho = floats.Dot(b.rt, b.r)
 		if math.Abs(b.rho) < breakdownTol {
 			b.resume = 0
 			return NoOperation, &BreakdownError{math.Abs(b.rho), breakdownTol}
 		}
-		if b.first {
-			b.first = false
-			copy(b.p, b.r)
-		} else {
-			beta := (b.rho / b.rhoPrev) * (b.alpha / b.omega)
-			floats.AddScaled(b.p, -b.omega, b.v)
-			floats.Scale(beta, b.p)
-			floats.Add(b.p, b.r)
-		}
+		// p_i = r_{i-1} + beta*(p_{i-1} - omega * v_{i-1})
+		beta := (b.rho / b.rhoPrev) * (b.alpha / b.omega)
+		floats.AddScaled(b.p, -b.omega, b.v)
+		floats.Scale(beta, b.p)
+		floats.Add(b.p, b.r)
 		// Solve M^{-1} * p_i.
 		copy(ctx.Src, b.p)
 		b.resume = 2
