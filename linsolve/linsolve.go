@@ -143,7 +143,7 @@ const (
 	// what it considers to be one iteration. Method
 	// will make sure that Context.X and
 	// Context.Residual are updated. If Context.Converged is true,
-	// the caller should terminate the iterative process,
+	// the caller must terminate the iterative process,
 	// otherwise it should call Method.Iterate again.
 	MajorIteration
 )

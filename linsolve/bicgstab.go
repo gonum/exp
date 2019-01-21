@@ -129,7 +129,11 @@ func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 		b.resume = 7
 		return CheckResidualNorm, nil
 	case 7:
-		if !ctx.Converged && math.Abs(b.omega) < breakdownTol {
+		if ctx.Converged {
+			b.resume = 0
+			return MajorIteration, nil
+		}
+		if math.Abs(b.omega) < breakdownTol {
 			b.resume = 0
 			return NoOperation, &BreakdownError{math.Abs(b.omega), breakdownTol}
 		}
