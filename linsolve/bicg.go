@@ -110,6 +110,10 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 		b.resume = 6
 		return CheckResidualNorm, nil
 	case 6:
+		if ctx.Converged {
+			b.resume = 0
+			return MajorIteration, nil
+		}
 		b.rhoPrev = b.rho
 		b.first = false
 		b.resume = 1

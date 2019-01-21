@@ -163,9 +163,12 @@ func (g *GMRES) Iterate(ctx *Context) (Operation, error) {
 			g.resume = 3
 			return NoOperation, nil
 		}
-		// Either we have convergence or we have to restart,
-		// so end the inner for-loop.
 		g.updateSolution(g.k, ctx.X)
+		if ctx.Converged {
+			g.resume = 0
+			return MajorIteration, nil
+		}
+		// We are restarting, so we have to compute the residual.
 		g.resume = 7
 		return ComputeResidual, nil
 	case 7:
