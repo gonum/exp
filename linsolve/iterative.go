@@ -172,18 +172,19 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 
 	var stats Stats
 	ctx := s.Work
+	// Use ctx.Dst as a temporary storage for the initial residual
+	// to avoid allocating an extra slice.
+	initRes := ctx.Dst
 	if s.InitX != nil {
 		copy(ctx.X, s.InitX)
-		// Use ctx.Dst as a temporary storage for the residual.
-		computeResidual(ctx.Dst, a, b, ctx.X, &stats)
+		computeResidual(initRes, a, b, ctx.X, &stats)
 	} else {
 		// Initial x is the zero vector.
 		for i := range ctx.X {
 			ctx.X[i] = 0
 		}
 		// Residual b-A*x is then equal to b.
-		// Use ctx.Dst as a temporary storage for the residual.
-		copy(ctx.Dst, b)
+		copy(initRes, b)
 	}
 
 	if m == nil {
@@ -191,9 +192,9 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	}
 
 	var err error
-	ctx.ResidualNorm = floats.Norm(ctx.Dst, 2)
+	ctx.ResidualNorm = floats.Norm(initRes, 2)
 	if ctx.ResidualNorm >= s.Tolerance {
-		err = iterate(a, b, s, m, &stats)
+		err = iterate(a, b, initRes, s, m, &stats)
 	} else {
 		copy(s.Dst, ctx.X)
 	}
@@ -205,7 +206,7 @@ func Iterative(a MulVecToer, b []float64, m Method, settings *Settings) (*Result
 	}, err
 }
 
-func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats *Stats) error {
+func iterate(a MulVecToer, b, initRes []float64, settings Settings, method Method, stats *Stats) error {
 	bNorm := floats.Norm(b, 2)
 	if bNorm == 0 {
 		bNorm = 1
@@ -214,7 +215,7 @@ func iterate(a MulVecToer, b []float64, settings Settings, method Method, stats 
 	ctx := settings.Work
 	copy(settings.Dst, ctx.X)
 
-	method.Init(ctx.X, ctx.Dst)
+	method.Init(ctx.X, initRes)
 	for {
 		op, err := method.Iterate(ctx)
 		if err != nil {
