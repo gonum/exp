@@ -64,9 +64,10 @@ type Context struct {
 	// CheckResidualNorm operation.
 	Converged bool
 
-	// Src and Dst are the source and destination
-	// vectors for various Operations. See the Operation
-	// documentation for more information.
+	// Src and Dst are the source and destination vectors
+	// for various Operations. Src will be set by Method
+	// and the caller must store the result in Dst. See
+	// the Operation documentation for more information.
 	Src, Dst []float64
 }
 
