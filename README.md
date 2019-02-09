@@ -1,4 +1,4 @@
-# Gonum exp [![Build Status](https://travis-ci.org/gonum/exp.svg?branch=master)](https://travis-ci.org/gonum/exp) [![Build status](https://ci.appveyor.com/api/projects/status/8aj3pwwukp1n1u09/branch/master?svg=true)](https://ci.appveyor.com/project/Gonum/exp/branch/master)
+# Gonum exp [![Build Status](https://travis-ci.org/gonum/exp.svg?branch=master)](https://travis-ci.org/gonum/exp) [![Build status](https://ci.appveyor.com/api/projects/status/8aj3pwwukp1n1u09/branch/master?svg=true)](https://ci.appveyor.com/project/Gonum/exp/branch/master) [![stability-experimental](https://img.shields.io/badge/stability-experimental-orange.svg)](https://github.com/emersion/stability-badges#experimental)
 
 ## Issues
 
