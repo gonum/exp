@@ -166,7 +166,7 @@ func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 	// Generate a reference solution.
 	want := make([]float64, n)
 	for i := range want {
-		want[i] = 1 + float64(i%3)
+		want[i] = 1 + 0.1*float64(i%2)
 	}
 	// Compute the corresponding right-hand side.
 	b := make([]float64, n)
