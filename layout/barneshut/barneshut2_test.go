@@ -63,20 +63,22 @@ var planeTests = []struct {
 		},
 		want: &Plane{
 			root: tile{
-				particle: particle2{x: 1, y: 1, m: 1},
-				bounds:   Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 1, Y: 1}},
+				bounds: Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 1, Y: 1}},
 				nodes: [4]*tile{
+					se: {
+						particle: particle2{x: 1, y: 1, m: 1},
+						bounds:   Box2{Min: Point2{X: 0, Y: 0}, Max: Point2{X: 1, Y: 1}},
+						center:   Point2{X: 1, Y: 1}, mass: 1,
+					},
 					sw: {
 						particle: particle2{x: -1, y: 1, m: 1},
 						bounds:   Box2{Min: Point2{X: -1, Y: 0}, Max: Point2{X: 0, Y: 1}},
-						center:   Point2{X: -1, Y: 1},
-						mass:     1,
+						center:   Point2{X: -1, Y: 1}, mass: 1,
 					},
 					nw: {
 						particle: particle2{x: -1, y: -1, m: 1},
 						bounds:   Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 0, Y: 0}},
-						center:   Point2{X: -1, Y: -1},
-						mass:     1,
+						center:   Point2{X: -1, Y: -1}, mass: 1,
 					},
 				},
 				center: Point2{X: -0.3333333333333333, Y: 0.3333333333333333},
@@ -100,23 +102,31 @@ var planeTests = []struct {
 		},
 		want: &Plane{
 			root: tile{
-				particle: particle2{x: 1, y: 1, m: 1},
-				bounds:   Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 1, Y: 1}},
+				bounds: Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 1, Y: 1}},
 				nodes: [4]*tile{
-					ne: {
+					{
 						particle: particle2{x: 1, y: -1, m: 1},
 						bounds:   Box2{Min: Point2{X: 0, Y: -1}, Max: Point2{X: 1, Y: 0}},
-						center:   Point2{X: 1, Y: -1}, mass: 1,
+						center:   Point2{X: 1, Y: -1},
+						mass:     1,
 					},
-					sw: {
+					{
+						particle: particle2{x: 1, y: 1, m: 1},
+						bounds:   Box2{Min: Point2{X: 0, Y: 0}, Max: Point2{X: 1, Y: 1}},
+						center:   Point2{X: 1, Y: 1},
+						mass:     1,
+					},
+					{
 						particle: particle2{x: -1, y: 1, m: 1},
 						bounds:   Box2{Min: Point2{X: -1, Y: 0}, Max: Point2{X: 0, Y: 1}},
-						center:   Point2{X: -1, Y: 1}, mass: 1,
+						center:   Point2{X: -1, Y: 1},
+						mass:     1,
 					},
-					nw: {
+					{
 						particle: particle2{x: -1, y: -1, m: 1},
 						bounds:   Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 0, Y: 0}},
-						center:   Point2{X: -1, Y: -1}, mass: 1,
+						center:   Point2{X: -1, Y: -1},
+						mass:     1,
 					},
 				},
 				center: Point2{X: 0, Y: 0},
@@ -142,30 +152,61 @@ var planeTests = []struct {
 		},
 		want: &Plane{
 			root: tile{
-				particle: particle2{x: 1, y: 1, m: 1},
-				bounds:   Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: 1, Y: 1}},
+				bounds: Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: 1, Y: 1}},
 				nodes: [4]*tile{
-					ne: {
+					{
 						particle: particle2{x: 1, y: -1, m: 1},
 						bounds:   Box2{Min: Point2{X: -0.050000000000000044, Y: -1}, Max: Point2{X: 1, Y: 0}},
 						center:   Point2{X: 1, Y: -1},
 						mass:     1,
 					},
-					sw: {
+					{
+						particle: particle2{x: 1, y: 1, m: 1},
+						bounds:   Box2{Min: Point2{X: -0.050000000000000044, Y: 0}, Max: Point2{X: 1, Y: 1}},
+						center:   Point2{X: 1, Y: 1},
+						mass:     1,
+					},
+					{
 						particle: particle2{x: -1, y: 1, m: 1},
 						bounds:   Box2{Min: Point2{X: -1.1, Y: 0}, Max: Point2{X: -0.050000000000000044, Y: 1}},
 						center:   Point2{X: -1, Y: 1},
 						mass:     1,
 					},
-					nw: {
-						particle: particle2{x: -1, y: -1, m: 1},
-						bounds:   Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: -0.050000000000000044, Y: 0}},
+					{
+						bounds: Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: -0.050000000000000044, Y: 0}},
 						nodes: [4]*tile{
 							nw: {
-								particle: particle2{x: -1.1, y: -1, m: 1},
-								bounds:   Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: -0.5750000000000001, Y: -0.5}},
-								center:   Point2{X: -1.1, Y: -1},
-								mass:     1,
+								bounds: Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: -0.5750000000000001, Y: -0.5}},
+								nodes: [4]*tile{
+									nw: {
+										bounds: Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: -0.8375000000000001, Y: -0.75}},
+										nodes: [4]*tile{
+											nw: {
+												bounds: Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: -0.9687500000000001, Y: -0.875}},
+												nodes: [4]*tile{
+													ne: {
+														particle: particle2{x: -1, y: -1, m: 1},
+														bounds:   Box2{Min: Point2{X: -1.034375, Y: -1}, Max: Point2{X: -0.9687500000000001, Y: -0.9375}},
+														center:   Point2{X: -1, Y: -1},
+														mass:     1,
+													},
+													nw: {
+														particle: particle2{x: -1.1, y: -1, m: 1},
+														bounds:   Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: -1.034375, Y: -0.9375}},
+														center:   Point2{X: -1.1, Y: -1},
+														mass:     1,
+													},
+												},
+												center: Point2{X: -1.05, Y: -1},
+												mass:   2,
+											},
+										},
+										center: Point2{X: -1.05, Y: -1},
+										mass:   2,
+									},
+								},
+								center: Point2{X: -1.05, Y: -1},
+								mass:   2,
 							},
 						},
 						center: Point2{X: -1.05, Y: -1},
@@ -202,18 +243,29 @@ var planeTests = []struct {
 		},
 		want: &Plane{
 			root: tile{
-				particle: particle2{x: 64.5, y: 81.5, m: 1, name: "A"},
-				bounds:   Box2{Min: Point2{X: 42.5, Y: 34}, Max: Point2{X: 285, Y: 334.5}},
+				bounds: Box2{Min: Point2{X: 42.5, Y: 34}, Max: Point2{X: 285, Y: 334.5}},
 				nodes: [4]*tile{
-					ne: {
-						particle: particle2{x: 242, y: 34, m: 1, name: "B"},
-						bounds:   Box2{Min: Point2{X: 163.75, Y: 34}, Max: Point2{X: 285, Y: 184.25}},
+					{
+						bounds: Box2{Min: Point2{X: 163.75, Y: 34}, Max: Point2{X: 285, Y: 184.25}},
 						nodes: [4]*tile{
 							ne: {
-								particle: particle2{x: 285, y: 106.5, m: 1, name: "D"},
-								bounds:   Box2{Min: Point2{X: 224.375, Y: 34}, Max: Point2{X: 285, Y: 109.125}},
-								center:   Point2{X: 285, Y: 106.5},
-								mass:     1,
+								bounds: Box2{Min: Point2{X: 224.375, Y: 34}, Max: Point2{X: 285, Y: 109.125}},
+								nodes: [4]*tile{
+									se: {
+										particle: particle2{x: 285, y: 106.5, m: 1, name: "D"},
+										bounds:   Box2{Min: Point2{X: 254.6875, Y: 71.5625}, Max: Point2{X: 285, Y: 109.125}},
+										center:   Point2{X: 285, Y: 106.5},
+										mass:     1,
+									},
+									nw: {
+										particle: particle2{x: 242, y: 34, m: 1, name: "B"},
+										bounds:   Box2{Min: Point2{X: 224.375, Y: 34}, Max: Point2{X: 254.6875, Y: 71.5625}},
+										center:   Point2{X: 242, Y: 34},
+										mass:     1,
+									},
+								},
+								center: Point2{X: 263.5, Y: 70.25},
+								mass:   2,
 							},
 							nw: {
 								particle: particle2{x: 199, y: 69, m: 1, name: "C"},
@@ -225,9 +277,8 @@ var planeTests = []struct {
 						center: Point2{X: 242, Y: 69.83333333333333},
 						mass:   3,
 					},
-					se: {
-						particle: particle2{x: 170, y: 194.5, m: 1, name: "E"},
-						bounds:   Box2{Min: Point2{X: 163.75, Y: 184.25}, Max: Point2{X: 285, Y: 334.5}},
+					{
+						bounds: Box2{Min: Point2{X: 163.75, Y: 184.25}, Max: Point2{X: 285, Y: 334.5}},
 						nodes: [4]*tile{
 							se: {
 								particle: particle2{x: 236.5, y: 324, m: 1, name: "H"},
@@ -235,13 +286,18 @@ var planeTests = []struct {
 								center:   Point2{X: 236.5, Y: 324},
 								mass:     1,
 							},
+							nw: {
+								particle: particle2{x: 170, y: 194.5, m: 1, name: "E"},
+								bounds:   Box2{Min: Point2{X: 163.75, Y: 184.25}, Max: Point2{X: 224.375, Y: 259.375}},
+								center:   Point2{X: 170, Y: 194.5},
+								mass:     1,
+							},
 						},
 						center: Point2{X: 203.25, Y: 259.25},
 						mass:   2,
 					},
-					sw: {
-						particle: particle2{x: 42.5, y: 334.5, m: 1, name: "F"},
-						bounds:   Box2{Min: Point2{X: 42.5, Y: 184.25}, Max: Point2{X: 163.75, Y: 334.5}},
+					{
+						bounds: Box2{Min: Point2{X: 42.5, Y: 184.25}, Max: Point2{X: 163.75, Y: 334.5}},
 						nodes: [4]*tile{
 							se: {
 								particle: particle2{x: 147, y: 309, m: 1, name: "G"},
@@ -249,9 +305,21 @@ var planeTests = []struct {
 								center:   Point2{X: 147, Y: 309},
 								mass:     1,
 							},
+							sw: {
+								particle: particle2{x: 42.5, y: 334.5, m: 1, name: "F"},
+								bounds:   Box2{Min: Point2{X: 42.5, Y: 259.375}, Max: Point2{X: 103.125, Y: 334.5}},
+								center:   Point2{X: 42.5, Y: 334.5},
+								mass:     1,
+							},
 						},
 						center: Point2{X: 94.75, Y: 321.75},
 						mass:   2,
+					},
+					{
+						particle: particle2{x: 64.5, y: 81.5, m: 1, name: "A"},
+						bounds:   Box2{Min: Point2{X: 42.5, Y: 34}, Max: Point2{X: 163.75, Y: 184.25}},
+						center:   Point2{X: 64.5, Y: 81.5},
+						mass:     1,
 					},
 				},
 				center: Point2{X: 173.3125, Y: 181.625},

@@ -128,11 +128,6 @@ func NewPlane(p []Particle2) *Plane {
 // ForceOn is called with theta=0 or no data structures have been
 // previously built.
 func (q *Plane) Reset() {
-	// Note that Plane does not perform the normal Barnes-Hut
-	// tree construction; Plane allows internal nodes to be
-	// filled with particles and does not relocate particles
-	// that have been put in the tree.
-
 	if len(q.Particles) == 0 {
 		q.root = tile{}
 		return
@@ -211,17 +206,35 @@ type tile struct {
 
 // insert inserts p into the subtree rooted at t.
 func (t *tile) insert(p Particle2) {
-	dir := t.bounds.quadrant(p)
-	if t.nodes[dir] != nil {
-		t.nodes[dir].insert(p)
+	if t.particle == nil {
+		for _, q := range t.nodes {
+			if q != nil {
+				dir := t.bounds.quadrant(p)
+				if t.nodes[dir] == nil {
+					t.nodes[dir] = &tile{bounds: t.bounds.split(dir)}
+				}
+				t.nodes[dir].insert(p)
+				return
+			}
+		}
+		t.particle = p
+		t.center = p.Coord2()
+		t.mass = p.Mass()
 		return
 	}
-	t.nodes[dir] = &tile{
-		particle: p,
-		bounds:   t.bounds.split(dir),
-		center:   p.Coord2(),
-		mass:     p.Mass(),
+	dir := t.bounds.quadrant(p)
+	if t.nodes[dir] == nil {
+		t.nodes[dir] = &tile{bounds: t.bounds.split(dir)}
 	}
+	t.nodes[dir].insert(p)
+	dir = t.bounds.quadrant(t.particle)
+	if t.nodes[dir] == nil {
+		t.nodes[dir] = &tile{bounds: t.bounds.split(dir)}
+	}
+	t.nodes[dir].insert(t.particle)
+	t.particle = nil
+	t.center = Point2{}
+	t.mass = 0
 }
 
 // summarize updates node masses and centers of mass.
@@ -245,11 +258,11 @@ func (t *tile) summarize() (center Point2, mass float64) {
 func (t *tile) forceOnMassAt(p Point2, m, theta float64, force func(m1, m2 float64, v Point2) Point2) (vector Point2) {
 	s := ((t.bounds.Max.X - t.bounds.Min.X) + (t.bounds.Max.Y - t.bounds.Min.Y)) / 2
 	d := math.Hypot(p.X-t.center.X, p.Y-t.center.Y)
-	if s/d < theta {
+	if s/d < theta || t.particle != nil {
 		return force(m, t.mass, t.center.Sub(p))
 	}
 
-	v := force(m, t.particle.Mass(), t.particle.Coord2().Sub(p))
+	var v Point2
 	for _, d := range &t.nodes {
 		if d == nil {
 			continue

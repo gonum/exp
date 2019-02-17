@@ -173,11 +173,6 @@ func NewVolume(p []Particle3) *Volume {
 // ForceOn is called with theta=0 or no data structures have been
 // previously built.
 func (q *Volume) Reset() {
-	// Note that Volume does not perform the normal Barnes-Hut
-	// tree construction; Volume allows internal nodes to be
-	// filled with particles and does not relocate particles
-	// that have been put in the tree.
-
 	if len(q.Particles) == 0 {
 		q.root = bucket{}
 		return
@@ -262,17 +257,35 @@ type bucket struct {
 
 // insert inserts p into the subtree rooted at b.
 func (b *bucket) insert(p Particle3) {
-	dir := b.bounds.octant(p)
-	if b.nodes[dir] != nil {
-		b.nodes[dir].insert(p)
+	if b.particle == nil {
+		for _, q := range b.nodes {
+			if q != nil {
+				dir := b.bounds.octant(p)
+				if b.nodes[dir] == nil {
+					b.nodes[dir] = &bucket{bounds: b.bounds.split(dir)}
+				}
+				b.nodes[dir].insert(p)
+				return
+			}
+		}
+		b.particle = p
+		b.center = p.Coord3()
+		b.mass = p.Mass()
 		return
 	}
-	b.nodes[dir] = &bucket{
-		particle: p,
-		bounds:   b.bounds.split(dir),
-		center:   p.Coord3(),
-		mass:     p.Mass(),
+	dir := b.bounds.octant(p)
+	if b.nodes[dir] == nil {
+		b.nodes[dir] = &bucket{bounds: b.bounds.split(dir)}
 	}
+	b.nodes[dir].insert(p)
+	dir = b.bounds.octant(b.particle)
+	if b.nodes[dir] == nil {
+		b.nodes[dir] = &bucket{bounds: b.bounds.split(dir)}
+	}
+	b.nodes[dir].insert(b.particle)
+	b.particle = nil
+	b.center = Point3{}
+	b.mass = 0
 }
 
 // summarize updates node masses and centers of mass.
@@ -298,11 +311,11 @@ func (b *bucket) summarize() (center Point3, mass float64) {
 func (b *bucket) forceOnMassAt(p Point3, m, theta float64, force func(m1, m2 float64, v Point3) Point3) (vector Point3) {
 	s := ((b.bounds.Max.X - b.bounds.Min.X) + (b.bounds.Max.Y - b.bounds.Min.Y) + (b.bounds.Max.Z - b.bounds.Min.Z)) / 3
 	d := math.Hypot(math.Hypot(p.X-b.center.X, p.Y-b.center.Y), p.Z-b.center.Z)
-	if s/d < theta {
+	if s/d < theta || b.particle != nil {
 		return force(m, b.mass, b.center.Sub(p))
 	}
 
-	v := force(m, b.particle.Mass(), b.particle.Coord3().Sub(p))
+	var v Point3
 	for _, d := range &b.nodes {
 		if d == nil {
 			continue
