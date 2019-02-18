@@ -43,21 +43,14 @@ var volumeTests = []struct {
 		particles: []particle3{{m: 1}}, // Must have a mass to avoid vacuum decay.
 		want: &Volume{
 			root: bucket{
-				bounds: Box3{Min: Point3{X: 0, Y: 0, Z: 0}, Max: Point3{X: 0, Y: 0, Z: 0}},
-				nodes: [8]*bucket{
-					use: {
-						particle: particle3{x: 0, y: 0, z: 0, m: 1},
-						bounds:   Box3{Min: Point3{X: 0, Y: 0, Z: 0}, Max: Point3{X: 0, Y: 0, Z: 0}},
-						center:   Point3{X: 0, Y: 0, Z: 0},
-						mass:     1,
-					},
-				},
-				center: Point3{X: 0, Y: 0, Z: 0},
-				mass:   1,
+				particle: particle3{x: 0, y: 0, z: 0, m: 1},
+				bounds:   Box3{Min: Point3{X: 0, Y: 0, Z: 0}, Max: Point3{X: 0, Y: 0, Z: 0}},
+				center:   Point3{X: 0, Y: 0, Z: 0},
+				mass:     1,
 			},
 
 			Particles: []Particle3{
-				particle3{m: 1},
+				particle3{x: 0, y: 0, z: 0, m: 1},
 			},
 		},
 	},
@@ -70,18 +63,13 @@ var volumeTests = []struct {
 		},
 		want: &Volume{
 			root: bucket{
-				bounds: Box3{Min: Point3{X: -1, Y: -1, Z: -1}, Max: Point3{X: 1, Y: 1, Z: 1}},
+				particle: particle3{x: 1, y: 1, z: 1, m: 1},
+				bounds:   Box3{Min: Point3{X: -1, Y: -1, Z: -1}, Max: Point3{X: 1, Y: 1, Z: 1}},
 				nodes: [8]*bucket{
 					lnw: {
 						particle: particle3{x: -1, y: -1, z: -1, m: 1},
 						bounds:   Box3{Min: Point3{X: -1, Y: -1, Z: -1}, Max: Point3{X: 0, Y: 0, Z: 0}},
 						center:   Point3{X: -1, Y: -1, Z: -1},
-						mass:     1,
-					},
-					use: {
-						particle: particle3{x: 1, y: 1, z: 1, m: 1},
-						bounds:   Box3{Min: Point3{X: 0, Y: 0, Z: 0}, Max: Point3{X: 1, Y: 1, Z: 1}},
-						center:   Point3{X: 1, Y: 1, Z: 1},
 						mass:     1,
 					},
 					usw: {
@@ -112,14 +100,9 @@ var volumeTests = []struct {
 		},
 		want: &Volume{
 			root: bucket{
-				bounds: Box3{Min: Point3{X: -1, Y: -1, Z: -1}, Max: Point3{X: 1, Y: 1, Z: 1}},
+				particle: particle3{x: 1, y: 1, z: -1, m: 1},
+				bounds:   Box3{Min: Point3{X: -1, Y: -1, Z: -1}, Max: Point3{X: 1, Y: 1, Z: 1}},
 				nodes: [8]*bucket{
-					lse: {
-						particle: particle3{x: 1, y: 1, z: -1, m: 1},
-						bounds:   Box3{Min: Point3{X: 0, Y: 0, Z: -1}, Max: Point3{X: 1, Y: 1, Z: 0}},
-						center:   Point3{X: 1, Y: 1, Z: -1},
-						mass:     1,
-					},
 					lnw: {
 						particle: particle3{x: -1, y: -1, z: -1, m: 1},
 						bounds:   Box3{Min: Point3{X: -1, Y: -1, Z: -1}, Max: Point3{X: 0, Y: 0, Z: 0}},
@@ -162,14 +145,9 @@ var volumeTests = []struct {
 		},
 		want: &Volume{
 			root: bucket{
-				bounds: Box3{Min: Point3{X: -1.1, Y: -1, Z: -1.1}, Max: Point3{X: 1, Y: 1, Z: 1}},
+				particle: particle3{x: 1, y: 1, z: -1, m: 1},
+				bounds:   Box3{Min: Point3{X: -1.1, Y: -1, Z: -1.1}, Max: Point3{X: 1, Y: 1, Z: 1}},
 				nodes: [8]*bucket{
-					lse: {
-						particle: particle3{x: 1, y: 1, z: -1, m: 1},
-						bounds:   Box3{Min: Point3{X: -0.050000000000000044, Y: 0, Z: -1.1}, Max: Point3{X: 1, Y: 1, Z: -0.050000000000000044}},
-						center:   Point3{X: 1, Y: 1, Z: -1},
-						mass:     1,
-					},
 					lnw: {
 						particle: particle3{x: -1, y: -1, z: -1, m: 1},
 						bounds:   Box3{Min: Point3{X: -1.1, Y: -1, Z: -1.1}, Max: Point3{X: -0.050000000000000044, Y: 0, Z: -0.050000000000000044}},
@@ -177,12 +155,8 @@ var volumeTests = []struct {
 							lnw: {
 								particle: particle3{x: -1.1, y: -1, z: -1.1, m: 1},
 								bounds:   Box3{Min: Point3{X: -1.1, Y: -1, Z: -1.1}, Max: Point3{X: -0.5750000000000001, Y: -0.5, Z: -0.5750000000000001}},
-								center: Point3{
-									X: -1.1,
-									Y: -1,
-									Z: -1.1,
-								},
-								mass: 1,
+								center:   Point3{X: -1.1, Y: -1, Z: -1.1},
+								mass:     1,
 							},
 						},
 						center: Point3{X: -1.05, Y: -1, Z: -1.05},
@@ -230,7 +204,8 @@ var volumeTests = []struct {
 		},
 		want: &Volume{
 			root: bucket{
-				bounds: Box3{Min: Point3{X: 42.5, Y: 34, Z: 0}, Max: Point3{X: 285, Y: 334.5, Z: 280}},
+				particle: particle3{x: 64.5, y: 81.5, z: 0, m: 1, name: "A"},
+				bounds:   Box3{Min: Point3{X: 42.5, Y: 34, Z: 0}, Max: Point3{X: 285, Y: 334.5, Z: 280}},
 				nodes: [8]*bucket{
 					lne: {
 						particle: particle3{x: 242, y: 34, z: 40, m: 1, name: "B"},
@@ -251,12 +226,6 @@ var volumeTests = []struct {
 						},
 						center: Point3{X: 242, Y: 69.83333333333333, Z: 80},
 						mass:   3,
-					},
-					lnw: {
-						particle: particle3{x: 64.5, y: 81.5, z: 0, m: 1, name: "A"},
-						bounds:   Box3{Min: Point3{X: 42.5, Y: 34, Z: 0}, Max: Point3{X: 163.75, Y: 184.25, Z: 140}},
-						center:   Point3{X: 64.5, Y: 81.5, Z: 0},
-						mass:     1,
 					},
 					use: {
 						particle: particle3{x: 170, y: 194.5, z: 160, m: 1, name: "E"},
@@ -387,7 +356,7 @@ func TestVolumeForceOn(t *testing.T) {
 			m := p.Mass()
 			pv := p.Coord3()
 			for _, e := range particles {
-				v = v.Add(force3(m, e.Mass(), e.Coord3().Sub(pv)))
+				v = v.Add(Gravity3(m, e.Mass(), e.Coord3().Sub(pv)))
 			}
 			moved[i] = p.Coord3().Add(v)
 		}
@@ -400,7 +369,7 @@ func TestVolumeForceOn(t *testing.T) {
 				for i, p := range particles {
 					v := volume.ForceOn(p, theta, func(m1, m2 float64, v Point3) Point3 {
 						calls++
-						return force3(m1, m2, v)
+						return Gravity3(m1, m2, v)
 					})
 					pos := p.Coord3().Add(v)
 					d := moved[i].Sub(pos)
@@ -418,14 +387,3 @@ func TestVolumeForceOn(t *testing.T) {
 	}
 }
 
-func force3(m1, m2 float64, v Point3) Point3 {
-	d2 := v.X*v.X + v.Y*v.Y + v.Z*v.Z
-	if d2 == 0 {
-		return Point3{}
-	}
-	f := (m1 * m2) / (d2 * math.Sqrt(d2))
-	v.X *= f
-	v.Y *= f
-	v.Z *= f
-	return v
-}

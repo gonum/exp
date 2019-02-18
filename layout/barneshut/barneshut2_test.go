@@ -43,17 +43,10 @@ var planeTests = []struct {
 		particles: []particle2{{m: 1}}, // Must have a mass to avoid vacuum decay.
 		want: &Plane{
 			root: tile{
-				bounds: Box2{Min: Point2{X: 0, Y: 0}, Max: Point2{X: 0, Y: 0}},
-				nodes: [4]*tile{
-					se: {
-						particle: particle2{x: 0, y: 0, m: 1},
-						bounds:   Box2{Min: Point2{X: 0, Y: 0}, Max: Point2{X: 0, Y: 0}},
-						center:   Point2{X: 0, Y: 0},
-						mass:     1,
-					},
-				},
-				center: Point2{X: 0, Y: 0},
-				mass:   1,
+				particle: particle2{x: 0, y: 0, m: 1},
+				bounds:   Box2{Min: Point2{X: 0, Y: 0}, Max: Point2{X: 0, Y: 0}},
+				center:   Point2{X: 0, Y: 0},
+				mass:     1,
 			},
 
 			Particles: []Particle2{
@@ -70,14 +63,9 @@ var planeTests = []struct {
 		},
 		want: &Plane{
 			root: tile{
-				bounds: Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 1, Y: 1}},
+				particle: particle2{x: 1, y: 1, m: 1},
+				bounds:   Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 1, Y: 1}},
 				nodes: [4]*tile{
-					se: {
-						particle: particle2{x: 1, y: 1, m: 1},
-						bounds:   Box2{Min: Point2{X: 0, Y: 0}, Max: Point2{X: 1, Y: 1}},
-						center:   Point2{X: 1, Y: 1},
-						mass:     1,
-					},
 					sw: {
 						particle: particle2{x: -1, y: 1, m: 1},
 						bounds:   Box2{Min: Point2{X: -1, Y: 0}, Max: Point2{X: 0, Y: 1}},
@@ -112,32 +100,23 @@ var planeTests = []struct {
 		},
 		want: &Plane{
 			root: tile{
-				particle: nil,
+				particle: particle2{x: 1, y: 1, m: 1},
 				bounds:   Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 1, Y: 1}},
 				nodes: [4]*tile{
 					ne: {
 						particle: particle2{x: 1, y: -1, m: 1},
 						bounds:   Box2{Min: Point2{X: 0, Y: -1}, Max: Point2{X: 1, Y: 0}},
-						center:   Point2{X: 1, Y: -1},
-						mass:     1,
-					},
-					se: {
-						particle: particle2{x: 1, y: 1, m: 1},
-						bounds:   Box2{Min: Point2{X: 0, Y: 0}, Max: Point2{X: 1, Y: 1}},
-						center:   Point2{X: 1, Y: 1},
-						mass:     1,
+						center:   Point2{X: 1, Y: -1}, mass: 1,
 					},
 					sw: {
 						particle: particle2{x: -1, y: 1, m: 1},
 						bounds:   Box2{Min: Point2{X: -1, Y: 0}, Max: Point2{X: 0, Y: 1}},
-						center:   Point2{X: -1, Y: 1},
-						mass:     1,
+						center:   Point2{X: -1, Y: 1}, mass: 1,
 					},
 					nw: {
 						particle: particle2{x: -1, y: -1, m: 1},
 						bounds:   Box2{Min: Point2{X: -1, Y: -1}, Max: Point2{X: 0, Y: 0}},
-						center:   Point2{X: -1, Y: -1},
-						mass:     1,
+						center:   Point2{X: -1, Y: -1}, mass: 1,
 					},
 				},
 				center: Point2{X: 0, Y: 0},
@@ -163,19 +142,13 @@ var planeTests = []struct {
 		},
 		want: &Plane{
 			root: tile{
-				particle: Particle2(nil),
+				particle: particle2{x: 1, y: 1, m: 1},
 				bounds:   Box2{Min: Point2{X: -1.1, Y: -1}, Max: Point2{X: 1, Y: 1}},
 				nodes: [4]*tile{
 					ne: {
 						particle: particle2{x: 1, y: -1, m: 1},
 						bounds:   Box2{Min: Point2{X: -0.050000000000000044, Y: -1}, Max: Point2{X: 1, Y: 0}},
 						center:   Point2{X: 1, Y: -1},
-						mass:     1,
-					},
-					se: {
-						particle: particle2{x: 1, y: 1, m: 1},
-						bounds:   Box2{Min: Point2{X: -0.050000000000000044, Y: 0}, Max: Point2{X: 1, Y: 1}},
-						center:   Point2{X: 1, Y: 1},
 						mass:     1,
 					},
 					sw: {
@@ -229,7 +202,8 @@ var planeTests = []struct {
 		},
 		want: &Plane{
 			root: tile{
-				bounds: Box2{Min: Point2{X: 42.5, Y: 34}, Max: Point2{X: 285, Y: 334.5}},
+				particle: particle2{x: 64.5, y: 81.5, m: 1, name: "A"},
+				bounds:   Box2{Min: Point2{X: 42.5, Y: 34}, Max: Point2{X: 285, Y: 334.5}},
 				nodes: [4]*tile{
 					ne: {
 						particle: particle2{x: 242, y: 34, m: 1, name: "B"},
@@ -278,12 +252,6 @@ var planeTests = []struct {
 						},
 						center: Point2{X: 94.75, Y: 321.75},
 						mass:   2,
-					},
-					nw: {
-						particle: particle2{x: 64.5, y: 81.5, m: 1, name: "A"},
-						bounds:   Box2{Min: Point2{X: 42.5, Y: 34}, Max: Point2{X: 163.75, Y: 184.25}},
-						center:   Point2{X: 64.5, Y: 81.5},
-						mass:     1,
 					},
 				},
 				center: Point2{X: 173.3125, Y: 181.625},
@@ -369,7 +337,7 @@ func walkPlane(t *tile, fn func(*tile)) {
 func TestPlaneForceOn(t *testing.T) {
 	const (
 		size = 1000
-		tol  = 0.05
+		tol  = 0.07
 	)
 	for _, n := range []int{3e3, 1e4, 3e4} {
 		rnd := rand.New(rand.NewSource(1))
@@ -384,7 +352,7 @@ func TestPlaneForceOn(t *testing.T) {
 			m := p.Mass()
 			pv := p.Coord2()
 			for _, e := range particles {
-				v = v.Add(force2(m, e.Mass(), e.Coord2().Sub(pv)))
+				v = v.Add(Gravity2(m, e.Mass(), e.Coord2().Sub(pv)))
 			}
 			moved[i] = p.Coord2().Add(v)
 		}
@@ -397,7 +365,7 @@ func TestPlaneForceOn(t *testing.T) {
 				for i, p := range particles {
 					v := plane.ForceOn(p, theta, func(m1, m2 float64, v Point2) Point2 {
 						calls++
-						return force2(m1, m2, v)
+						return Gravity2(m1, m2, v)
 					})
 					pos := p.Coord2().Add(v)
 					d := moved[i].Sub(pos)
@@ -415,13 +383,3 @@ func TestPlaneForceOn(t *testing.T) {
 	}
 }
 
-func force2(m1, m2 float64, v Point2) Point2 {
-	d2 := v.X*v.X + v.Y*v.Y
-	if d2 == 0 {
-		return Point2{}
-	}
-	f := (m1 * m2) / (d2 * math.Sqrt(d2))
-	v.X *= f
-	v.Y *= f
-	return v
-}

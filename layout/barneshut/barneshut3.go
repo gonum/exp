@@ -174,17 +174,22 @@ func NewVolume(p []Particle3) *Volume {
 // previously built.
 func (q *Volume) Reset() {
 	// Note that Volume does not perform the normal Barnes-Hut
-	// tree construction; Volume allows internal nodes, with the
-	// exception of root, to be filled with particles and does
-	// not relocate particles that have been put in the tree.
+	// tree construction; Volume allows internal nodes to be
+	// filled with particles and does not relocate particles
+	// that have been put in the tree.
 
-	q.root = bucket{}
 	if len(q.Particles) == 0 {
+		q.root = bucket{}
 		return
 	}
 
-	q.root.bounds.Min = q.Particles[0].Coord3()
-	q.root.bounds.Max = q.root.bounds.Min
+	q.root = bucket{
+		particle: q.Particles[0],
+		center:   q.Particles[0].Coord3(),
+		mass:     q.Particles[0].Mass(),
+	}
+	q.root.bounds.Min = q.root.center
+	q.root.bounds.Max = q.root.center
 	for _, e := range q.Particles[1:] {
 		c := e.Coord3()
 		if c.X < q.root.bounds.Min.X {
@@ -210,7 +215,7 @@ func (q *Volume) Reset() {
 	// TODO(kortschak): Partially parallelise this by
 	// choosing the direction and using one of eight
 	// goroutines to work on each root octant.
-	for _, e := range q.Particles {
+	for _, e := range q.Particles[1:] {
 		q.root.insert(e)
 	}
 	q.root.summarize()
@@ -297,10 +302,7 @@ func (b *bucket) forceOnMassAt(p Point3, m, theta float64, force func(m1, m2 flo
 		return force(m, b.mass, b.center.Sub(p))
 	}
 
-	var v Point3
-	if b.particle != nil {
-		v = force(m, b.particle.Mass(), b.particle.Coord3().Sub(p))
-	}
+	v := force(m, b.particle.Mass(), b.particle.Coord3().Sub(p))
 	for _, d := range &b.nodes {
 		if d == nil {
 			continue

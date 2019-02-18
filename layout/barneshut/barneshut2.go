@@ -129,17 +129,22 @@ func NewPlane(p []Particle2) *Plane {
 // previously built.
 func (q *Plane) Reset() {
 	// Note that Plane does not perform the normal Barnes-Hut
-	// tree construction; Plane allows internal nodes, with the
-	// exception of root, to be filled with particles and does
-	// not relocate particles that have been put in the tree.
+	// tree construction; Plane allows internal nodes to be
+	// filled with particles and does not relocate particles
+	// that have been put in the tree.
 
-	q.root = tile{}
 	if len(q.Particles) == 0 {
+		q.root = tile{}
 		return
 	}
 
-	q.root.bounds.Min = q.Particles[0].Coord2()
-	q.root.bounds.Max = q.root.bounds.Min
+	q.root = tile{
+		particle: q.Particles[0],
+		center:   q.Particles[0].Coord2(),
+		mass:     q.Particles[0].Mass(),
+	}
+	q.root.bounds.Min = q.root.center
+	q.root.bounds.Max = q.root.center
 	for _, e := range q.Particles[1:] {
 		c := e.Coord2()
 		if c.X < q.root.bounds.Min.X {
@@ -159,7 +164,7 @@ func (q *Plane) Reset() {
 	// TODO(kortschak): Partially parallelise this by
 	// choosing the direction and using one of four
 	// goroutines to work on each root quadrant.
-	for _, e := range q.Particles {
+	for _, e := range q.Particles[1:] {
 		q.root.insert(e)
 	}
 	q.root.summarize()
@@ -244,10 +249,7 @@ func (t *tile) forceOnMassAt(p Point2, m, theta float64, force func(m1, m2 float
 		return force(m, t.mass, t.center.Sub(p))
 	}
 
-	var v Point2
-	if t.particle != nil {
-		v = force(m, t.particle.Mass(), t.particle.Coord2().Sub(p))
-	}
+	v := force(m, t.particle.Mass(), t.particle.Coord2().Sub(p))
 	for _, d := range &t.nodes {
 		if d == nil {
 			continue
