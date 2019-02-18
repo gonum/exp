@@ -383,3 +383,73 @@ func TestPlaneForceOn(t *testing.T) {
 	}
 }
 
+var (
+	fv2sink   Point2
+	planeSink *Plane
+)
+
+func BenchmarkNewPlane(b *testing.B) {
+	for _, n := range []int{1e3, 1e4, 1e5, 1e6} {
+		rnd := rand.New(rand.NewSource(1))
+		particles := make([]Particle2, n)
+		for i := range particles {
+			particles[i] = particle2{x: rnd.Float64(), y: rnd.Float64(), m: 1}
+		}
+		b.ResetTimer()
+		b.Run(fmt.Sprintf("%d-body", len(particles)), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				planeSink = NewPlane(particles)
+			}
+		})
+	}
+}
+
+func BenchmarkPlaneForceOn(b *testing.B) {
+	for _, n := range []int{1e3, 1e4, 1e5} {
+		for _, theta := range []float64{0, 0.1, 0.5, 1, 1.5} {
+			if n > 1e4 && theta < 0.5 {
+				// Don't run unreasonably long benchmarks.
+				continue
+			}
+			rnd := rand.New(rand.NewSource(1))
+			particles := make([]Particle2, n)
+			for i := range particles {
+				particles[i] = particle2{x: rnd.Float64(), y: rnd.Float64(), m: 1}
+			}
+			plane := NewPlane(particles)
+			b.ResetTimer()
+			b.Run(fmt.Sprintf("%d-body/theta=%v", len(particles), theta), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					for _, p := range particles {
+						fv2sink = plane.ForceOn(p, theta, Gravity2)
+					}
+				}
+			})
+		}
+	}
+}
+
+func BenchmarkPlaneFull(b *testing.B) {
+	for _, n := range []int{1e3, 1e4, 1e5} {
+		for _, theta := range []float64{0, 0.1, 0.5, 1, 1.5} {
+			if n > 1e4 && theta < 0.5 {
+				// Don't run unreasonably long benchmarks.
+				continue
+			}
+			rnd := rand.New(rand.NewSource(1))
+			particles := make([]Particle2, n)
+			for i := range particles {
+				particles[i] = particle2{x: rnd.Float64(), y: rnd.Float64(), m: 1}
+			}
+			b.ResetTimer()
+			b.Run(fmt.Sprintf("%d-body/theta=%v", len(particles), theta), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					plane := NewPlane(particles)
+					for _, p := range particles {
+						fv2sink = plane.ForceOn(p, theta, Gravity2)
+					}
+				}
+			})
+		}
+	}
+}

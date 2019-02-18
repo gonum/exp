@@ -387,3 +387,73 @@ func TestVolumeForceOn(t *testing.T) {
 	}
 }
 
+var (
+	fv3sink    Point3
+	volumeSink *Volume
+)
+
+func BenchmarkNewVolume(b *testing.B) {
+	for _, n := range []int{1e3, 1e4, 1e5, 1e6} {
+		rnd := rand.New(rand.NewSource(1))
+		particles := make([]Particle3, n)
+		for i := range particles {
+			particles[i] = particle3{x: rnd.Float64(), y: rnd.Float64(), z: rnd.Float64(), m: 1}
+		}
+		b.ResetTimer()
+		b.Run(fmt.Sprintf("%d-body", len(particles)), func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				volumeSink = NewVolume(particles)
+			}
+		})
+	}
+}
+
+func BenchmarkVolumeForceOn(b *testing.B) {
+	for _, n := range []int{1e3, 1e4, 1e5} {
+		for _, theta := range []float64{0, 0.1, 0.5, 1, 1.5} {
+			if n > 1e4 && theta < 0.5 {
+				// Don't run unreasonably long benchmarks.
+				continue
+			}
+			rnd := rand.New(rand.NewSource(1))
+			particles := make([]Particle3, n)
+			for i := range particles {
+				particles[i] = particle3{x: rnd.Float64(), y: rnd.Float64(), z: rnd.Float64(), m: 1}
+			}
+			volume := NewVolume(particles)
+			b.ResetTimer()
+			b.Run(fmt.Sprintf("%d-body/theta=%v", len(particles), theta), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					for _, p := range particles {
+						fv3sink = volume.ForceOn(p, theta, Gravity3)
+					}
+				}
+			})
+		}
+	}
+}
+
+func BenchmarkVolumeFull(b *testing.B) {
+	for _, n := range []int{1e3, 1e4, 1e5} {
+		for _, theta := range []float64{0, 0.1, 0.5, 1, 1.5} {
+			if n > 1e4 && theta < 0.5 {
+				// Don't run unreasonably long benchmarks.
+				continue
+			}
+			rnd := rand.New(rand.NewSource(1))
+			particles := make([]Particle3, n)
+			for i := range particles {
+				particles[i] = particle3{x: rnd.Float64(), y: rnd.Float64(), z: rnd.Float64(), m: 1}
+			}
+			b.ResetTimer()
+			b.Run(fmt.Sprintf("%d-body/theta=%v", len(particles), theta), func(b *testing.B) {
+				for i := 0; i < b.N; i++ {
+					volume := NewVolume(particles)
+					for _, p := range particles {
+						fv3sink = volume.ForceOn(p, theta, Gravity3)
+					}
+				}
+			})
+		}
+	}
+}
