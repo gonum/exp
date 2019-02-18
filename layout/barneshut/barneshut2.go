@@ -209,11 +209,7 @@ func (t *tile) insert(p Particle2) {
 	if t.particle == nil {
 		for _, q := range t.nodes {
 			if q != nil {
-				dir := t.bounds.quadrant(p)
-				if t.nodes[dir] == nil {
-					t.nodes[dir] = &tile{bounds: t.bounds.split(dir)}
-				}
-				t.nodes[dir].insert(p)
+				t.passDown(p)
 				return
 			}
 		}
@@ -222,19 +218,19 @@ func (t *tile) insert(p Particle2) {
 		t.mass = p.Mass()
 		return
 	}
+	t.passDown(p)
+	t.passDown(t.particle)
+	t.particle = nil
+	t.center = Point2{}
+	t.mass = 0
+}
+
+func (t *tile) passDown(p Particle2) {
 	dir := t.bounds.quadrant(p)
 	if t.nodes[dir] == nil {
 		t.nodes[dir] = &tile{bounds: t.bounds.split(dir)}
 	}
 	t.nodes[dir].insert(p)
-	dir = t.bounds.quadrant(t.particle)
-	if t.nodes[dir] == nil {
-		t.nodes[dir] = &tile{bounds: t.bounds.split(dir)}
-	}
-	t.nodes[dir].insert(t.particle)
-	t.particle = nil
-	t.center = Point2{}
-	t.mass = 0
 }
 
 // summarize updates node masses and centers of mass.

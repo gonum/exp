@@ -260,11 +260,7 @@ func (b *bucket) insert(p Particle3) {
 	if b.particle == nil {
 		for _, q := range b.nodes {
 			if q != nil {
-				dir := b.bounds.octant(p)
-				if b.nodes[dir] == nil {
-					b.nodes[dir] = &bucket{bounds: b.bounds.split(dir)}
-				}
-				b.nodes[dir].insert(p)
+				b.passDown(p)
 				return
 			}
 		}
@@ -273,19 +269,20 @@ func (b *bucket) insert(p Particle3) {
 		b.mass = p.Mass()
 		return
 	}
+
+	b.passDown(p)
+	b.passDown(b.particle)
+	b.particle = nil
+	b.center = Point3{}
+	b.mass = 0
+}
+
+func (b *bucket) passDown(p Particle3) {
 	dir := b.bounds.octant(p)
 	if b.nodes[dir] == nil {
 		b.nodes[dir] = &bucket{bounds: b.bounds.split(dir)}
 	}
 	b.nodes[dir].insert(p)
-	dir = b.bounds.octant(b.particle)
-	if b.nodes[dir] == nil {
-		b.nodes[dir] = &bucket{bounds: b.bounds.split(dir)}
-	}
-	b.nodes[dir].insert(b.particle)
-	b.particle = nil
-	b.center = Point3{}
-	b.mass = 0
 }
 
 // summarize updates node masses and centers of mass.
