@@ -31,4 +31,4 @@ echo "mode: set" > $ACC_OUT
 find . -type d | while read d; do testCover $d || exit; done
 
 # Upload the coverage profile to coveralls.io
-[ -n "$COVERALLS_TOKEN" ] && goveralls -coverprofile=$ACC_OUT -service=travis-ci -repotoken $COVERALLS_TOKEN
+[ -n "$COVERALLS_TOKEN" ] && ( goveralls -coverprofile=$ACC_OUT -service=travis-ci -repotoken $COVERALLS_TOKEN || echo -e '\n\e[31mCoveralls failed.\n' )
