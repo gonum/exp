@@ -417,7 +417,7 @@ func TestVolumeForceOn(t *testing.T) {
 			m := p.Mass()
 			pv := p.Coord3()
 			for _, e := range particles {
-				v = v.Add(Gravity3(m, e.Mass(), e.Coord3().Sub(pv)))
+				v = v.Add(Gravity3(p, e, m, e.Mass(), e.Coord3().Sub(pv)))
 			}
 			moved[i] = p.Coord3().Add(v)
 		}
@@ -428,9 +428,9 @@ func TestVolumeForceOn(t *testing.T) {
 				var ssd, sd float64
 				var calls int
 				for i, p := range particles {
-					v := volume.ForceOn(p, theta, func(m1, m2 float64, v Point3) Point3 {
+					v := volume.ForceOn(p, theta, func(p1, p2 Particle3, m1, m2 float64, v Point3) Point3 {
 						calls++
-						return Gravity3(m1, m2, v)
+						return Gravity3(p1, p2, m1, m2, v)
 					})
 					pos := p.Coord3().Add(v)
 					d := moved[i].Sub(pos)

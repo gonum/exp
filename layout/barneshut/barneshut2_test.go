@@ -420,7 +420,7 @@ func TestPlaneForceOn(t *testing.T) {
 			m := p.Mass()
 			pv := p.Coord2()
 			for _, e := range particles {
-				v = v.Add(Gravity2(m, e.Mass(), e.Coord2().Sub(pv)))
+				v = v.Add(Gravity2(p, e, m, e.Mass(), e.Coord2().Sub(pv)))
 			}
 			moved[i] = p.Coord2().Add(v)
 		}
@@ -431,9 +431,9 @@ func TestPlaneForceOn(t *testing.T) {
 				var ssd, sd float64
 				var calls int
 				for i, p := range particles {
-					v := plane.ForceOn(p, theta, func(m1, m2 float64, v Point2) Point2 {
+					v := plane.ForceOn(p, theta, func(p1, p2 Particle2, m1, m2 float64, v Point2) Point2 {
 						calls++
-						return Gravity2(m1, m2, v)
+						return Gravity2(p1, p2, m1, m2, v)
 					})
 					pos := p.Coord2().Add(v)
 					d := moved[i].Sub(pos)

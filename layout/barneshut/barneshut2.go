@@ -99,9 +99,21 @@ type Particle2 interface {
 	Mass() float64
 }
 
-// Gravity2 returns a vector force on m1 by m2, equalt to (m1⋅m2)/‖v‖²
-// in the directions of v.
-func Gravity2(m1, m2 float64, v Point2) Point2 {
+// Force2 is a force modeling function for interactions between p1 and p2,
+// m1 is the mass of p1 and m2 of p2. The vector v is the vector from p1 to
+// p2. The returned value is the force vector acting on p1.
+//
+// In models where the identity of particles must be known, p1 and p2 may be
+// compared. Force2 may be passed nil for p2 when the Barnes-Hut approximation
+// is being used. A nil p2 indicates that the second mass center is an
+// aggregate.
+type Force2 func(p1, p2 Particle2, m1, m2 float64, v Point2) Point2
+
+// Gravity2 returns a vector force on m1 by m2, equal to (m1⋅m2)/‖v‖²
+// in the directions of v. Gravity2 ignores the identity of the interacting
+// particles and returns a zero vector when the two particles are
+// coincident, but performs no other sanity checks.
+func Gravity2(_, _ Particle2, m1, m2 float64, v Point2) Point2 {
 	d2 := v.X*v.X + v.Y*v.Y
 	if d2 == 0 {
 		return Point2{}
@@ -165,20 +177,17 @@ func (q *Plane) Reset() {
 	q.root.summarize()
 }
 
-// ForceOn returns a force vector on p given p's mass and the force calculation
-// function, using the Barnes-Hut theta approximation parameter.
+// ForceOn returns a force vector on p given p's mass and the force function, f,
+// using the Barnes-Hut theta approximation parameter.
 //
-// When calculating the force component on a particle, m1 is the mass of the
-// particle, m2 is the mass of the component mass center and v is the
-// vector from the particle to the component mass center. The returned vector
-// from force is the force vector component acting on p by the component
-// mass center.
+// Calls to f will include p in the p1 position and a non-nil p2 if the force
+// interaction is with a non-aggregate mass center, otherwise p2 will be nil.
 //
 // It is safe to call ForceOn concurrently.
-func (q *Plane) ForceOn(p Particle2, theta float64, force func(m1, m2 float64, v Point2) Point2) (vector Point2) {
+func (q *Plane) ForceOn(p Particle2, theta float64, f Force2) (vector Point2) {
 	var empty tile
 	if theta > 0 && q.root != empty {
-		return q.root.forceOnMassAt(p.Coord2(), p.Mass(), theta, force)
+		return q.root.forceOn(p, p.Coord2(), p.Mass(), theta, f)
 	}
 
 	// For the degenerate case, just iterate over the
@@ -187,7 +196,7 @@ func (q *Plane) ForceOn(p Particle2, theta float64, force func(m1, m2 float64, v
 	m := p.Mass()
 	pv := p.Coord2()
 	for _, e := range q.Particles {
-		v = v.Add(force(m, e.Mass(), e.Coord2().Sub(pv)))
+		v = v.Add(f(p, e, m, e.Mass(), e.Coord2().Sub(pv)))
 	}
 	return v
 }
@@ -249,13 +258,13 @@ func (t *tile) summarize() (center Point2, mass float64) {
 	return t.center, t.mass
 }
 
-// forceOnMassAt returns a force vector on p given p's mass m and the force
+// forceOn returns a force vector on p given p's mass m and the force
 // calculation function, using the Barnes-Hut theta approximation parameter.
-func (t *tile) forceOnMassAt(p Point2, m, theta float64, force func(m1, m2 float64, v Point2) Point2) (vector Point2) {
+func (t *tile) forceOn(p Particle2, pt Point2, m, theta float64, f Force2) (vector Point2) {
 	s := ((t.bounds.Max.X - t.bounds.Min.X) + (t.bounds.Max.Y - t.bounds.Min.Y)) / 2
-	d := math.Hypot(p.X-t.center.X, p.Y-t.center.Y)
+	d := math.Hypot(pt.X-t.center.X, pt.Y-t.center.Y)
 	if s/d < theta || t.particle != nil {
-		return force(m, t.mass, t.center.Sub(p))
+		return f(p, t.particle, m, t.mass, t.center.Sub(pt))
 	}
 
 	var v Point2
@@ -263,7 +272,7 @@ func (t *tile) forceOnMassAt(p Point2, m, theta float64, force func(m1, m2 float
 		if d == nil {
 			continue
 		}
-		v = v.Add(d.forceOnMassAt(p, m, theta, force))
+		v = v.Add(d.forceOn(p, pt, m, theta, f))
 	}
 	return v
 }

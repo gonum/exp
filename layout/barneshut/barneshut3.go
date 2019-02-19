@@ -144,9 +144,21 @@ type Particle3 interface {
 	Mass() float64
 }
 
-// Gravity3 returns a vector force on m1 by m2, equalt to (m1⋅m2)/‖v‖²
-// in the directions of v.
-func Gravity3(m1, m2 float64, v Point3) Point3 {
+// Force3 is a force modeling function for interactions between p1 and p2,
+// m1 is the mass of p1 and m2 of p2. The vector v is the vector from p1 to
+// p2. The returned value is the force vector acting on p1.
+//
+// In models where the identity of particles must be known, p1 and p2 may be
+// compared. Force3 may be passed nil for p2 when the Barnes-Hut approximation
+// is being used. A nil p2 indicates that the second mass center is an
+// aggregate.
+type Force3 func(p1, p2 Particle3, m1, m2 float64, v Point3) Point3
+
+// Gravity3 returns a vector force on m1 by m2, equal to (m1⋅m2)/‖v‖²
+// in the directions of v. Gravity3 ignores the identity of the interacting
+// particles and returns a zero vector when the two particles are
+// coincident, but performs no other sanity checks.
+func Gravity3(_, _ Particle3, m1, m2 float64, v Point3) Point3 {
 	d2 := v.X*v.X + v.Y*v.Y + v.Z*v.Z
 	if d2 == 0 {
 		return Point3{}
@@ -216,20 +228,17 @@ func (q *Volume) Reset() {
 	q.root.summarize()
 }
 
-// ForceOn returns a force vector on p given p's mass and the force calculation
-// function, using the Barnes-Hut theta approximation parameter.
+// ForceOn returns a force vector on p given p's mass and the force function, f,
+// using the Barnes-Hut theta approximation parameter.
 //
-// When calculating the force component on a particle, m1 is the mass of the
-// particle, m2 is the mass of the component mass center and v is the
-// vector from the particle to the component mass center. The returned vector
-// from force is the force vector component acting on p by the component
-// mass center.
+// Calls to f will include p in the p1 position and a non-nil p2 if the force
+// interaction is with a non-aggregate mass center, otherwise p2 will be nil.
 //
 // It is safe to call ForceOn concurrently.
-func (q *Volume) ForceOn(p Particle3, theta float64, force func(m1, m2 float64, v Point3) Point3) (vector Point3) {
+func (q *Volume) ForceOn(p Particle3, theta float64, f Force3) (vector Point3) {
 	var empty bucket
 	if theta > 0 && q.root != empty {
-		return q.root.forceOnMassAt(p.Coord3(), p.Mass(), theta, force)
+		return q.root.forceOn(p, p.Coord3(), p.Mass(), theta, f)
 	}
 
 	// For the degenerate case, just iterate over the
@@ -238,7 +247,7 @@ func (q *Volume) ForceOn(p Particle3, theta float64, force func(m1, m2 float64, 
 	m := p.Mass()
 	pv := p.Coord3()
 	for _, e := range q.Particles {
-		v = v.Add(force(m, e.Mass(), e.Coord3().Sub(pv)))
+		v = v.Add(f(p, e, m, e.Mass(), e.Coord3().Sub(pv)))
 	}
 	return v
 }
@@ -303,13 +312,13 @@ func (b *bucket) summarize() (center Point3, mass float64) {
 	return b.center, b.mass
 }
 
-// forceOnMassAt returns a force vector on p given p's mass m and the force
+// forceOn returns a force vector on p given p's mass m and the force
 // calculation function, using the Barnes-Hut theta approximation parameter.
-func (b *bucket) forceOnMassAt(p Point3, m, theta float64, force func(m1, m2 float64, v Point3) Point3) (vector Point3) {
+func (b *bucket) forceOn(p Particle3, pt Point3, m, theta float64, f Force3) (vector Point3) {
 	s := ((b.bounds.Max.X - b.bounds.Min.X) + (b.bounds.Max.Y - b.bounds.Min.Y) + (b.bounds.Max.Z - b.bounds.Min.Z)) / 3
-	d := math.Hypot(math.Hypot(p.X-b.center.X, p.Y-b.center.Y), p.Z-b.center.Z)
+	d := math.Hypot(math.Hypot(pt.X-b.center.X, pt.Y-b.center.Y), pt.Z-b.center.Z)
 	if s/d < theta || b.particle != nil {
-		return force(m, b.mass, b.center.Sub(p))
+		return f(p, b.particle, m, b.mass, b.center.Sub(pt))
 	}
 
 	var v Point3
@@ -317,7 +326,7 @@ func (b *bucket) forceOnMassAt(p Point3, m, theta float64, force func(m1, m2 flo
 		if d == nil {
 			continue
 		}
-		v = v.Add(d.forceOnMassAt(p, m, theta, force))
+		v = v.Add(d.forceOn(p, pt, m, theta, f))
 	}
 	return v
 }
