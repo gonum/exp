@@ -11,9 +11,9 @@ branches:
 
 environment:
   matrix:
-    - GOROOT: 'c:\go19'
     - GOROOT: 'c:\go110'
     - GOROOT: 'c:\go111'
+    - GOROOT: 'c:\go112'
   GOPATH: c:\gopath
   GOTOOLDIR: '%GOROOT%\pkg\tool\windows_amd64'
   PATH: '%GOPATH%\bin;%GOROOT%\bin;%PATH%'
