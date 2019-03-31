@@ -9,6 +9,10 @@ go:
  - 1.10.x
  - master
 
+env:
+ global:
+  - GO111MODULE=on
+
 matrix:
  fast_finish: true
  allow_failures:
@@ -31,6 +35,7 @@ go_import_path: gonum.org/v1/exp
 # If we are building as gonum, then we have access to the coveralls api key, so we can run coverage as well.
 script:
  - ${TRAVIS_BUILD_DIR}/.travis/check-copyright.sh
+ - ${TRAVIS_BUILD_DIR}/.travis/check-imports.sh
  - ${TRAVIS_BUILD_DIR}/.travis/check-formatting.sh
  - go get -d -t -v ./...
  - go build -v ./...
