@@ -96,7 +96,7 @@ func newRandomSPD(n int, rnd *rand.Rand) testCase {
 		panic("bad test matrix")
 	}
 	want := make([]float64, n)
-	chol.SolveVec(mat.NewVecDense(n, want), mat.NewVecDense(n, b))
+	chol.SolveVecTo(mat.NewVecDense(n, want), mat.NewVecDense(n, b))
 	// Matrix-vector multiplication.
 	mulVecTo := func(dst []float64, _ bool, x []float64) {
 		if len(dst) != n || len(x) != n {
@@ -195,7 +195,7 @@ func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 		panic("bad test matrix")
 	}
 	want := make([]float64, n)
-	chol.SolveVec(mat.NewVecDense(n, want), mat.NewVecDense(n, b))
+	chol.SolveVecTo(mat.NewVecDense(n, want), mat.NewVecDense(n, b))
 	// Matrix-vector multiplication.
 	mulVecTo := func(dst []float64, _ bool, x []float64) {
 		if len(dst) != n || len(x) != n {
@@ -353,9 +353,9 @@ func newGreenbaum54(n1, n2 int, rnd *rand.Rand) testCase {
 	// First, compute the solution of V*D*y = b.
 	want := make([]float64, n)
 	wantVec := mat.NewVecDense(n, want)
-	err := luVD.SolveVec(wantVec, false, mat.NewVecDense(n, b))
+	err := luVD.SolveVecTo(wantVec, false, mat.NewVecDense(n, b))
 	if err != nil {
-		panic("luVD.SolveVec(notrans) failed")
+		panic("luVD.SolveVecTo(notrans) failed")
 	}
 	// Second, compute the solution of V^{-1}*x = y, which amounts to just
 	// computing x = V*y.
@@ -370,15 +370,15 @@ func newGreenbaum54(n1, n2 int, rnd *rand.Rand) testCase {
 			// Multiply (V*D*V^{-1})^T * x which can be
 			// rewritten as V^{-1}^T * (V*D)^T * x.
 			dstvec.MulVec(VD.T(), mat.NewVecDense(n, x))
-			err := luV.SolveVec(dstvec, true, dstvec)
+			err := luV.SolveVecTo(dstvec, true, dstvec)
 			if err != nil {
-				panic("luV.SolveVec(trans) failed")
+				panic("luV.SolveVecTo(trans) failed")
 			}
 		} else {
 			// Multiply V*D*V^{-1} * x.
-			err := luV.SolveVec(dstvec, false, mat.NewVecDense(n, x))
+			err := luV.SolveVecTo(dstvec, false, mat.NewVecDense(n, x))
 			if err != nil {
-				panic("luV.SolveVec(notrans) failed")
+				panic("luV.SolveVecTo(notrans) failed")
 			}
 			dstvec.MulVec(&VD, dstvec)
 		}
@@ -582,7 +582,7 @@ func newPDE(nx, ny int, a, b, c, d, e, f func(float64, float64) float64) testCas
 	lu.Factorize(Ad)
 	n := len(rhs)
 	want := make([]float64, n)
-	err := lu.SolveVec(mat.NewVecDense(n, want), false, mat.NewVecDense(n, rhs))
+	err := lu.SolveVecTo(mat.NewVecDense(n, want), false, mat.NewVecDense(n, rhs))
 	if err != nil {
 		panic("lu.SolveVec failed")
 	}
