@@ -1,5 +1,10 @@
 sudo: false
 
+os:
+ - linux
+ - osx
+ - windows
+
 language: go
 
 # Versions of go that are explicitly supported by gonum plus go tip.
@@ -15,36 +20,22 @@ env:
 
 matrix:
  fast_finish: true
+ exclude:
+  - os: windows
+    go: 1.11.x
+  - os: windows
+    go: 1.10.x
+  - os: windows
+    go: master
  allow_failures:
-   - go: master
+  - go: master
 
 before_install:
- # Required for format check.
- - go get golang.org/x/tools/cmd/goimports
- # Required for imports check.
- - go get gonum.org/v1/tools/cmd/check-imports
- # Required for copyright header check.
- - go get gonum.org/v1/tools/cmd/check-copyright
- # Required for coverage.
- - go get golang.org/x/tools/cmd/cover
- - go get github.com/mattn/goveralls
+ - source ${TRAVIS_BUILD_DIR}/.travis/run-parts ${TRAVIS_BUILD_DIR}/.travis/deps.d/${TRAVIS_OS_NAME}
 
 go_import_path: gonum.org/v1/exp
 
 # Get deps, build, test, and ensure the code is gofmt'ed.
 # If we are building as gonum, then we have access to the coveralls api key, so we can run coverage as well.
 script:
- - ${TRAVIS_BUILD_DIR}/.travis/check-copyright.sh
- - ${TRAVIS_BUILD_DIR}/.travis/check-imports.sh
- - ${TRAVIS_BUILD_DIR}/.travis/check-formatting.sh
- - go get -d -t -v ./...
- - go build -v ./...
- - go test -v ./...
- - go test -a -tags bounds -v ./...
- - go test -a -tags noasm -v ./...
- - go test -a -tags appengine -v ./...
- - if [[ $TRAVIS_SECURE_ENV_VARS = "true" ]]; then bash ./.travis/test-coverage.sh; fi
- - ${TRAVIS_BUILD_DIR}/.travis/check-imports.sh
- # This is run last since it alters the tree.
- - ${TRAVIS_BUILD_DIR}/.travis/check-generate.sh
-
+ - source ${TRAVIS_BUILD_DIR}/.travis/run-parts ${TRAVIS_BUILD_DIR}/.travis/run.d/${TRAVIS_OS_NAME}

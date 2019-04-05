@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ $TRAVIS_SECURE_ENV_VARS != "true" ]]; then 
+	exit 0
+fi
+
 MODE=set
 PROFILE_OUT="${PWD}/profile.out"
 ACC_OUT="${PWD}/coverage.txt"
