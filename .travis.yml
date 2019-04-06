@@ -31,11 +31,11 @@ matrix:
   - go: master
 
 before_install:
- - source ${TRAVIS_BUILD_DIR}/.travis/run-parts ${TRAVIS_BUILD_DIR}/.travis/deps.d/${TRAVIS_OS_NAME}
+ - ${TRAVIS_BUILD_DIR}/.travis/run-parts ${TRAVIS_BUILD_DIR}/.travis/deps.d/${TRAVIS_OS_NAME}
 
 go_import_path: gonum.org/v1/exp
 
 # Get deps, build, test, and ensure the code is gofmt'ed.
 # If we are building as gonum, then we have access to the coveralls api key, so we can run coverage as well.
 script:
- - source ${TRAVIS_BUILD_DIR}/.travis/run-parts ${TRAVIS_BUILD_DIR}/.travis/run.d/${TRAVIS_OS_NAME}
+ - ${TRAVIS_BUILD_DIR}/.travis/run-parts ${TRAVIS_BUILD_DIR}/.travis/run.d/${TRAVIS_OS_NAME}
