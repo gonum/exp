@@ -138,7 +138,7 @@ func (b Box3) split(dir int) Box3 {
 	return b
 }
 
-// Particle3 is a particle in a plane.
+// Particle3 is a particle in a volume.
 type Particle3 interface {
 	Coord3() Vector3
 	Mass() float64
