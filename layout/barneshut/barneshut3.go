@@ -20,13 +20,13 @@ const (
 	unw
 )
 
-// Point3 is a 3D point.
-type Point3 struct {
+// Vector3 is a 3D vector.
+type Vector3 struct {
 	X, Y, Z float64
 }
 
 // Add returns the vector sum of p and q.
-func (p Point3) Add(q Point3) Point3 {
+func (p Vector3) Add(q Vector3) Vector3 {
 	p.X += q.X
 	p.Y += q.Y
 	p.Z += q.Z
@@ -34,7 +34,7 @@ func (p Point3) Add(q Point3) Point3 {
 }
 
 // Sub returns the vector sum of p and -q.
-func (p Point3) Sub(q Point3) Point3 {
+func (p Vector3) Sub(q Vector3) Vector3 {
 	p.X -= q.X
 	p.Y -= q.Y
 	p.Z -= q.Z
@@ -42,7 +42,7 @@ func (p Point3) Sub(q Point3) Point3 {
 }
 
 // Scale returns the vector p scaled by f.
-func (p Point3) Scale(f float64) Point3 {
+func (p Vector3) Scale(f float64) Vector3 {
 	p.X *= f
 	p.Y *= f
 	p.Z *= f
@@ -51,12 +51,12 @@ func (p Point3) Scale(f float64) Point3 {
 
 // Box3 is a 3D bounding box.
 type Box3 struct {
-	Min, Max Point3
+	Min, Max Vector3
 }
 
 // octant returns which octant of b that p should be placed in.
 func (b Box3) octant(p Particle3) int {
-	center := Point3{
+	center := Vector3{
 		X: (b.Min.X + b.Max.X) / 2,
 		Y: (b.Min.Y + b.Max.Y) / 2,
 		Z: (b.Min.Z + b.Max.Z) / 2,
@@ -140,7 +140,7 @@ func (b Box3) split(dir int) Box3 {
 
 // Particle3 is a particle in a plane.
 type Particle3 interface {
-	Coord3() Point3
+	Coord3() Vector3
 	Mass() float64
 }
 
@@ -152,16 +152,16 @@ type Particle3 interface {
 // compared. Force3 may be passed nil for p2 when the Barnes-Hut approximation
 // is being used. A nil p2 indicates that the second mass center is an
 // aggregate.
-type Force3 func(p1, p2 Particle3, m1, m2 float64, v Point3) Point3
+type Force3 func(p1, p2 Particle3, m1, m2 float64, v Vector3) Vector3
 
 // Gravity3 returns a vector force on m1 by m2, equal to (m1⋅m2)/‖v‖²
 // in the directions of v. Gravity3 ignores the identity of the interacting
 // particles and returns a zero vector when the two particles are
 // coincident, but performs no other sanity checks.
-func Gravity3(_, _ Particle3, m1, m2 float64, v Point3) Point3 {
+func Gravity3(_, _ Particle3, m1, m2 float64, v Vector3) Vector3 {
 	d2 := v.X*v.X + v.Y*v.Y + v.Z*v.Z
 	if d2 == 0 {
-		return Point3{}
+		return Vector3{}
 	}
 	return v.Scale((m1 * m2) / (d2 * math.Sqrt(d2)))
 }
@@ -235,7 +235,7 @@ func (q *Volume) Reset() {
 // interaction is with a non-aggregate mass center, otherwise p2 will be nil.
 //
 // It is safe to call ForceOn concurrently.
-func (q *Volume) ForceOn(p Particle3, theta float64, f Force3) (vector Point3) {
+func (q *Volume) ForceOn(p Particle3, theta float64, f Force3) (force Vector3) {
 	var empty bucket
 	if theta > 0 && q.root != empty {
 		return q.root.forceOn(p, p.Coord3(), p.Mass(), theta, f)
@@ -243,7 +243,7 @@ func (q *Volume) ForceOn(p Particle3, theta float64, f Force3) (vector Point3) {
 
 	// For the degenerate case, just iterate over the
 	// slice of particles rather than walking the tree.
-	var v Point3
+	var v Vector3
 	m := p.Mass()
 	pv := p.Coord3()
 	for _, e := range q.Particles {
@@ -260,7 +260,7 @@ type bucket struct {
 
 	nodes [8]*bucket
 
-	center Point3
+	center Vector3
 	mass   float64
 }
 
@@ -282,7 +282,7 @@ func (b *bucket) insert(p Particle3) {
 	b.passDown(p)
 	b.passDown(b.particle)
 	b.particle = nil
-	b.center = Point3{}
+	b.center = Vector3{}
 	b.mass = 0
 }
 
@@ -295,7 +295,7 @@ func (b *bucket) passDown(p Particle3) {
 }
 
 // summarize updates node masses and centers of mass.
-func (b *bucket) summarize() (center Point3, mass float64) {
+func (b *bucket) summarize() (center Vector3, mass float64) {
 	for _, d := range &b.nodes {
 		if d == nil {
 			continue
@@ -314,14 +314,14 @@ func (b *bucket) summarize() (center Point3, mass float64) {
 
 // forceOn returns a force vector on p given p's mass m and the force
 // calculation function, using the Barnes-Hut theta approximation parameter.
-func (b *bucket) forceOn(p Particle3, pt Point3, m, theta float64, f Force3) (vector Point3) {
+func (b *bucket) forceOn(p Particle3, pt Vector3, m, theta float64, f Force3) (vector Vector3) {
 	s := ((b.bounds.Max.X - b.bounds.Min.X) + (b.bounds.Max.Y - b.bounds.Min.Y) + (b.bounds.Max.Z - b.bounds.Min.Z)) / 3
 	d := math.Hypot(math.Hypot(pt.X-b.center.X, pt.Y-b.center.Y), pt.Z-b.center.Z)
 	if s/d < theta || b.particle != nil {
 		return f(p, b.particle, m, b.mass, b.center.Sub(pt))
 	}
 
-	var v Point3
+	var v Vector3
 	for _, d := range &b.nodes {
 		if d == nil {
 			continue

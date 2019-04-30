@@ -16,27 +16,27 @@ const (
 	nw
 )
 
-// Point2 is a 2D point.
-type Point2 struct {
+// Vector2 is a 2D vector.
+type Vector2 struct {
 	X, Y float64
 }
 
 // Add returns the vector sum of p and q.
-func (p Point2) Add(q Point2) Point2 {
+func (p Vector2) Add(q Vector2) Vector2 {
 	p.X += q.X
 	p.Y += q.Y
 	return p
 }
 
 // Sub returns the vector sum of p and -q.
-func (p Point2) Sub(q Point2) Point2 {
+func (p Vector2) Sub(q Vector2) Vector2 {
 	p.X -= q.X
 	p.Y -= q.Y
 	return p
 }
 
 // Scale returns the vector p scaled by f.
-func (p Point2) Scale(f float64) Point2 {
+func (p Vector2) Scale(f float64) Vector2 {
 	p.X *= f
 	p.Y *= f
 	return p
@@ -44,12 +44,12 @@ func (p Point2) Scale(f float64) Point2 {
 
 // Box2 is a 2D bounding box.
 type Box2 struct {
-	Min, Max Point2
+	Min, Max Vector2
 }
 
 // quadrant returns which quadrant of b that p should be placed in.
 func (b Box2) quadrant(p Particle2) int {
-	center := Point2{
+	center := Vector2{
 		X: (b.Min.X + b.Max.X) / 2,
 		Y: (b.Min.Y + b.Max.Y) / 2,
 	}
@@ -95,7 +95,7 @@ func (b Box2) split(dir int) Box2 {
 
 // Particle2 is a particle in a plane.
 type Particle2 interface {
-	Coord2() Point2
+	Coord2() Vector2
 	Mass() float64
 }
 
@@ -107,16 +107,16 @@ type Particle2 interface {
 // compared. Force2 may be passed nil for p2 when the Barnes-Hut approximation
 // is being used. A nil p2 indicates that the second mass center is an
 // aggregate.
-type Force2 func(p1, p2 Particle2, m1, m2 float64, v Point2) Point2
+type Force2 func(p1, p2 Particle2, m1, m2 float64, v Vector2) Vector2
 
 // Gravity2 returns a vector force on m1 by m2, equal to (m1⋅m2)/‖v‖²
 // in the directions of v. Gravity2 ignores the identity of the interacting
 // particles and returns a zero vector when the two particles are
 // coincident, but performs no other sanity checks.
-func Gravity2(_, _ Particle2, m1, m2 float64, v Point2) Point2 {
+func Gravity2(_, _ Particle2, m1, m2 float64, v Vector2) Vector2 {
 	d2 := v.X*v.X + v.Y*v.Y
 	if d2 == 0 {
-		return Point2{}
+		return Vector2{}
 	}
 	return v.Scale((m1 * m2) / (d2 * math.Sqrt(d2)))
 }
@@ -184,7 +184,7 @@ func (q *Plane) Reset() {
 // interaction is with a non-aggregate mass center, otherwise p2 will be nil.
 //
 // It is safe to call ForceOn concurrently.
-func (q *Plane) ForceOn(p Particle2, theta float64, f Force2) (vector Point2) {
+func (q *Plane) ForceOn(p Particle2, theta float64, f Force2) (force Vector2) {
 	var empty tile
 	if theta > 0 && q.root != empty {
 		return q.root.forceOn(p, p.Coord2(), p.Mass(), theta, f)
@@ -192,7 +192,7 @@ func (q *Plane) ForceOn(p Particle2, theta float64, f Force2) (vector Point2) {
 
 	// For the degenerate case, just iterate over the
 	// slice of particles rather than walking the tree.
-	var v Point2
+	var v Vector2
 	m := p.Mass()
 	pv := p.Coord2()
 	for _, e := range q.Particles {
@@ -209,7 +209,7 @@ type tile struct {
 
 	nodes [4]*tile
 
-	center Point2
+	center Vector2
 	mass   float64
 }
 
@@ -230,7 +230,7 @@ func (t *tile) insert(p Particle2) {
 	t.passDown(p)
 	t.passDown(t.particle)
 	t.particle = nil
-	t.center = Point2{}
+	t.center = Vector2{}
 	t.mass = 0
 }
 
@@ -243,7 +243,7 @@ func (t *tile) passDown(p Particle2) {
 }
 
 // summarize updates node masses and centers of mass.
-func (t *tile) summarize() (center Point2, mass float64) {
+func (t *tile) summarize() (center Vector2, mass float64) {
 	for _, d := range &t.nodes {
 		if d == nil {
 			continue
@@ -260,14 +260,14 @@ func (t *tile) summarize() (center Point2, mass float64) {
 
 // forceOn returns a force vector on p given p's mass m and the force
 // calculation function, using the Barnes-Hut theta approximation parameter.
-func (t *tile) forceOn(p Particle2, pt Point2, m, theta float64, f Force2) (vector Point2) {
+func (t *tile) forceOn(p Particle2, pt Vector2, m, theta float64, f Force2) (vector Vector2) {
 	s := ((t.bounds.Max.X - t.bounds.Min.X) + (t.bounds.Max.Y - t.bounds.Min.Y)) / 2
 	d := math.Hypot(pt.X-t.center.X, pt.Y-t.center.Y)
 	if s/d < theta || t.particle != nil {
 		return f(p, t.particle, m, t.mass, t.center.Sub(pt))
 	}
 
-	var v Point2
+	var v Vector2
 	for _, d := range &t.nodes {
 		if d == nil {
 			continue
