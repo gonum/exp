@@ -96,7 +96,7 @@ func (b Box3) octant(p Particle3) int {
 	}
 }
 
-// split returns a octant subdivision of b in the given direction.
+// split returns an octant subdivision of b in the given direction.
 func (b Box3) split(dir int) Box3 {
 	halfX := (b.Max.X - b.Min.X) / 2
 	halfY := (b.Max.Y - b.Min.Y) / 2
@@ -252,7 +252,7 @@ func (q *Volume) ForceOn(p Particle3, theta float64, f Force3) (force Vector3) {
 	return v
 }
 
-// bucket is a oct tree octant with Barnes-Hut extensions.
+// bucket is an oct tree octant with Barnes-Hut extensions.
 type bucket struct {
 	particle Particle3
 
