@@ -8,10 +8,11 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-// CG implements the Conjugate Gradient iterative method with
-// preconditioning for solving systems of linear equations
-//  A*x = b,
-// where A is a symmetric positive definite matrix.
+// CG implements the Conjugate Gradient iterative method with preconditioning
+// for solving systems of linear equations
+//  A * x = b,
+// where A is a symmetric positive definite matrix. It requires minimal memory
+// storage and is the method of choice for symmetric positive definite problem.
 //
 // References:
 //  - Barrett, Richard et al. (1994). Section 2.3.1 Conjugate Gradient Method (CG).

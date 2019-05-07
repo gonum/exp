@@ -10,10 +10,12 @@ import (
 	"gonum.org/v1/gonum/floats"
 )
 
-// BiCG implements the Bi-Conjugate Gradient method with
-// preconditioning for solving systems of linear equations
-//  A*x = b,
-// where A is a square, possibly nonsymmetric matrix.
+// BiCG implements the Bi-Conjugate Gradient method with preconditioning for
+// solving systems of linear equations
+//  A * x = b,
+// where A is a nonsymmetric, nonsingular matrix. It uses limited memory storage
+// but the convergence may be irregular and the method may break down. BiCG
+// requires a multiplication with A and A^T at each iteration.
 //
 // References:
 //  - Barrett, R. et al. (1994). Section 2.3.5 BiConjugate Gradient (BiCG).

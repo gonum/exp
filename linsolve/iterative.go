@@ -146,7 +146,7 @@ type Stats struct {
 //
 // settings provide means for adjusting parameters of the iterative process. See
 // the Settings documentation for more information. Iterative will not modify
-// the fields of Settings.
+// the fields of Settings. If settings is nil, default settings will be used.
 //
 // Note that the default choices of Method and Settings were chosen to provide
 // accuracy and robustness, rather than speed. There are many algorithms for

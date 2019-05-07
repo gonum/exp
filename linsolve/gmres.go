@@ -14,9 +14,12 @@ import (
 
 // GMRES implements the Generalized Minimum Residual method with the modified
 // Gram-Schmidt orthogonalization for solving systems of linear equations
-//  A*x = b,
-// where A is a square matrix (not necessarily symmetric). It uses restarts to control
-// memory requirements.
+//  A * x = b,
+// where A is a nonsymmetric, nonsingular matrix. It may find a solution in
+// fewer iterations and with fewer matrix-vector products compared to BiCG or
+// BiCGStab at the price of much large memory storage. This implementation uses
+// restarts to limit the memory requirements. GMRES does not need the
+// multiplication with A^T.
 //
 // References:
 //  - Barrett, R. et al. (1994). Section 2.3.4 Generalized Minimal Residual
