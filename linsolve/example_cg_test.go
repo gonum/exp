@@ -9,13 +9,18 @@ import (
 	"math"
 
 	"gonum.org/v1/exp/linsolve"
-	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
 
 type system struct {
-	A *mat.SymBandDense
+	a *mat.SymBandDense
 	b []float64
+}
+
+func (sys system) MulVecTo(dst []float64, trans bool, x []float64) {
+	n := len(x)
+	ax := mat.NewVecDense(n, dst)
+	ax.MulVec(sys.a, mat.NewVecDense(n, x))
 }
 
 // L2Projection returns a linear system whose solution is the L2 projection of f
@@ -29,10 +34,9 @@ type system struct {
 func L2Projection(grid []float64, f func(float64) float64) system {
 	n := len(grid)
 
-	// Allocate the mass matrix.
+	// Assemble the mass matrix by iterating over all elements.
 	lda := 2
 	a := make([]float64, n*lda)
-	// Assemble the mass matrix by iterating over all elements.
 	for i := 0; i < n-1; i++ {
 		// h is the length of the i-th element.
 		h := grid[i+1] - grid[i]
@@ -42,11 +46,12 @@ func L2Projection(grid []float64, f func(float64) float64) system {
 		a[(i+1)*lda] += h / 3
 		a[i*lda+1] += h / 6
 	}
+
+	// Allocate the mass matrix.
 	A := mat.NewSymBandDense(n, 1, a)
 
-	// Allocate the load vector.
-	b := make([]float64, n)
 	// Assemble the load vector by iterating over all elements.
+	b := make([]float64, n)
 	for i := 0; i < n-1; i++ {
 		h := grid[i+1] - grid[i]
 		b[i] += f(grid[i]) * h / 2
@@ -68,63 +73,22 @@ func UniformGrid(x0, x1 float64, n int) []float64 {
 	return grid
 }
 
-func ExampleCG() {
-	const tol = 1e-6
-
+func ExampleIterative() {
 	grid := UniformGrid(0, 1, 10)
 	sys := L2Projection(grid, func(x float64) float64 {
 		return x * math.Sin(x)
 	})
-	n := sys.A.Symmetric()
 
-	ctx := linsolve.Context{
-		X:   make([]float64, n),
-		Src: make([]float64, n),
-		Dst: make([]float64, n),
-	}
-
-	if floats.Norm(sys.b, 2) < tol {
-		fmt.Println("Initial estimate is sufficiently accurate")
+	result, err := linsolve.Iterative(sys, sys.b, &linsolve.CG{}, nil)
+	if err != nil {
+		fmt.Println("Error:", err)
 		return
 	}
 
-	bnorm := floats.Norm(sys.b, 2)
-	var (
-		numiter int
-		rnorms  []float64
-		cg      linsolve.CG
-	)
-	cg.Init(ctx.X, sys.b)
-MainLoop:
-	for {
-		op, err := cg.Iterate(&ctx)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
-		switch op {
-		case linsolve.MulVec:
-			dst := mat.NewVecDense(n, ctx.Dst)
-			dst.MulVec(sys.A, mat.NewVecDense(n, ctx.Src))
-		case linsolve.PreconSolve:
-			copy(ctx.Dst, ctx.Src)
-		case linsolve.CheckResidualNorm:
-			rnorms = append(rnorms, ctx.ResidualNorm)
-			ctx.Converged = ctx.ResidualNorm/bnorm < tol
-		case linsolve.MajorIteration:
-			numiter++
-			if ctx.Converged {
-				break MainLoop
-			}
-		}
-	}
-
-	fmt.Printf("# iterations: %v\n", numiter)
-	fmt.Printf("Residual history: %.6g\n", rnorms)
-	fmt.Printf("Final solution: %.6f\n", ctx.X)
+	fmt.Printf("# iterations: %v\n", result.Stats.Iterations)
+	fmt.Printf("Final solution: %.6f\n", result.X)
 
 	// Output:
-	// # iterations: 10
-	// Residual history: [0.016233 0.00801479 0.00296172 0.000836001 0.000221519 5.67951e-05 1.45126e-05 3.54889e-06 7.65854e-07 6.49586e-08]
-	// Final solution: [-0.003341 0.006678 0.036530 0.085606 0.152981 0.237072 0.337006 0.447616 0.578244 0.682719 0.920847]
+	// # iterations: 11
+	// Final solution: [-0.003339 0.006677 0.036530 0.085606 0.152981 0.237072 0.337006 0.447616 0.578244 0.682719 0.920847]
 }
