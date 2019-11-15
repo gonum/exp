@@ -1,6 +1,7 @@
 // Copyright ©2019 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
 package linsolve_test
 
 import (
@@ -19,9 +20,10 @@ import (
 
 // AllenCahnFD implements a semi-implicit finite difference scheme for the
 // solution of the one-dimensional Allen-Cahn equation
-//  ∂_t u = Δu - 1/ξ²·f'(u)  in (0,L)×(0,T)
-//   u(0) = u0              on (0,L)
-// where f is a double-well potential function
+//   u_t = u_xx - 1/ξ²·f'(u)  in (0,L)×(0,T)
+//   u_x = 0                  on (0,T)
+//  u(0) = u0                 on (0,L)
+// where f is a double-well-shaped function with two minima at ±1
 //  f(s) = 1/4·(s²-1)²
 //
 // The equation arises in materials science in the description of phase
@@ -60,46 +62,79 @@ func FPrime(s float64) float64 {
 }
 
 // Setup initializes the receiver for solving the Allen-Cahn equation on a
-// uniform grid with n nodes on the spatial interval (0,L) and with the time
+// uniform grid with n+1 nodes on the spatial interval (0,L) and with the time
 // step size tau.
 func (ac *AllenCahnFD) Setup(n int, L float64, tau float64) {
-	ac.h = L / float64(n-1)
+	ac.h = L / float64(n)
 	ac.tau = tau
 
-	// The finite difference scheme can be derived by replacing the derivatives
-	// by finite differences:
-	//  (u^k_i - u^{k-1}_i) / tau = (u^k_{i-1} - 2*u^k_i + u^k_{i+1}) / h² - 1/ξ² * f'(u^{k-1}_i)
-	// Collecting the terms from the same time level on each side of the
-	// equation gives:
-	//  u^k_i - tau / h² * (u^k_{i-1} - 2*u^k_i + u^k_{i+1}) = u^{k-1}_i - tau/ξ² * f'(u^{k-1}_i)
-	// The zero Neumann boundary condition is imposed by reflecting the solution
-	// across the boundary:
-	//  u_{-1} = u_1,   u_{n+1} = u_{n-1}
-	// giving for example at i=0:
-	//  u^k_0 / 2 - tau / h² * (u^k_1 - u^k_0) = (u^{k-1}_0 - tau/ξ² * f'(u^{k-1}_0)) / 2
+	// We solve this PDE numerically by replacing the derivatives with finite
+	// differences. For the spatial derivative, we use a central difference
+	// scheme, and for the time derivative derivative we use semi-implicit Euler
+	// integration where the non-linear term with f' is taken from the previous
+	// time step.
+	//
+	// After replacing the derivatives we get
+	//  1/tau*(u^{k+1}_i - u^k_i) = 1/h²*(u^{k+1}_{i-1} - 2*u^{k+1}_i + u^{k+1}_{i+1}) - 1/ξ²*f'(u^k_i)
+	// where tau is the time step size, h is the spatial step size, and u^k_i
+	// denotes the numerical solution that approximates u at time level k and
+	// grid node i, that is,
+	//  u^k_i ≅ u(k*tau,i*h)
+	// Multiplying the equation by tau and collecting the terms from the same
+	// time level on each side gives
+	//  -tau/h²*u^{k+1}_{i-1} + (1+2*tau/h²)*u^{k+1}_i - tau/h²*u^{k+1}_{i+1}) = u^k_i - tau/ξ²*f'(u^k_i)
+	// If we denote C:=tau/h² we can simplify this to
+	//  -C*u^{k+1}_{i-1} + (1+2*C)*u^{k+1}_i - C*u^{k+1}_{i+1} = u^k_i - tau/ξ²*f'(u^k_i)   (1)
+	// which must hold for all i=0,...,n.
+	//
+	// When i=0 or i=n, the expression (1) refers to values at nodes that lie
+	// outside of the grid. We resolve this by using the zero Neumann boundary
+	// condition - we approximate it by central difference:
+	//      -1/h*(u^{k+1}_{-1} - u^{k+1}_1) = 0
+	//  1/h*(u^{k+1}_{n+1} - u^{k+1}_{n-1}) = 0
+	// which after simplifying gives
+	//   u^{k+1}_{-1} = u^{k+1}_1
+	//  u^{k+1}_{n+1} = u^{k+1}_{n-1}
+	// If we substitute these two expressions into (1) at i=0 and i=n and divide
+	// by 2, we finally get
+	//  (1/2+C)*u^{k+1}_0 - C*u^{k+1}_1 = 1/2*u^k_0 - 1/2*tau/ξ²*f'(u^k_0)        (2)
+	//  -C*u^{k+1}_{n-1} + (1/2+C)*u^{k+1}_n = 1/2*u^k_n - 1/2*tau/ξ²*f'(u^k_n)   (3)
+	//
+	// For a given k the equations (1),(2),(3) form a linear system for the
+	// unknown vector [u^{k+1}_i], i=0,...,n that must be solved at each step in
+	// order to advance the solution in time. The matrix of this system is
+	// tridiagonal and symmetric positive-definite:
+	//  [1/2+C   -C    0    .    .    .    .     0 ]
+	//  [   -C 1+2C   -C                         . ]
+	//  [    0   -C 1+2C   -C                    . ]
+	//  [    .        -C    .    .               . ]
+	//  [    .              .    .    .          . ]
+	//  [    .                   .    .   -C     0 ]
+	//  [    .                       -C 1+2C    -C ]
+	//  [    0    .    .    .    .    0   -C 1/2+C ]
 
-	// Assemble the symmetric tridiagonal system matrix A based on the above
-	// discretization scheme.
-	const lda = 2
-	a := make([]float64, n*lda)
-	coef := tau / ac.h / ac.h
+	// Assemble the system matrix A based on the discretization scheme above.
+	// Since the matrix is symmetric, we only need to set elements in the upper
+	// triangle.
+	A := mat.NewSymBandDense(n+1, 1, nil)
+	c := ac.tau / ac.h / ac.h
 	// Boundary condition at the left node
-	a[0] = 0.5 + coef
-	a[1] = -coef
+	A.SetSymBand(0, 0, 0.5+c)
+	A.SetSymBand(0, 1, -c)
 	// Interior nodes
-	for i := 1; i < n-1; i++ {
-		a[i*lda] = 1 + 2*coef
-		a[i*lda+1] = -coef
+	for i := 1; i < n; i++ {
+		A.SetSymBand(i, i, 1+2*c)
+		A.SetSymBand(i, i+1, -c)
 	}
 	// Boundary condition at the right node
-	a[(n-1)*lda] = 0.5 + coef
+	A.SetSymBand(n, n, 0.5+c)
+	ac.a = A
 
-	// Allocate the matrix A and the right-hand side b.
-	ac.a = mat.NewSymBandDense(n, 1, a)
-	ac.b = make([]float64, n)
+	// Allocate the right-hand side b.
+	ac.b = make([]float64, n+1)
 
 	// Allocate and set up the initial condition.
-	ac.u = make([]float64, n)
+	ac.u = make([]float64, n+1)
 	for i := range ac.u {
 		ac.u[i] = ac.InitCond(float64(i) * ac.h)
 	}
@@ -111,22 +146,23 @@ func (ac *AllenCahnFD) Setup(n int, L float64, tau float64) {
 		InitX: ac.u,
 		// Store the solution into the existing slice.
 		Dst: ac.u,
-		// Provide context to reduce memory garbage.
-		Work: linsolve.NewContext(n),
+		// Provide context to reduce memory allocation and GC pressure.
+		Work: linsolve.NewContext(n + 1),
 	}
 }
 
 // Step advances the solution one step in time.
 func (ac *AllenCahnFD) Step() error {
 	// Assemble the right-hand side vector b.
-	coef := ac.tau / ac.Xi / ac.Xi
+	tauXi2 := ac.tau / ac.Xi / ac.Xi
 	n := len(ac.u)
 	for i, ui := range ac.u {
-		ac.b[i] = ui - coef*FPrime(ui)
+		ac.b[i] = ui - tauXi2*FPrime(ui)
 		if i == 0 || i == n-1 {
 			ac.b[i] *= 0.5
 		}
 	}
+	// Solve the system.
 	_, err := linsolve.Iterative(ac, ac.b, ac.ls, &ac.lssettings)
 	return err
 }
@@ -142,10 +178,10 @@ func (ac *AllenCahnFD) Solution() []float64 {
 	return ac.u
 }
 
-func output(u []float64, L float64, step int) {
+func output(u []float64, L float64, step int) error {
 	p, err := plot.New()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	p.Title.Text = fmt.Sprintf("Step %d", step)
@@ -162,39 +198,46 @@ func output(u []float64, L float64, step int) {
 		pts[i].X = float64(i) * h
 		pts[i].Y = ui
 	}
-	err = plotutil.AddLinePoints(p, "u", pts)
+	err = plotutil.AddLines(p, "u", pts)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	err = p.Save(20*vg.Centimeter, 10*vg.Centimeter, fmt.Sprintf("u%04d.png", step))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
-func Example_evolutionPDE() {
+func ExampleIterative_evolutionPDE() {
 	const (
-		L        = 10.0
-		n        = 1000
-		tau      = 0.1 * L / n
-		xi       = 6 * L / n
-		numSteps = 200
+		L   = 10.0
+		nx  = 1000
+		nt  = 200
+		tau = 0.1 * L / nx
+		xi  = 6.0 * L / nx
 	)
 	rnd := rand.New(rand.NewSource(1))
 	ac := AllenCahnFD{
 		Xi: xi,
 		InitCond: func(x float64) float64 {
+			// Initial condition is a perturbation of the (unstable) zero state
+			// (the peak in the double-well function f).
 			return 0.01 * rnd.NormFloat64()
 		},
 	}
-	ac.Setup(n, L, tau)
-	for i := 1; i <= numSteps; i++ {
+	ac.Setup(nx, L, tau)
+	for i := 1; i <= nt; i++ {
 		err := ac.Step()
 		if err != nil {
 			log.Fatal(err)
 		}
-		// output(ac.Solution(), L, i)
+		// Generate plots of u as PNG images that can be converted to video
+		// using for example
+		//  ffmpeg -i u%04d.png output.webm
+		err = output(ac.Solution(), L, i)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-
-	// Output:
 }
