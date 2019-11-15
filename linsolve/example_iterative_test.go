@@ -12,15 +12,19 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-type system struct {
-	a *mat.SymBandDense
-	b []float64
+// System represents a linear system with a symmetric band matrix
+//  A*x = b
+type System struct {
+	A *mat.SymBandDense
+	B []float64
 }
 
-func (sys system) MulVecTo(dst []float64, trans bool, x []float64) {
+// MulVecTo stores into dst the matrix-vector product A*x, implementing the
+// MulVecToer interface.
+func (sys System) MulVecTo(dst []float64, _ bool, x []float64) {
 	n := len(x)
 	ax := mat.NewVecDense(n, dst)
-	ax.MulVec(sys.a, mat.NewVecDense(n, x))
+	ax.MulVec(sys.A, mat.NewVecDense(n, x))
 }
 
 // L2Projection returns a linear system whose solution is the L2 projection of f
@@ -31,24 +35,19 @@ func (sys system) MulVecTo(dst []float64, trans bool, x []float64) {
 //    Implementations, and Applications. Springer (2013), Section 1.3, also
 //    available at:
 //    http://www.springer.com/cda/content/document/cda_downloaddocument/9783642332869-c1.pdf
-func L2Projection(grid []float64, f func(float64) float64) system {
+func L2Projection(grid []float64, f func(float64) float64) System {
 	n := len(grid)
 
-	// Assemble the mass matrix by iterating over all elements.
-	lda := 2
-	a := make([]float64, n*lda)
+	// Assemble the symmetric banded mass matrix by iterating over all elements.
+	A := mat.NewSymBandDense(n, 1, nil)
 	for i := 0; i < n-1; i++ {
 		// h is the length of the i-th element.
 		h := grid[i+1] - grid[i]
-		// Add contribution from the i-th element, first the two diagonal
-		// elements, then the one off-diagonal element.
-		a[i*lda] += h / 3
-		a[(i+1)*lda] += h / 3
-		a[i*lda+1] += h / 6
+		// Add contribution from the i-th element.
+		A.SetSymBand(i, i, A.At(i, i)+h/3)
+		A.SetSymBand(i, i+1, h/6)
+		A.SetSymBand(i+1, i+1, A.At(i+1, i+1)+h/3)
 	}
-
-	// Allocate the mass matrix.
-	A := mat.NewSymBandDense(n, 1, a)
 
 	// Assemble the load vector by iterating over all elements.
 	b := make([]float64, n)
@@ -58,7 +57,7 @@ func L2Projection(grid []float64, f func(float64) float64) system {
 		b[i+1] += f(grid[i+1]) * h / 2
 	}
 
-	return system{A, b}
+	return System{A, b}
 }
 
 // UniformGrid returns a slice of n+1 evenly spaced values between
@@ -79,7 +78,7 @@ func ExampleIterative() {
 		return x * math.Sin(x)
 	})
 
-	result, err := linsolve.Iterative(sys, sys.b, &linsolve.CG{}, nil)
+	result, err := linsolve.Iterative(sys, sys.B, &linsolve.CG{}, nil)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
