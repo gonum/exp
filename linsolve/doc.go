@@ -54,9 +54,8 @@ MulVecToer interface
 
 The MulVecToer interface represents the system matrix A in this package. This
 abstracts the details of any particular matrix storage, and allows the user to
-exploit the properties of their particular matrix. All matrix types provided by
-gonum.org/v1/gonum/mat and github.com/james-bowman/sparse packages implement
-this interface.
+exploit the properties of their particular matrix. Matrix types provided by
+github.com/james-bowman/sparse packages implement this interface.
 
 Note that methods in this package have only limited means for checking whether
 the provided MulVecToer represents a matrix that satisfies all assumptions made
