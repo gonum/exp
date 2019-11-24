@@ -19,7 +19,7 @@ var ErrIterationLimit = errors.New("linsolve: iteration limit reached")
 // MulVecToer represents a square matrix A by means of a matrix-vector
 // multiplication.
 type MulVecToer interface {
-	// MulVecTo computes A*x or A^T*x and stores the result into dst.
+	// MulVecTo computes A*x or Aᵀ*x and stores the result into dst.
 	MulVecTo(dst []float64, trans bool, x []float64)
 }
 
@@ -53,7 +53,8 @@ type Settings struct {
 
 	// PreconSolve describes a preconditioner solve that stores into dst the
 	// solution of the system
-	//  M dst = rhs, or M^T dst = rhs,
+	//  M  * dst = rhs, or
+	//  Mᵀ * dst = rhs,
 	// where M is the preconditioning matrix. If PreconSolve is nil, no
 	// preconditioning will be used (M is the identity).
 	PreconSolve func(dst []float64, trans bool, rhs []float64) error
@@ -146,7 +147,7 @@ type Stats struct {
 //
 // settings provide means for adjusting parameters of the iterative process. See
 // the Settings documentation for more information. Iterative will not modify
-// the fields of Settings.
+// the fields of Settings. If settings is nil, default settings will be used.
 //
 // Note that the default choices of Method and Settings were chosen to provide
 // accuracy and robustness, rather than speed. There are many algorithms for

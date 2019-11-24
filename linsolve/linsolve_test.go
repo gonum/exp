@@ -161,7 +161,7 @@ func newRandomDiagonal(n int, rnd *rand.Rand) testCase {
 
 // newGreenbaum41 returns a test case with a symmetric positive definite matrix
 // A defined as
-//  A = U*D*U^T,
+//  A = U * D * Uᵀ,
 // where U is a random orthogonal matrix and D is a diagonal matrix with entries
 // given by
 //  d_i = d_1 + (i-1)/(n-1)*(d_n-d_1)*rho^{n-i},   i = 2,...,n-1.
@@ -367,8 +367,8 @@ func newGreenbaum54(n1, n2 int, rnd *rand.Rand) testCase {
 		}
 		dstvec := mat.NewVecDense(n, dst)
 		if trans {
-			// Multiply (V*D*V^{-1})^T * x which can be
-			// rewritten as V^{-1}^T * (V*D)^T * x.
+			// Multiply (V*D*V^{-1})ᵀ * x which can be
+			// rewritten as V^{-1}ᵀ * (V*D)ᵀ * x.
 			dstvec.MulVec(VD.T(), mat.NewVecDense(n, x))
 			err := luV.SolveVecTo(dstvec, true, dstvec)
 			if err != nil {
