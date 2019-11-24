@@ -1,4 +1,4 @@
-// Copyright ©2016 The Gonum Authors. All rights reserved.
+// Copyright ©2019 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -9,6 +9,7 @@ import (
 	"math"
 
 	"gonum.org/v1/exp/linsolve"
+	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -60,20 +61,15 @@ func L2Projection(grid []float64, f func(float64) float64) System {
 	return System{A, b}
 }
 
-// UniformGrid returns a slice of n+1 evenly spaced values between
-// x0 and x1, inclusive.
-func UniformGrid(x0, x1 float64, n int) []float64 {
-	h := (x1 - x0) / float64(n)
-	grid := make([]float64, n+1)
-	for i := range grid {
-		grid[i] = x0 + float64(i)*h
-	}
-	grid[n] = x1
-	return grid
-}
-
 func ExampleIterative() {
-	grid := UniformGrid(0, 1, 10)
+	const (
+		n  = 10
+		x0 = 0.0
+		x1 = 1.0
+	)
+	// Make a uniform grid.
+	grid := make([]float64, n+1)
+	floats.Span(grid, x0, x1)
 	sys := L2Projection(grid, func(x float64) float64 {
 		return x * math.Sin(x)
 	})

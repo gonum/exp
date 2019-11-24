@@ -28,7 +28,7 @@ threshold. If the desired threshold is very small, then the iterative methods
 may take as long or longer than a direct method. However, for many problems a
 decent approximation can be found in a small number of steps.
 
-THe iterative methods implemented in this package do not access the elements of
+The iterative methods implemented in this package do not access the elements of
 A directly, they instead ask for the result of matrix-vector products with A.
 For a general n×n matrix this requires O(n^2) operations, but can be much
 cheaper depending on the structure of the matrix (sparse, banded,
@@ -40,7 +40,7 @@ Iterative methods are most often useful in the following situations:
 
  - The system matrix A is sparse, blocked or has other special structure,
  - The problem size is sufficiently large that a dense factorization of A is
-   costly in terms of computer time and/or storage,
+   costly in terms of compute time and/or memory storage,
  - Computing the product of A (or A^T, if necessary) with a vector can be done
    efficiently,
  - An approximate solution is all that is required.
@@ -52,9 +52,9 @@ Iterative function.
 
 MulVecToer interface
 
-The MulVecToer interface represents the system matrix A in this package. This
-abstracts the details of any particular matrix storage, and allows the user to
-exploit the properties of their particular matrix. Matrix types provided by
+The MulVecToer interface represents the system matrix A. This abstracts the
+details of any particular matrix storage, and allows the user to exploit the
+properties of their particular matrix. Matrix types provided by gonum/mat and
 github.com/james-bowman/sparse packages implement this interface.
 
 Note that methods in this package have only limited means for checking whether

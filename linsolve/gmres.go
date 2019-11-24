@@ -19,7 +19,7 @@ import (
 // fewer iterations and with fewer matrix-vector products compared to BiCG or
 // BiCGStab at the price of much large memory storage. This implementation uses
 // restarts to limit the memory requirements. GMRES does not need the
-// multiplication with A^T.
+// multiplication with Aᵀ.
 //
 // References:
 //  - Barrett, R. et al. (1994). Section 2.3.4 Generalized Minimal Residual
@@ -43,11 +43,11 @@ type GMRES struct {
 
 	// m is the used value of Restart.
 	m int
-	// vt is an (m+1)×n matrix. It corresponds to V^T in
+	// vt is an (m+1)×n matrix. It corresponds to Vᵀ in
 	// standard descriptions of GMRES. Its rows form an orthonormal basis of the
 	// Krylov subspace.
 	vt []float64
-	// ht is an m×(m+1) lower Hessenberg matrix. It corresponds to H^T in
+	// ht is an m×(m+1) lower Hessenberg matrix. It corresponds to Hᵀ in
 	// standard descriptions of GMRES.
 	ht []float64
 	// givs holds Givens rotations that are used to reduce H to
@@ -247,7 +247,7 @@ func (g *GMRES) updateSolution(k int, x []float64) {
 	copy(y, g.s)
 
 	// Solve H*y = s for upper-triangular H.
-	// Note that we are actually storing H^T which is lower-triangular so we
+	// Note that we are actually storing Hᵀ which is lower-triangular so we
 	// need to adjust the arguments accordingly.
 	bi := blas64.Implementation()
 	ldh := g.m + 1

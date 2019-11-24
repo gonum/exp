@@ -87,31 +87,44 @@ func (ac *AllenCahnFD) Setup(n int, L float64, tau float64) {
 	//  -C*u^{k+1}_{i-1} + (1+2*C)*u^{k+1}_i - C*u^{k+1}_{i+1} = u^k_i - tau/ξ²*f'(u^k_i)   (1)
 	// which must hold for all i=0,...,n.
 	//
-	// When i=0 or i=n, the expression (1) refers to values at nodes that lie
-	// outside of the grid. We resolve this by using the zero Neumann boundary
-	// condition - we approximate it by central difference:
+	// When i=0 or i=n, the expression (1) refers to values at nodes -1 and n+1
+	// which lie outside of the domain. We can eliminate them by using the fact
+	// that the first derivative is zero at the boundary. We approximate it by
+	// central difference:
 	//      -1/h*(u^{k+1}_{-1} - u^{k+1}_1) = 0
 	//  1/h*(u^{k+1}_{n+1} - u^{k+1}_{n-1}) = 0
 	// which after simplifying gives
 	//   u^{k+1}_{-1} = u^{k+1}_1
 	//  u^{k+1}_{n+1} = u^{k+1}_{n-1}
-	// If we substitute these two expressions into (1) at i=0 and i=n and divide
-	// by 2, we finally get
-	//  (1/2+C)*u^{k+1}_0 - C*u^{k+1}_1 = 1/2*u^k_0 - 1/2*tau/ξ²*f'(u^k_0)        (2)
-	//  -C*u^{k+1}_{n-1} + (1/2+C)*u^{k+1}_n = 1/2*u^k_n - 1/2*tau/ξ²*f'(u^k_n)   (3)
+	// By substituting these two expressions into (1) at i=0 and i=n values at
+	// outside nodes do not appear in the expressions. If we further divide them
+	// by 2 (to obtain a symmetric matrix), we finally get
+	//  (1/2+C)*u^{k+1}_0 - C*u^{k+1}_1 = 1/2*u^k_0 - 1/2*tau/ξ²*f'(u^k_0)                  (2)
+	//  -C*u^{k+1}_{n-1} + (1/2+C)*u^{k+1}_n = 1/2*u^k_n - 1/2*tau/ξ²*f'(u^k_n)             (3)
+	// Note that simply means that we treat values at the boundary nodes the
+	// same as the inner nodes.
 	//
 	// For a given k the equations (1),(2),(3) form a linear system for the
 	// unknown vector [u^{k+1}_i], i=0,...,n that must be solved at each step in
 	// order to advance the solution in time. The matrix of this system is
 	// tridiagonal and symmetric positive-definite:
-	//  [1/2+C   -C    0    .    .    .    .     0 ]
-	//  [   -C 1+2C   -C                         . ]
-	//  [    0   -C 1+2C   -C                    . ]
-	//  [    .        -C    .    .               . ]
-	//  [    .              .    .    .          . ]
-	//  [    .                   .    .   -C     0 ]
-	//  [    .                       -C 1+2C    -C ]
-	//  [    0    .    .    .    .    0   -C 1/2+C ]
+	//  ⎛1/2+C   -C    0    .    .    .    .     0⎞
+	//  ⎜   -C 1+2C   -C                         .⎟
+	//  ⎜    0   -C 1+2C   -C                    .⎟
+	//  ⎜    .        -C    .    .               .⎟
+	//  ⎜    .              .    .    .          .⎟
+	//  ⎜    .                   .    .   -C     0⎟
+	//  ⎜    .                       -C 1+2C    -C⎟
+	//  ⎝    0    .    .    .    .    0   -C 1/2+C⎠
+	// The right-hand side is:
+	//  ⎛1/2*u^k_0     - 1/2*tau/ξ²*f'(u^k_0)    ⎞
+	//  ⎜    u^k_1     -     tau/ξ²*f'(u^k_1)    ⎟
+	//  ⎜    u^k_2     -     tau/ξ²*f'(u^k_2)    ⎟
+	//  ⎜              .                         ⎟
+	//  ⎜              .                         ⎟
+	//  ⎜              .                         ⎟
+	//  ⎜    u^k_{n-1} -     tau/ξ²*f'(u^k_{n-1})⎟
+	//  ⎝1/2*u^k_n     - 1/2*tau/ξ²*f'(u^k_n)    ⎠
 
 	// Assemble the system matrix A based on the discretization scheme above.
 	// Since the matrix is symmetric, we only need to set elements in the upper

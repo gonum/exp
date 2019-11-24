@@ -1,4 +1,4 @@
-// Copyright ©2016 The Gonum Authors. All rights reserved.
+// Copyright ©2017 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -12,7 +12,7 @@ import (
 // for solving systems of linear equations
 //  A * x = b,
 // where A is a symmetric positive definite matrix. It requires minimal memory
-// storage and is a good choice for symmetric positive definite problem.
+// storage and is a good choice for symmetric positive definite problems.
 //
 // References:
 //  - Barrett, Richard et al. (1994). Section 2.3.1 Conjugate Gradient Method (CG).

@@ -15,7 +15,8 @@ import (
 //  A * x = b,
 // where A is a nonsymmetric, nonsingular matrix. It uses limited memory storage
 // but the convergence may be irregular and the method may break down. BiCG
-// requires a multiplication with A and A^T at each iteration.
+// requires a multiplication with A and Aᵀ at each iteration. BiCGStab is a
+// related method that does not use Aᵀ.
 //
 // References:
 //  - Barrett, R. et al. (1994). Section 2.3.5 BiConjugate Gradient (BiCG).
@@ -99,7 +100,7 @@ func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 	case 4:
 		// z is overwritten and reused.
 		copy(b.z, ctx.Dst)
-		// Compute A^T * pt.
+		// Compute Aᵀ * pt.
 		copy(ctx.Src, b.pt)
 		b.resume = 5
 		return MulVec | Trans, nil

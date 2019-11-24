@@ -113,7 +113,7 @@ const (
 
 	// Trans indicates that MulVec or PreconSolve
 	// operation must be performed wih the transpose,
-	// that is, compute A^T*x or solve M^T z = r. Method
+	// that is, compute Aᵀ*x or solve Mᵀ*z = r. Method
 	// will command Trans only in bitwise OR combination
 	// with MulVec and PreconSolve.
 	Trans

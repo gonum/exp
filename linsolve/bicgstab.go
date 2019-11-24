@@ -15,7 +15,7 @@ import (
 //  A * x = b,
 // where A is a nonsymmetric, nonsingular matrix. The method is a variant of
 // BiCG but offers a smoother convergence and does not require multiplication
-// with A^T.
+// with Aᵀ.
 //
 // References:
 //  - Barrett, R. et al. (1994). Section 2.3.8 BiConjugate Gradient Stabilized (Bi-CGSTAB).
