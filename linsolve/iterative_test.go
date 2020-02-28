@@ -11,6 +11,7 @@ import (
 	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/mat"
 )
 
 func TestDefaultMethodDefaultSettings(t *testing.T) {
@@ -220,23 +221,23 @@ func newTestSettings(rnd *rand.Rand, tc testCase) *Settings {
 	n := len(tc.b)
 
 	// Initial guess is a random vector.
-	initX := make([]float64, n)
-	for i := range initX {
-		initX[i] = rnd.NormFloat64()
+	initX := mat.NewVecDense(n, nil)
+	for i := 0; i < initX.Len(); i++ {
+		initX.SetVec(i, rnd.NormFloat64())
 	}
 
-	// Preallocate a destination slice and fill it with NaN.
-	dst := make([]float64, n)
-	for i := range dst {
-		dst[i] = math.NaN()
+	// Allocate a destination vector and fill it with NaN.
+	dst := mat.NewVecDense(n, nil)
+	for i := 0; i < dst.Len(); i++ {
+		dst.SetVec(i, math.NaN())
 	}
 
 	// Preallocate a work context and fill it with NaN.
 	work := NewContext(n)
-	for i := range work.X {
-		work.X[i] = math.NaN()
-		work.Src[i] = math.NaN()
-		work.Dst[i] = math.NaN()
+	for i := 0; i < work.X.Len(); i++ {
+		work.X.SetVec(i, math.NaN())
+		work.Src.SetVec(i, math.NaN())
+		work.Dst.SetVec(i, math.NaN())
 	}
 	work.ResidualNorm = math.NaN()
 
@@ -259,20 +260,26 @@ func testMethodWithSettings(t *testing.T, m Method, s *Settings, tc testCase) {
 		wantTol = 1e-7
 	}
 
-	bCopy := make([]float64, len(tc.b))
-	copy(bCopy, tc.b)
+	n := len(tc.b)
 
-	result, err := Iterative(&tc, bCopy, m, s)
+	b := make([]float64, n)
+	copy(b, tc.b)
+	bVec := mat.NewVecDense(n, b)
+
+	result, err := Iterative(&tc, bVec, m, s)
 	if err != nil {
 		t.Errorf("%v: unexpected error %v", tc.name, err)
 		return
 	}
 
-	if !floats.Equal(tc.b, bCopy) {
+	if !floats.Equal(tc.b, b) {
 		t.Errorf("%v: unexpected modification of b", tc.name)
 	}
 
-	dist := floats.Distance(result.X, tc.want, 2) / floats.Norm(result.X, 2)
+	wantVec := mat.NewVecDense(n, tc.want)
+	var diff mat.VecDense
+	diff.SubVec(result.X, wantVec)
+	dist := mat.Norm(&diff, 2) / mat.Norm(wantVec, 2)
 	if dist > wantTol {
 		t.Errorf("%v: unexpected solution, |want-got|/|want|=%v", tc.name, dist)
 	}
@@ -286,21 +293,12 @@ func testMethodWithSettings(t *testing.T, m Method, s *Settings, tc testCase) {
 	}
 
 	if s.Dst != nil {
-		if floats.HasNaN(s.Dst) {
-			t.Errorf("%v: Settings.Dst was not used", tc.name)
+		if !mat.Equal(s.Dst, result.X) {
+			t.Errorf("%v: Settings.Dst and Result.X not equal\n%v\n%v", tc.name, s.Dst, result.X)
 		}
-		if !floats.Equal(s.Dst, result.X) {
-			t.Errorf("%v: Settings.Dst and Result.X not equal", tc.name)
-		}
-		result.X[0] = 123456.7
-		if s.Dst[0] != result.X[0] {
-			t.Errorf("%v: Settings.Dst and Result.X are not the same slice", tc.name)
-		}
-	}
-
-	if s.Work != nil {
-		if floats.HasNaN(s.Work.X) || floats.HasNaN(s.Work.Src) || floats.HasNaN(s.Work.Dst) {
-			t.Errorf("%v: Settings.Work was not used", tc.name)
+		result.X.SetVec(0, 123456.7)
+		if s.Dst.AtVec(0) != result.X.AtVec(0) {
+			t.Errorf("%v: Settings.Dst and Result.X are not the same vector", tc.name)
 		}
 	}
 }
