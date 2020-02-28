@@ -48,8 +48,8 @@ type AllenCahnFD struct {
 	tau float64 // Time step size
 
 	a *mat.SymBandDense
-	b []float64
-	u []float64
+	b *mat.VecDense
+	u *mat.VecDense
 
 	ls         linsolve.Method
 	lssettings linsolve.Settings
@@ -144,12 +144,12 @@ func (ac *AllenCahnFD) Setup(n int, L float64, tau float64) {
 	ac.a = A
 
 	// Allocate the right-hand side b.
-	ac.b = make([]float64, n+1)
+	ac.b = mat.NewVecDense(n+1, nil)
 
 	// Allocate and set up the initial condition.
-	ac.u = make([]float64, n+1)
-	for i := range ac.u {
-		ac.u[i] = ac.InitCond(float64(i) * ac.h)
+	ac.u = mat.NewVecDense(n+1, nil)
+	for i := 0; i < ac.u.Len(); i++ {
+		ac.u.SetVec(i, ac.InitCond(float64(i)*ac.h))
 	}
 
 	// Allocate the linear solver and the settings.
@@ -157,7 +157,7 @@ func (ac *AllenCahnFD) Setup(n int, L float64, tau float64) {
 	ac.lssettings = linsolve.Settings{
 		// Solution from the previous time step will be a good initial estimate.
 		InitX: ac.u,
-		// Store the solution into the existing slice.
+		// Store the solution into the existing vector.
 		Dst: ac.u,
 		// Provide context to reduce memory allocation and GC pressure.
 		Work: linsolve.NewContext(n + 1),
@@ -168,12 +168,14 @@ func (ac *AllenCahnFD) Setup(n int, L float64, tau float64) {
 func (ac *AllenCahnFD) Step() error {
 	// Assemble the right-hand side vector b.
 	tauXi2 := ac.tau / ac.Xi / ac.Xi
-	n := len(ac.u)
-	for i, ui := range ac.u {
-		ac.b[i] = ui - tauXi2*FPrime(ui)
+	n := ac.u.Len()
+	for i := 0; i < ac.u.Len(); i++ {
+		ui := ac.u.AtVec(i)
+		bi := ui - tauXi2*FPrime(ui)
 		if i == 0 || i == n-1 {
-			ac.b[i] *= 0.5
+			bi *= 0.5
 		}
+		ac.b.SetVec(i, bi)
 	}
 	// Solve the system.
 	_, err := linsolve.Iterative(ac, ac.b, ac.ls, &ac.lssettings)
@@ -181,17 +183,15 @@ func (ac *AllenCahnFD) Step() error {
 }
 
 // MulVecTo implements the MulVecToer interface.
-func (ac *AllenCahnFD) MulVecTo(dst []float64, _ bool, x []float64) {
-	n := len(x)
-	ax := mat.NewVecDense(n, dst)
-	ax.MulVec(ac.a, mat.NewVecDense(n, x))
+func (ac *AllenCahnFD) MulVecTo(dst *mat.VecDense, _ bool, x mat.Vector) {
+	dst.MulVec(ac.a, x)
 }
 
-func (ac *AllenCahnFD) Solution() []float64 {
+func (ac *AllenCahnFD) Solution() *mat.VecDense {
 	return ac.u
 }
 
-func output(u []float64, L float64, step int) error {
+func output(u mat.Vector, L float64, step int) error {
 	p, err := plot.New()
 	if err != nil {
 		return err
@@ -204,12 +204,12 @@ func output(u []float64, L float64, step int) error {
 	p.Y.Min = -1.1
 	p.Y.Max = 1.1
 
-	n := len(u)
+	n := u.Len()
 	h := L / float64(n-1)
 	pts := make(plotter.XYs, n)
-	for i, ui := range u {
+	for i := 0; i < u.Len(); i++ {
 		pts[i].X = float64(i) * h
-		pts[i].Y = ui
+		pts[i].Y = u.AtVec(i)
 	}
 	err = plotutil.AddLines(p, "u", pts)
 	if err != nil {

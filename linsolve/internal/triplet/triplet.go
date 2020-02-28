@@ -46,24 +46,22 @@ func (m *Matrix) Append(i, j int, v float64) {
 	m.data = append(m.data, triplet{i, j, v})
 }
 
-func (m *Matrix) MulVecTo(dst []float64, trans bool, x []float64) {
-	for i := range dst {
-		dst[i] = 0
-	}
+func (m *Matrix) MulVecTo(dst *mat.VecDense, trans bool, x mat.Vector) {
+	dst.Zero()
 	if trans {
-		if m.c != len(dst) || m.r != len(x) {
+		if m.c != dst.Len() || m.r != x.Len() {
 			panic("triplet: dimension mismatch")
 		}
 		for _, aij := range m.data {
-			dst[aij.j] += aij.v * x[aij.i]
+			dst.SetVec(aij.j, dst.AtVec(aij.j)+aij.v*x.AtVec(aij.i))
 		}
 		return
 	}
-	if m.c != len(x) || m.r != len(dst) {
+	if m.c != x.Len() || m.r != dst.Len() {
 		panic("triplet: dimension mismatch")
 	}
 	for _, aij := range m.data {
-		dst[aij.i] += aij.v * x[aij.j]
+		dst.SetVec(aij.i, dst.AtVec(aij.i)+aij.v*x.AtVec(aij.j))
 	}
 }
 

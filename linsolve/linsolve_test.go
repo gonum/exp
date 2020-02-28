@@ -20,25 +20,26 @@ const defaultTol = 1e-13
 type testCase struct {
 	name string
 
-	mulVecTo func([]float64, bool, []float64) // Matrix-vector multiplication
-	b        []float64                        // Right-hand side vector
-	diag     []float64                        // Diagonal for the Jacobi preconditioner
-	tol      float64                          // Tolerance for the convergence criterion
+	mulVecTo func(*mat.VecDense, bool, mat.Vector) // Matrix-vector multiplication
+
+	b    []float64 // Right-hand side vector
+	diag []float64 // Diagonal for the Jacobi preconditioner
+	tol  float64   // Tolerance for the convergence criterion
 
 	want []float64 // Expected solution
 }
 
-func (tc *testCase) MulVecTo(dst []float64, trans bool, x []float64) {
+func (tc *testCase) MulVecTo(dst *mat.VecDense, trans bool, x mat.Vector) {
 	tc.mulVecTo(dst, trans, x)
 }
 
-func (tc *testCase) PreconSolve(dst []float64, trans bool, rhs []float64) error {
+func (tc *testCase) PreconSolve(dst *mat.VecDense, trans bool, rhs mat.Vector) error {
 	if tc.diag == nil {
-		copy(dst, rhs)
+		dst.CopyVec(rhs)
 	} else {
-		for i, aii := range tc.diag {
-			dst[i] = rhs[i] / aii
-		}
+		n := len(tc.diag)
+		diag := mat.NewVecDense(n, tc.diag)
+		dst.DivElemVec(rhs, diag)
 	}
 	return nil
 }
@@ -98,12 +99,11 @@ func newRandomSPD(n int, rnd *rand.Rand) testCase {
 	want := make([]float64, n)
 	chol.SolveVecTo(mat.NewVecDense(n, want), mat.NewVecDense(n, b))
 	// Matrix-vector multiplication.
-	mulVecTo := func(dst []float64, _ bool, x []float64) {
-		if len(dst) != n || len(x) != n {
-			panic("mismatched slice length")
+	mulVecTo := func(dst *mat.VecDense, _ bool, x mat.Vector) {
+		if dst.Len() != n || x.Len() != n {
+			panic("mismatched vector length")
 		}
-		d := mat.NewVecDense(n, dst)
-		d.MulVec(&A, mat.NewVecDense(n, x))
+		dst.MulVec(&A, x)
 	}
 	// Store the diagonal for preconditioning.
 	diag := make([]float64, n)
@@ -142,12 +142,11 @@ func newRandomDiagonal(n int, rnd *rand.Rand) testCase {
 		want[i] = b[i] / a[i]
 	}
 	// Matrix-vector multiplication.
-	mulVecTo := func(dst []float64, _ bool, x []float64) {
-		if len(dst) != n || len(x) != n {
-			panic("mismatched slice length")
+	mulVecTo := func(dst *mat.VecDense, _ bool, x mat.Vector) {
+		if dst.Len() != n || x.Len() != n {
+			panic("mismatched vector length")
 		}
-		d := mat.NewVecDense(n, dst)
-		d.MulVec(A, mat.NewVecDense(n, x))
+		dst.MulVec(A, x)
 	}
 	return testCase{
 		name:     fmt.Sprintf("Random diagonal n=%v", n),
@@ -197,12 +196,11 @@ func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 	want := make([]float64, n)
 	chol.SolveVecTo(mat.NewVecDense(n, want), mat.NewVecDense(n, b))
 	// Matrix-vector multiplication.
-	mulVecTo := func(dst []float64, _ bool, x []float64) {
-		if len(dst) != n || len(x) != n {
-			panic("mismatched slice length")
+	mulVecTo := func(dst *mat.VecDense, _ bool, x mat.Vector) {
+		if dst.Len() != n || x.Len() != n {
+			panic("mismatched vector length")
 		}
-		d := mat.NewVecDense(n, dst)
-		d.MulVec(A, mat.NewVecDense(n, x))
+		dst.MulVec(A, x)
 	}
 	// Store the diagonal for preconditioning.
 	diag := make([]float64, n)
@@ -222,17 +220,16 @@ func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 func nonsym3x3() testCase {
 	return testCase{
 		name: "nonsym 3x3",
-		mulVecTo: func(dst []float64, trans bool, x []float64) {
+		mulVecTo: func(dst *mat.VecDense, trans bool, x mat.Vector) {
 			A := mat.NewDense(3, 3, []float64{
 				5, -1, 3,
 				-1, 2, -2,
 				3, -2, 3,
 			})
-			dstvec := mat.NewVecDense(3, dst)
 			if trans {
-				dstvec.MulVec(A.T(), mat.NewVecDense(3, x))
+				dst.MulVec(A.T(), x)
 			} else {
-				dstvec.MulVec(A, mat.NewVecDense(3, x))
+				dst.MulVec(A, x)
 			}
 		},
 		b:    []float64{7, -1, 4},
@@ -294,7 +291,7 @@ func newPoisson1D(nx int, f func(float64, float64) float64) testCase {
 func newPoisson2D(nx, ny int, f func(float64, float64) float64) testCase {
 	tc := newPDE(nx, ny, negOne, negOne, zero, zero, zero, f)
 	tc.name = fmt.Sprintf("Poisson 2D nx=%v,ny=%v", nx, ny)
-	tc.tol = 1e-14
+	tc.tol = 1e-12
 	return tc
 }
 
@@ -361,26 +358,25 @@ func newGreenbaum54(n1, n2 int, rnd *rand.Rand) testCase {
 	// computing x = V*y.
 	wantVec.MulVec(V, wantVec)
 	// Matrix-vector multiplication.
-	mulVecTo := func(dst []float64, trans bool, x []float64) {
-		if len(dst) != n || len(x) != n {
-			panic("mismatched slice length")
+	mulVecTo := func(dst *mat.VecDense, trans bool, x mat.Vector) {
+		if dst.Len() != n || x.Len() != n {
+			panic("mismatched vector length")
 		}
-		dstvec := mat.NewVecDense(n, dst)
 		if trans {
 			// Multiply (V*D*V^{-1})ᵀ * x which can be
 			// rewritten as V^{-1}ᵀ * (V*D)ᵀ * x.
-			dstvec.MulVec(VD.T(), mat.NewVecDense(n, x))
-			err := luV.SolveVecTo(dstvec, true, dstvec)
+			dst.MulVec(VD.T(), x)
+			err := luV.SolveVecTo(dst, true, dst)
 			if err != nil {
 				panic("luV.SolveVecTo(trans) failed")
 			}
 		} else {
 			// Multiply V*D*V^{-1} * x.
-			err := luV.SolveVecTo(dstvec, false, mat.NewVecDense(n, x))
+			err := luV.SolveVecTo(dst, false, x)
 			if err != nil {
 				panic("luV.SolveVecTo(notrans) failed")
 			}
-			dstvec.MulVec(&VD, dstvec)
+			dst.MulVec(&VD, dst)
 		}
 	}
 	return testCase{

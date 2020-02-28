@@ -4,7 +4,11 @@
 
 package linsolve
 
-import "fmt"
+import (
+	"fmt"
+
+	"gonum.org/v1/gonum/mat"
+)
 
 // BreakdownError signifies that a breakdown occured and the method cannot continue.
 type BreakdownError struct {
@@ -33,7 +37,7 @@ type Method interface {
 	// the corresponding residual vector.
 	//
 	// Method will not retain x or residual.
-	Init(x, residual []float64)
+	Init(x, residual *mat.VecDense)
 
 	// Iterate performs a step in converging to the
 	// solution of a linear system.
@@ -51,7 +55,7 @@ type Method interface {
 type Context struct {
 	// X will be set by Method to the current approximate
 	// solution when it commands ComputeResidual and MajorIteration.
-	X []float64
+	X *mat.VecDense
 
 	// ResidualNorm is (an estimate of) a norm of
 	// the residual. Method will set it to the current
@@ -67,7 +71,7 @@ type Context struct {
 	// for various Operations. Src will be set by Method
 	// and the caller must store the result in Dst. See
 	// the Operation documentation for more information.
-	Src, Dst []float64
+	Src, Dst *mat.VecDense
 }
 
 // NewContext returns a new Context for work on problems of dimension n.
@@ -77,9 +81,9 @@ func NewContext(n int) *Context {
 		panic("linsolve: context size is not positive")
 	}
 	return &Context{
-		X:   make([]float64, n),
-		Src: make([]float64, n),
-		Dst: make([]float64, n),
+		X:   mat.NewVecDense(n, nil),
+		Src: mat.NewVecDense(n, nil),
+		Dst: mat.NewVecDense(n, nil),
 	}
 }
 
@@ -87,11 +91,14 @@ func NewContext(n int) *Context {
 // Reset will panic if n is not positive.
 func (ctx *Context) Reset(n int) {
 	if n <= 0 {
-		panic("linsolve: context size is not positive")
+		panic("linsolve: dimension not positive")
 	}
-	ctx.X = reuse(ctx.X, n)
-	ctx.Src = reuse(ctx.Src, n)
-	ctx.Dst = reuse(ctx.Dst, n)
+	ctx.X.Reset()
+	ctx.X.ReuseAsVec(n)
+	ctx.Src.Reset()
+	ctx.Src.ReuseAsVec(n)
+	ctx.Dst.Reset()
+	ctx.Dst.ReuseAsVec(n)
 }
 
 // Operation specifies the type of operation.

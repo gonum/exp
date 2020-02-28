@@ -5,7 +5,7 @@
 package linsolve
 
 import (
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/mat"
 )
 
 // CG implements the Conjugate Gradient iterative method with preconditioning
@@ -25,9 +25,9 @@ import (
 //  - Málek, J. and Strakoš, Z. (2015). Preconditioning and the Conjugate Gradient
 //    Method in the Context of Solving PDEs. Philadelphia, PA: SIAM.
 type CG struct {
-	x []float64
-	r []float64
-	p []float64
+	x mat.VecDense
+	r mat.VecDense
+	p mat.VecDense
 
 	rho, rhoPrev float64
 
@@ -35,20 +35,17 @@ type CG struct {
 }
 
 // Init initializes the data for a linear solve. See the Method interface for more details.
-func (cg *CG) Init(x, residual []float64) {
-	dim := len(x)
-	if dim == 0 {
-		panic("cg: dimension not positive")
-	}
-	if len(residual) != dim {
-		panic("cg: slice length mismatch")
+func (cg *CG) Init(x, residual *mat.VecDense) {
+	dim := x.Len()
+	if residual.Len() != dim {
+		panic("cg: vector length mismatch")
 	}
 
-	cg.x = reuse(cg.x, dim)
-	copy(cg.x, x)
-	cg.r = reuse(cg.r, dim)
-	copy(cg.r, residual)
-	cg.p = reuse(cg.p, dim)
+	cg.x.CloneVec(x)
+	cg.r.CloneVec(residual)
+
+	cg.p.Reset()
+	cg.p.ReuseAsVec(dim)
 
 	cg.rhoPrev = 1
 
@@ -65,29 +62,29 @@ func (cg *CG) Init(x, residual []float64) {
 func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 	switch cg.resume {
 	case 1:
-		copy(ctx.Src, cg.r)
+		ctx.Src.CopyVec(&cg.r)
 		cg.resume = 2
 		// Compute z_{i-1} = M^{-1} * r_{i-1}.
 		return PreconSolve, nil
 	case 2:
 		z := ctx.Dst
-		cg.rho = floats.Dot(cg.r, z)            // ρ_{i-1} = r_{i-1} · z_{i-1}
-		beta := cg.rho / cg.rhoPrev             // β_{i-1} = ρ_{i-1} / ρ_{i-2}
-		floats.AddScaledTo(cg.p, z, beta, cg.p) // p_i = z_{i-1} + β p_{i-1}
-		copy(ctx.Src, cg.p)
+		cg.rho = mat.Dot(&cg.r, z)        // ρ_{i-1} = r_{i-1} · z_{i-1}
+		beta := cg.rho / cg.rhoPrev       // β_{i-1} = ρ_{i-1} / ρ_{i-2}
+		cg.p.AddScaledVec(z, beta, &cg.p) // p_i = z_{i-1} + β p_{i-1}
+		ctx.Src.CopyVec(&cg.p)
 		cg.resume = 3
 		// Compute A * p_i.
 		return MulVec, nil
 	case 3:
 		ap := ctx.Dst
-		alpha := cg.rho / floats.Dot(cg.p, ap) // α_i = ρ_{i-1} / (p_i · A p_i)
-		floats.AddScaled(cg.x, alpha, cg.p)    // x_i = x_{i-1} + α p_i
-		floats.AddScaled(cg.r, -alpha, ap)     // r_i = r_{i-1} - α A p_i
-		ctx.ResidualNorm = floats.Norm(cg.r, 2)
+		alpha := cg.rho / mat.Dot(&cg.p, ap)   // α_i = ρ_{i-1} / (p_i · A p_i)
+		cg.x.AddScaledVec(&cg.x, alpha, &cg.p) // x_i = x_{i-1} + α p_i
+		cg.r.AddScaledVec(&cg.r, -alpha, ap)   // r_i = r_{i-1} - α A p_i
+		ctx.ResidualNorm = mat.Norm(&cg.r, 2)
 		cg.resume = 4
 		return CheckResidualNorm, nil
 	case 4:
-		copy(ctx.X, cg.x)
+		ctx.X.CopyVec(&cg.x)
 		if ctx.Converged {
 			cg.resume = 0
 			return MajorIteration, nil
