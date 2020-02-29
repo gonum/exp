@@ -9,9 +9,8 @@ language: go
 
 # Versions of go that are explicitly supported by gonum plus go tip.
 go:
- - 1.12.x
- - 1.11.x
- - 1.10.x
+ - 1.14.x
+ - 1.13.x
  - master
 
 env:
@@ -22,9 +21,9 @@ matrix:
  fast_finish: true
  exclude:
   - os: windows
-    go: 1.11.x
+    go: 1.13.x
   - os: windows
-    go: 1.10.x
+    go: 1.13.x
   - os: windows
     go: master
  allow_failures:
