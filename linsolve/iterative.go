@@ -25,15 +25,14 @@ type MulVecToer interface {
 
 // Settings holds settings for solving a linear system.
 type Settings struct {
-	// InitX holds the initial guess. If it is nil, the zero vector will be
-	// used, otherwise its length must be equal to the dimension of the
-	// system.
+	// InitX holds the initial guess. If it is empty, the zero vector will be
+	// used, otherwise its length must be equal to the dimension of the system.
 	InitX *mat.VecDense
 
-	// Dst, if not nil, will be used for storing the approximate solution,
+	// Dst, if not empty, will be used for storing the approximate solution,
 	// otherwise a new vector will be allocated. In both cases the vector will
-	// also be returned in Result. If Dst is not nil, its length must be
-	// equal to the dimension of the system.
+	// also be returned in Result. If Dst is not nil, its length must be equal
+	// to the dimension of the system.
 	Dst *mat.VecDense
 
 	// Tolerance specifies error tolerance for the final (approximate)
@@ -67,8 +66,13 @@ type Settings struct {
 
 // defaultSettings fills zero fields of s with default values.
 func defaultSettings(s *Settings, dim int) {
+	if s.InitX != nil && s.InitX.Len() == 0 {
+		s.InitX.ReuseAsVec(dim)
+	}
 	if s.Dst == nil {
 		s.Dst = mat.NewVecDense(dim, nil)
+	} else if s.Dst.Len() == 0 {
+		s.Dst.ReuseAsVec(dim)
 	}
 	if s.Tolerance == 0 {
 		s.Tolerance = defaultTolerance
@@ -81,6 +85,16 @@ func defaultSettings(s *Settings, dim int) {
 	}
 	if s.Work == nil {
 		s.Work = NewContext(dim)
+	} else {
+		if s.Work.X.Len() == 0 {
+			s.Work.X.ReuseAsVec(dim)
+		}
+		if s.Work.Src.Len() == 0 {
+			s.Work.Src.ReuseAsVec(dim)
+		}
+		if s.Work.Dst.Len() == 0 {
+			s.Work.Dst.ReuseAsVec(dim)
+		}
 	}
 }
 
@@ -96,6 +110,9 @@ func checkSettings(s *Settings, dim int) {
 	}
 	if s.MaxIterations <= 0 {
 		panic("linsolve: negative iteration limit")
+	}
+	if s.Work.X.Len() != dim || s.Work.Src.Len() != dim || s.Work.Dst.Len() != dim {
+		panic("linsolve: mismatched work context length")
 	}
 }
 
