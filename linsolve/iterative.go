@@ -25,13 +25,14 @@ type MulVecToer interface {
 
 // Settings holds settings for solving a linear system.
 type Settings struct {
-	// InitX holds the initial guess. If it is empty, the zero vector will be
-	// used, otherwise its length must be equal to the dimension of the system.
+	// InitX holds the initial guess. If it is nil or empty, the zero vector
+	// will be used, otherwise its length must be equal to the dimension of
+	// the system.
 	InitX *mat.VecDense
 
-	// Dst, if not empty, will be used for storing the approximate solution,
+	// Dst, if not nil, will be used for storing the approximate solution,
 	// otherwise a new vector will be allocated. In both cases the vector will
-	// also be returned in Result. If Dst is not nil, its length must be equal
+	// also be returned in Result. If Dst is not empty, its length must be equal
 	// to the dimension of the system.
 	Dst *mat.VecDense
 
@@ -59,8 +60,9 @@ type Settings struct {
 	PreconSolve func(dst *mat.VecDense, trans bool, rhs mat.Vector) error
 
 	// Work context can be provided to reduce memory allocation when solving
-	// multiple linear systems. If Work is not nil, its fields will be Reset
-	// prior to use.
+	// multiple linear systems. If Work is not nil, its fields must be
+	// either empty or their length must be equal to the dimension of the
+	// system.
 	Work *Context
 }
 
