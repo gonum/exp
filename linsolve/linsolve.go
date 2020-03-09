@@ -146,17 +146,6 @@ const (
 	MajorIteration
 )
 
-func reuse(v []float64, n int) []float64 {
-	if cap(v) < n {
-		return make([]float64, n)
-	}
-	v = v[:n]
-	for i := range v {
-		v[i] = 0
-	}
-	return v
-}
-
 const (
 	// Machine epsilon.
 	eps = 1.0 / (1 << 53)
