@@ -45,9 +45,9 @@ func (b *BiCGStab) Init(x, residual *mat.VecDense) {
 		panic("bicgstab: vector length mismatch")
 	}
 
-	b.x.CloneVec(x)
-	b.r.CloneVec(residual)
-	b.rt.CloneVec(&b.r)
+	b.x.CloneFromVec(x)
+	b.r.CloneFromVec(residual)
+	b.rt.CloneFromVec(&b.r)
 
 	b.p.Reset()
 	b.p.ReuseAsVec(dim)
