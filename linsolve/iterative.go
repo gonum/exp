@@ -176,7 +176,7 @@ func Iterative(a MulVecToer, b *mat.VecDense, m Method, settings *Settings) (*Re
 	rInit := mat.NewVecDense(n, nil)
 	if s.InitX != nil {
 		// Initial x is provided.
-		ctx.X.CloneVec(s.InitX)
+		ctx.X.CloneFromVec(s.InitX)
 		computeResidual(rInit, a, b, ctx.X, &stats)
 	} else {
 		// Initial x is the zero vector.
@@ -255,7 +255,7 @@ func NoPreconditioner(dst *mat.VecDense, trans bool, rhs mat.Vector) error {
 	if dst.Len() != rhs.Len() {
 		panic("linsolve: mismatched vector length")
 	}
-	dst.CloneVec(rhs)
+	dst.CloneFromVec(rhs)
 	return nil
 }
 

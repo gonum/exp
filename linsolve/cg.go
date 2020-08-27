@@ -41,8 +41,8 @@ func (cg *CG) Init(x, residual *mat.VecDense) {
 		panic("cg: vector length mismatch")
 	}
 
-	cg.x.CloneVec(x)
-	cg.r.CloneVec(residual)
+	cg.x.CloneFromVec(x)
+	cg.r.CloneFromVec(residual)
 
 	cg.p.Reset()
 	cg.p.ReuseAsVec(dim)

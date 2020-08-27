@@ -93,7 +93,7 @@ func (g *GMRES) Init(x, residual *mat.VecDense) {
 		}
 	}
 
-	g.x.CloneVec(x)
+	g.x.CloneFromVec(x)
 	g.y.Reset()
 	g.y.ReuseAsVec(g.m + 1)
 	g.s.Reset()
