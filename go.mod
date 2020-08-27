@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/ajstarks/svgo v0.0.0-20181006003313-6ce6a3bcf6cd // indirect
-	github.com/containous/yaegi v0.7.7-0.20200226140606-94e0b582ea80 // indirect
+	github.com/containous/yaegi v0.8.14 // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/jung-kurt/gofpdf v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56

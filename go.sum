@@ -6,6 +6,8 @@ github.com/ajstarks/svgo v0.0.0-20181006003313-6ce6a3bcf6cd/go.mod h1:K08gAheRH3
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/containous/yaegi v0.7.7-0.20200226140606-94e0b582ea80 h1:yHmvc2IUwWwTPtIoOBM/hYAO/i/ai/sS+ZtgO7EZJ8k=
 github.com/containous/yaegi v0.7.7-0.20200226140606-94e0b582ea80/go.mod h1:Yj82MHpXQ9/h3ukzc2numJQ/Wr4+M3C9YLMzNjFtd3o=
+github.com/containous/yaegi v0.8.14 h1:SUVs88S6YwXbDgcujg3swokscGa93lozWm6myJ5MRug=
+github.com/containous/yaegi v0.8.14/go.mod h1:Yj82MHpXQ9/h3ukzc2numJQ/Wr4+M3C9YLMzNjFtd3o=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/C5z7JzPU0zXsXHKM4/ayA+zqcVNZzPa1k=
 github.com/fogleman/gg v1.3.0 h1:/7zJX8F6AaYQc57WQCyN9cAIz+4bCJGO9B+dyW29am8=
