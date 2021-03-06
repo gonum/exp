@@ -536,7 +536,7 @@ func Arlsvd(svd mat.SVD, b *mat.VecDense) (
 	if ur >= nr {
 		x, check = rmslambda(b, &U, S, &V, ur, 0.0)
 	} else {
-		noise := Utb.SliceVec(ur, mn).(*mat.VecDense) 
+		noise := Utb.SliceVec(ur, mn).(*mat.VecDense)
 		sigma = myrms(noise) //sigma := myrms(Utb[ur:mn])
 		lambda = discrep(b, &U, S, &V, ur, sigma)
 		x, check = rmslambda(b, &U, S, &V, ur, lambda)
