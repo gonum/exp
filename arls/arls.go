@@ -44,44 +44,23 @@ import (
 
 // SIMPLE MATH UTILITIES
 
-func assumedErr() float64 { return 1.0E-9 }
+const assumedErr = 1.0e-9
 
-func mini(a, b int) int {
+func min(a, b int) int {
 	if a < b {
 		return a
 	}
 	return b
 }
 
-func maxi(a, b int) int {
+func max(a, b int) int {
 	if a > b {
 		return a
 	}
 	return b
 }
 
-func minf(a, b float64) float64 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func maxf(a, b float64) float64 {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func myabs(a float64) float64 {
-	if a >= 0.0 {
-		return a
-	}
-	return -a
-}
-
-func myrms(x *mat.VecDense) float64 {
+func rms(x *mat.VecDense) float64 {
 	return mat.Norm(x, 2) / math.Sqrt(float64(x.Len()))
 }
 
@@ -92,7 +71,7 @@ func isMatZero(A *mat.Dense) bool {
 	}
 	for i := 0; i < m; i++ {
 		for j := 0; j < n; j++ {
-			if A.At(i, j) == 0.0 {
+			if A.At(i, j) == 0 {
 				continue
 			}
 			return false
@@ -107,7 +86,7 @@ func isVecZero(b *mat.VecDense) bool {
 		return true
 	}
 	for i := 0; i < m; i++ {
-		if b.AtVec(i) == 0.0 {
+		if b.AtVec(i) == 0 {
 			continue
 		}
 		return false
@@ -134,58 +113,34 @@ func vecMin(x *mat.VecDense) float64 {
 
 // SHAPE CHANGING UTILITIES
 
-// Transpose a matrix
-func trans(A *mat.Dense) *mat.Dense {
-	m, n := A.Dims()
-	AT := mat.NewDense(n, m, nil)
-	for i := 0; i < m; i++ {
-		for j := 0; j < n; j++ {
-			AT.Set(j, i, A.At(i, j))
-		}
-	}
-	return AT
-}
-
 // Delete a column from a matrix
-func deleteColumn(A *mat.Dense, jkill int) *mat.Dense {
-	m, n := A.Dims()
-	B := mat.NewDense(m, n-1, nil)
-	jj := 0
-	for j := 0; j < n; j++ {
-		if j == jkill {
-			continue
-		}
-		for i := 0; i < m; i++ {
-			B.Set(i, jj, A.At(i, j))
-		}
-		jj++
+// Delete a column from a matrix in place
+func deleteColumn(A *mat.Dense, col int) *mat.Dense {
+	n, m := A.Dims()
+	if m <= 1 {
+		return mat.NewDense(n, 1, nil)
 	}
-	return B
+	if col < m-1 {
+		A.Slice(0, n, col, m).(*mat.Dense).Copy(A.Slice(0, n, col+1, m))
+	}
+	return A.Slice(0, n, 0, m-1).(*mat.Dense)
 }
 
 // Delete a row from a matrix
-func deleteRow(A *mat.Dense, ikill int) *mat.Dense {
-	m, n := A.Dims()
-	if m <= 1 {
-		return mat.NewDense(1, n, nil)
+func deleteRow(A *mat.Dense, row int) *mat.Dense {
+	n, m := A.Dims()
+	if n <= 1 {
+		return mat.NewDense(1, m, nil)
 	}
-	B := mat.NewDense(m-1, n, nil)
-	ii := 0
-	for i := 0; i < m; i++ {
-		if i == ikill {
-			continue
-		}
-		for j := 0; j < n; j++ {
-			B.Set(ii, j, A.At(i, j))
-		}
-		ii++
+	if row < n-1 {
+		A.Slice(row, n, 0, m).(*mat.Dense).Copy(A.Slice(row+1, n, 0, m))
 	}
-	return B
+	return A.Slice(0, n-1, 0, m).(*mat.Dense)
 }
 
 // Delete element from vector
 func deleteElement(b *mat.VecDense, ikill int) *mat.VecDense {
-	m, _ := b.Dims()
+	m := b.Len()
 	if m <= 1 {
 		return mat.NewVecDense(1, nil)
 	}
@@ -201,46 +156,17 @@ func deleteElement(b *mat.VecDense, ikill int) *mat.VecDense {
 	return bb
 }
 
-// Trim off last few rows of a matrix
-func trimRowSize(A *mat.Dense, mnew int) *mat.Dense {
-	_, n := A.Dims()
-	B := mat.NewDense(mnew, n, nil)
-	for i := 0; i < mnew; i++ {
-		for j := 0; j < n; j++ {
-			B.Set(i, j, A.At(i, j))
-		}
-	}
-	return B
-}
-
-// Trim off last few elements of a vector
-// mnew must not be larger than length of x
-func trimSize(x *mat.VecDense, mnew int) *mat.VecDense {
-	y := mat.NewVecDense(mnew, nil)
-	for i := 0; i < mnew; i++ {
-		y.SetVec(i, x.AtVec(i))
-	}
-	return y
-}
-
 // Add a new row to A
-func appendRow(A *mat.Dense, row mat.Vector) *mat.Dense {
-	m, n := A.Dims()
-	B := mat.NewDense(m+1, n, nil)
-	for i := 0; i < m; i++ {
-		for j := 0; j < n; j++ {
-			B.Set(i, j, A.At(i, j))
-		}
-	}
-	for j := 0; j < n; j++ {
-		B.Set(m, j, row.AtVec(j))
-	}
+func appendRow(A *mat.Dense, row *mat.VecDense) *mat.Dense {
+	m, _ := A.Dims()
+	B := A.Grow(1, 0).(*mat.Dense)
+	B.RowView(m).(*mat.VecDense).CopyVec(row.TVec())
 	return B
 }
 
 // Add a new element to b
 func appendElement(b *mat.VecDense, val float64) *mat.VecDense {
-	m, _ := b.Dims()
+	m := b.Len()
 	bb := mat.NewVecDense(m+1, nil)
 	for i := 0; i < m; i++ {
 		bb.SetVec(i, b.AtVec(i))
@@ -265,7 +191,7 @@ func splita(g *mat.VecDense, mg int) int {
 	//look for sensitivity explosion
 	for i := 1; i < mg; i++ {
 		sensitivity = g.At(i, 0)
-		if i >= w && sensitivity > 25.0*small && sensitivity > local {
+		if i >= w && sensitivity > 25*small && sensitivity > local {
 			break
 		}
 		if sensitivity < small {
@@ -281,33 +207,34 @@ func splita(g *mat.VecDense, mg int) int {
 
 // A utility for splitb, below
 func decideWidth(mg int) int {
-	if mg < 3 {
+	switch {
+	case mg < 3:
 		return 1
-	} else if mg <= 8 {
+	case mg <= 8:
 		return 2 // 2 to 4 spans of 2
-	} else if mg <= 12 {
+	case mg <= 12:
 		return 3 // 3 to 4 spans of 3
-	} else if mg <= 20 {
+	case mg <= 20:
 		return 4 // 3 to 5 spans of 4
-	} else if mg <= 28 {
+	case mg <= 28:
 		return 5 // 4 to 5 spans of 5
-	} else if mg <= 36 {
+	case mg <= 36:
 		return 6 // 4 to 6 spans of 6
-	} else if mg <= 50 {
+	case mg <= 50:
 		return 7 // 5 to 7 spans of 7
-	} else if mg <= 64 {
+	case mg <= 64:
 		return 8 // 6 to 8 spans of 8
-	} else if mg <= 80 {
+	case mg <= 80:
 		return 9 // 7 to 8 spans of 9
-	} else if mg <= 200 {
+	case mg <= 200:
 		return 10 // 8 to 20 spans of 10
-	} else if mg <= 300 {
+	case mg <= 300:
 		return 12 //16 to 24 spans of 12
-	} else if mg <= 400 {
+	case mg <= 400:
 		return 14 //21 to 28 spans of 14
-	} else if mg <= 1000 {
+	case mg <= 1000:
 		return 16 //25 to 60 spans of 16
-	} else {
+	default:
 		return 20 //50 to ?? spans of 20
 	}
 }
@@ -316,11 +243,10 @@ func decideWidth(mg int) int {
 func computeMovSums(g *mat.VecDense, mg, w int) *mat.VecDense {
 	numsums := mg - w + 1
 	sums := mat.NewVecDense(numsums, nil)
-	s := 0.0
 	for i := 0; i < numsums; i++ {
-		s = 0.0
+		var s float64
 		for j := i; j < i+w; j++ {
-			s = s + g.AtVec(j)
+			s += g.AtVec(j)
 		}
 		sums.SetVec(i, s)
 	}
@@ -329,14 +255,15 @@ func computeMovSums(g *mat.VecDense, mg, w int) *mat.VecDense {
 
 // A utility for splitb, below
 func decideMultiple(width int) float64 {
-	if width < 3 {
-		return 30.0
-	} else if width <= 10 {
-		return 20.0
-	} else if width <= 20 {
-		return 15.0
-	} else {
-		return 7.0
+	switch {
+	case width < 3:
+		return 30
+	case width <= 10:
+		return 20
+	case width <= 20:
+		return 15
+	default:
+		return 7
 	}
 }
 
@@ -358,7 +285,7 @@ func splitb(g *mat.VecDense, mg int) int {
 	// suppress dropouts
 	var gmin float64
 	for i := 1; i < mg-1; i++ {
-		gmin = minf(gg.AtVec(i-1), gg.AtVec(i+1))
+		gmin = math.Min(gg.AtVec(i-1), gg.AtVec(i+1))
 		if gg.AtVec(i) < 0.2*gmin {
 			gg.SetVec(i, 0.5*gmin)
 		}
@@ -400,54 +327,44 @@ func splitb(g *mat.VecDense, mg int) int {
 
 // Computes a regularized solution to Ax=b,
 // given the usable rank and the Tikhonov lambda value.
-func rmslambda(b *mat.VecDense, U *mat.Dense, S *mat.DiagDense, V *mat.Dense,
-	ur int, lamb float64) (*mat.VecDense, float64) {
-	m, n1 := U.Dims()
-	n, n2 := V.Dims()
-	mn := mini(m, n)
+func rmslambda(b *mat.VecDense, U *mat.Dense, S *mat.DiagDense, V *mat.Dense, ur int, lamb float64) (*mat.VecDense, float64) {
+	m, _ := U.Dims()
+	n, _ := V.Dims()
+	mn := min(m, n)
 	si := 0.0
 	ps := mat.NewDiagDense(mn, nil) // initally zero
 	for i := 0; i < ur; i++ {
 		si = S.At(i, i)
-		if si > 0.0 {
+		if si > 0 {
 			ps.SetDiag(i, 1.0/(si+lamb*lamb/si))
 		}
 	}
 
 	xx := mat.NewDense(n, 1, nil)
 	xx.Product(V, ps, U.T(), b)
-	var x mat.Vector
-	x = xx.ColView(0)
+	x := xx.ColView(0)
 
 	Ax := mat.NewDense(m, 1, nil)
 	Ax.Product(U, S, V.T(), x)
-	var bb mat.Vector
-	bb = Ax.ColView(0)
+	bb := Ax.ColView(0)
 
 	res := mat.NewVecDense(m, nil)
 	res.SubVec(b, bb)
-	rn := myrms(res)
+	rn := rms(res)
 
-	mn = n1 + n2 // avoid compiler complaint
 	return x.(*mat.VecDense), rn
 }
 
 // Computes Tikhonov's lambda using b's estimated RMS error
-func discrep(b *mat.VecDense,
-	U *mat.Dense, S *mat.DiagDense, V *mat.Dense,
-	ur int, mysigma float64) float64 {
+func discrep(b *mat.VecDense, U *mat.Dense, S *mat.DiagDense, V *mat.Dense, ur int, mysigma float64) float64 {
 	lo := 0.0               // for minimum achievable residual
 	hi := 0.33 * S.At(0, 0) // for ridiculously large residual
 	lamb := 0.0
-	var n, mx int
-	n, mx = V.Dims()
-	x := mat.NewVecDense(n, nil)
-	check := 0.0
 	// bisect until we get the residual we want...but quit eventually
 	for k := 0; k < 50; k++ {
 		lamb = (lo + hi) * 0.5
-		x, check = rmslambda(b, U, S, V, ur, lamb)
-		if math.Abs(check-mysigma) < 1.0E-9*mysigma {
+		_, check := rmslambda(b, U, S, V, ur, lamb)
+		if math.Abs(check-mysigma) < 1.0e-9*mysigma {
 			break // close enough!
 		}
 		if check > mysigma {
@@ -456,7 +373,6 @@ func discrep(b *mat.VecDense,
 			lo = lamb
 		}
 	}
-	mx = mx + int(x.AtVec(0)) // to avoid compiler complaint
 	return lamb
 }
 
@@ -476,31 +392,26 @@ func discrep(b *mat.VecDense,
   a simple interface to this routine. See the (small) body of Arls() below
   for how to compute the SVD yourself and call this routine directly.
 */
-func Arlsvd(svd mat.SVD, b *mat.VecDense) (
-	x *mat.VecDense, nr, ur int, sigma, lambda float64) {
+func Arlsvd(svd mat.SVD, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	//extract SVD components
-	var m, n, mb, nb, mn, mx int
 	var U, V mat.Dense
 	svd.UTo(&U)
-	m, nb = U.Dims()
-	mb, nb = b.Dims()
-	if mb != m || nb != 1 {
+	m, _ := U.Dims()
+	mb := b.Len()
+	if mb != m {
 		panic("Dimensions do not match.")
 	}
 	svd.VTo(&V)
-	n, nb = V.Dims()
-	mn = mini(m, n)
-	mx = maxi(m, n)
-	sv := make([]float64, mn)
-	svd.Values(sv)
-	S := mat.NewDiagDense(mn, sv)
+	n, _ := V.Dims()
+	mn := min(m, n)
+	mx := max(m, n)
+	S := mat.NewDiagDense(mn, svd.Values(nil))
 
 	//compute sensitivity vector
-	Ut := trans(&U)
 	Utb := mat.NewVecDense(mn, nil)
-	Utb.MulVec(Ut, b)
-	eps := S.At(0, 0) * float64(mx) * 1.0E-14
-	if eps == 0.0 {
+	Utb.MulVec(U.T(), b)
+	eps := S.At(0, 0) * float64(mx) * 1.0e-14
+	if eps == 0 {
 		eps = 1.0E-14
 	}
 	si := 0.0
@@ -513,7 +424,7 @@ func Arlsvd(svd mat.SVD, b *mat.VecDense) (
 			break
 		}
 		sense = Utb.AtVec(i) / si
-		if sense < 0.0 {
+		if sense < 0 {
 			sense = -sense
 		}
 		g.SetVec(i, sense)
@@ -521,28 +432,24 @@ func Arlsvd(svd mat.SVD, b *mat.VecDense) (
 	}
 	if nr < 1 {
 		x := mat.NewVecDense(n, nil)
-		return x, 0, 0, 0.0, 0.0
+		return x, 0, 0, 0, 0
 	}
 
 	//get usable rank
 	ura := splita(g, nr)
 	urb := splitb(g, ura)
-	ur = mini(ura, urb)
+	ur = min(ura, urb)
 
 	//solve
-	sigma = 0.0
-	lambda = 0.0
-	check := 0.0
 	if ur >= nr {
-		x, check = rmslambda(b, &U, S, &V, ur, 0.0)
+		x, _ = rmslambda(b, &U, S, &V, ur, 0)
 	} else {
 		noise := Utb.SliceVec(ur, mn).(*mat.VecDense)
-		sigma = myrms(noise) //sigma := myrms(Utb[ur:mn])
+		sigma = rms(noise)
 		lambda = discrep(b, &U, S, &V, ur, sigma)
-		x, check = rmslambda(b, &U, S, &V, ur, lambda)
+		x, _ = rmslambda(b, &U, S, &V, ur, lambda)
 	}
-	eps = check // to avoid compiler complaint
-	return
+	return x, nr, ur, sigma, lambda
 }
 
 /*----------------------------------------------------------
@@ -668,19 +575,17 @@ func Arlsvd(svd mat.SVD, b *mat.VecDense) (
   http://www.rejtrix.net/
   rejones7@msn.com
 */
-func Arls(A *mat.Dense, b *mat.VecDense) (
-	x *mat.VecDense, nr, ur int, sigma, lambda float64) {
+func Arls(A *mat.Dense, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	_, n := A.Dims()
 	if isMatZero(A) || isVecZero(b) {
-		return mat.NewVecDense(n, nil), 0, 0, 0., 0.
+		return mat.NewVecDense(n, nil), 0, 0, 0, 0
 	}
 	var svd mat.SVD
 	ok := svd.Factorize(A, mat.SVDThin)
 	if !ok {
 		panic("SVD failed to factorize A")
 	}
-	x, nr, ur, sigma, lambda = Arlsvd(svd, b)
-	return
+	return Arlsvd(svd, b)
 }
 
 /*----------------------------------------------------------
@@ -713,11 +618,10 @@ func Arls(A *mat.Dense, b *mat.VecDense) (
   residual, resulting in extra interference with the user's model.
   Arlsnn seeks a better balance.
 */
-func Arlsnn(A *mat.Dense, b *mat.VecDense) (
-	x *mat.VecDense, nr, ur int, sigma, lambda float64) {
+func Arlsnn(A *mat.Dense, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	m, n := A.Dims()
-	mb, nb := b.Dims()
-	if mb != m || nb != 1 {
+	mb := b.Len()
+	if mb != m {
 		panic("Dimensions are not right.")
 	}
 
@@ -727,24 +631,21 @@ func Arlsnn(A *mat.Dense, b *mat.VecDense) (
 	if !ok {
 		panic("SVD failed to factorize A")
 	}
-	var xt *mat.VecDense
-	xt, nr, ur, sigma, lambda = Arlsvd(svd, b)
+	xt, nr, ur, sigma, lambda := Arlsvd(svd, b)
 
 	// see if unconstrained solution is already non-negative
-	if vecMin(xt) >= 0.0 {
+	if vecMin(xt) >= 0 {
 		return xt, nr, ur, sigma, lambda
 	}
 
-	C := matCopy(A)
+	C := &mat.Dense{}
+	C.CloneFrom(A)
 	// cols is a list of active column numbers
 	cols := make([]int, n) //var cols [n] int
 	for i := 0; i < n; i++ {
 		cols[i] = i
 	}
-	mc := m
 	nc := n
-	mrc := mini(mc, nc)
-	t := 0.0
 
 	// the approach here is to actually delete columns,
 	// for SVD speed and stability, not just zero columns.
@@ -753,7 +654,7 @@ func Arlsnn(A *mat.Dense, b *mat.VecDense) (
 		p := -1
 		worst := 0.0
 		for j := 0; j < nc; j++ {
-			t = xt.AtVec(j)
+			t := xt.AtVec(j)
 			if t < worst {
 				p = j
 				worst = t
@@ -764,17 +665,17 @@ func Arlsnn(A *mat.Dense, b *mat.VecDense) (
 		}
 
 		// remove column p and re-Factorize
-		for i := p; i < nc-1; i++ {
-			cols[i] = cols[i+1]
-		}
+		cols = cols[:nc]
+		copy(cols[p:], cols[p+1:])
 		C = deleteColumn(C, p)
 		ok := svd.Factorize(C, mat.SVDThin)
 		if !ok {
 			panic("SVD failed to factorize A")
 		}
 
+		var mc int
 		mc, nc = C.Dims()
-		mrc = mini(mc, nc)
+		mrc := min(mc, nc)
 		U := mat.NewDense(mc, mrc, nil)
 		svd.UTo(U)
 		V := mat.NewDense(nc, mrc, nil)
@@ -789,10 +690,10 @@ func Arlsnn(A *mat.Dense, b *mat.VecDense) (
 		ps := mat.NewDiagDense(mrc, nil)
 		for i := 0; i < mrc; i++ {
 			si = S.At(i, i)
-			if si > 0.0 {
-				pi = 1.0 / (si + lambda*lambda/si)
+			if si > 0 {
+				pi = 1 / (si + lambda*lambda/si)
 			} else {
-				pi = 0.0
+				pi = 0
 			}
 			ps.SetDiag(i, pi)
 		}
@@ -806,8 +707,8 @@ func Arlsnn(A *mat.Dense, b *mat.VecDense) (
 	}
 
 	// degenerate case: nc==1
-	if xt.AtVec(0) < 0.0 {
-		xt.SetVec(0, 0.0)
+	if xt.AtVec(0) < 0 {
+		xt.SetVec(0, 0)
 	}
 
 	// rebuild full solution vector
@@ -816,22 +717,6 @@ func Arlsnn(A *mat.Dense, b *mat.VecDense) (
 		x.SetVec(cols[j], xt.AtVec(j))
 	}
 	return
-}
-
-// UTILITIES FOR CONSTRAINED SOLVERS
-
-func vecCopy(b *mat.VecDense) *mat.VecDense {
-	m, _ := b.Dims()
-	c := mat.NewVecDense(m, nil)
-	c.CopyVec(b)
-	return c
-}
-
-func matCopy(A *mat.Dense) *mat.Dense {
-	m, n := A.Dims()
-	B := mat.NewDense(m, n, nil)
-	B.Copy(A)
-	return B
 }
 
 // Exchange two rows of A, in place
@@ -850,31 +735,8 @@ func exchangeRowsOf(A *mat.Dense, i1, i2 int) {
 
 // Multiply a row of A by r, in place
 func scaleRow(A *mat.Dense, i int, r float64) {
-	_, n := A.Dims()
-	for j := 0; j < n; j++ {
-		A.Set(i, j, A.At(i, j)*r)
-	}
-}
-
-// Dot product two rows of A, returning a float64
-func dotRows(A *mat.Dense, i1, i2 int) float64 {
-	_, n := A.Dims()
-	t := 0.0
-	for j := 0; j < n; j++ {
-		t += A.At(i1, j) * A.At(i2, j)
-	}
-	return t
-}
-
-// Dot product row i of A with row j of E, returning a float64
-// Caller must assure the matrices have identical column sizes
-func dotRowsAB(A *mat.Dense, i int, E *mat.Dense, j int) float64 {
-	_, n := A.Dims()
-	t := 0.0
-	for k := 0; k < n; k++ {
-		t += A.At(i, k) * E.At(j, k)
-	}
-	return t
+	v := A.RowView(i).(*mat.VecDense)
+	v.ScaleVec(r, v)
 }
 
 // Find the (first) row of Ex=f which has the highest ratio of f[i]
@@ -883,11 +745,10 @@ func findMaxSense(A *mat.Dense, b *mat.VecDense) int {
 	snmax := -1.0
 	imax := 0 // default
 	m, _ := A.Dims()
-	s := 0.0
 	for i := 0; i < m; i++ {
 		rn := mat.Norm(A.RowView(i), 2)
-		if rn > 0.0 {
-			s = math.Abs(b.AtVec(i)) / rn
+		if rn > 0 {
+			s := math.Abs(b.AtVec(i)) / rn
 			if s > snmax {
 				snmax = s
 				imax = i
@@ -914,14 +775,15 @@ func findMaxRowNorm(A *mat.Dense, istart int) int {
 }
 
 // Orthogonalize and order the rows of Ex=f for Arlseq
-func prepeq(E *mat.Dense, f *mat.VecDense) (
-	*mat.Dense, *mat.VecDense) {
+func prepeq(E *mat.Dense, f *mat.VecDense) (*mat.Dense, *mat.VecDense) {
 	if isMatZero(E) {
 		return E, f
 	}
 
-	EE := matCopy(E)
-	ff := vecCopy(f)
+	EE := &mat.Dense{}
+	EE.CloneFrom(E)
+	ff := &mat.VecDense{}
+	ff.CloneFromVec(f)
 	m, n := EE.Dims()
 	t, rin, scale, d := 0.0, 0.0, 0.0, 0.0
 	imax := 0
@@ -940,17 +802,17 @@ func prepeq(E *mat.Dense, f *mat.VecDense) (
 
 		// normalize
 		rin = mat.Norm(EE.RowView(i), 2)
-		if rin > 0.0 {
-			scale = 1.0 / rin
+		if rin > 0 {
+			scale = 1 / rin
 			scaleRow(EE, i, scale)
 			ff.SetVec(i, scale*ff.AtVec(i))
 		} else {
-			ff.SetVec(i, 0.0)
+			ff.SetVec(i, 0)
 		}
 
 		// subtract projections onto EE[i,:]
 		for k := i + 1; k < m; k++ {
-			d = dotRows(EE, k, i)
+			d = mat.Dot(EE.RowView(k), EE.RowView(i))
 			for j := 0; j < n; j++ {
 				EE.Set(k, j, EE.At(k, j)-d*EE.At(i, j))
 			}
@@ -967,8 +829,8 @@ func prepeq(E *mat.Dense, f *mat.VecDense) (
 		m1 := splita(g, m)
 		mm := splitb(g, m1)
 		if mm < m {
-			EE = trimRowSize(EE, mm)
-			ff = trimSize(ff, mm)
+			EE = EE.Slice(0, mm, 0, n).(*mat.Dense)
+			ff = ff.SliceVec(0, mm).(*mat.VecDense)
 		}
 	}
 	return EE, ff
@@ -977,18 +839,17 @@ func prepeq(E *mat.Dense, f *mat.VecDense) (
 // Subtract from Ax=b its projection onto Ex=f.
 // E should normally have been processed with prepeq() before calling arlspj.
 // Caller must guarantee that A and E have identical 2nd dimensions.
-func arlspj(A *mat.Dense, b *mat.VecDense,
-	E *mat.Dense, f *mat.VecDense, neglect float64) (
-	*mat.Dense, *mat.VecDense) {
-	AA := matCopy(A)
-	bb := vecCopy(b)
+func arlspj(A *mat.Dense, b *mat.VecDense, E *mat.Dense, f *mat.VecDense, neglect float64) (*mat.Dense, *mat.VecDense) {
+	AA := &mat.Dense{}
+	AA.CloneFrom(A)
+	bb := &mat.VecDense{}
+	bb.CloneFromVec(b)
 	ma, na := AA.Dims()
 	me, _ := E.Dims()
-	i := 0
-	d := 0.0
-	for i < ma {
+
+	for i := 0; i < ma; {
 		for j := 0; j < me; j++ {
-			d = dotRowsAB(AA, i, E, j)
+			d := mat.Dot(AA.RowView(i), E.RowView(j))
 			for k := 0; k < na; k++ {
 				AA.Set(i, k, AA.At(i, k)-d*E.At(j, k))
 			}
@@ -1002,7 +863,7 @@ func arlspj(A *mat.Dense, b *mat.VecDense,
 		} else {
 			scaleRow(AA, i, 1.0/nm)
 			bb.SetVec(i, bb.AtVec(i)/nm)
-			i += 1
+			i++
 		}
 		if ma < 2 {
 			if isMatZero(AA) {
@@ -1113,14 +974,12 @@ func arlspj(A *mat.Dense, b *mat.VecDense,
   -----
   See arls() above for notes and references.
 */
-func Arlseq(A *mat.Dense, b *mat.VecDense,
-	E *mat.Dense, f *mat.VecDense) (
-	x *mat.VecDense, nr, ur int, sigma, lambda float64) {
+func Arlseq(A *mat.Dense, b *mat.VecDense, E *mat.Dense, f *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	ma, na := A.Dims()
-	mb, nb := b.Dims()
+	mb := b.Len()
 	me, ne := E.Dims()
-	mf, nf := f.Dims()
-	if ma < 1 || ma != mb || nb != 1 || me != mf || nf != 1 || na != ne {
+	mf := f.Len()
+	if ma < 1 || ma != mb || me != mf || na != ne {
 		panic("Dimensions do not match.")
 	}
 
@@ -1130,13 +989,12 @@ func Arlseq(A *mat.Dense, b *mat.VecDense,
 
 	imax := findMaxRowNorm(A, 0)
 	rnmax := mat.Norm(A.RowView(imax), 2)
-	neglect := rnmax * assumedErr() // see Note 5. for arls()
+	neglect := rnmax * assumedErr // see Note 5. for arls()
 
 	EE, ff := prepeq(E, f)
 	AA, bb := arlspj(A, b, EE, ff, neglect)
-	EEt := trans(EE)
 	xe := mat.NewVecDense(ne, nil)
-	xe.MulVec(EEt, ff)
+	xe.MulVec(EE.T(), ff)
 	xt, nr, ur, sigma, lambdah := Arls(AA, bb)
 	xt.AddVec(xt, xe)
 	return xt, nr, ur, sigma, lambdah
@@ -1256,27 +1114,25 @@ func get_worst(GG *mat.Dense, hh, x *mat.VecDense) int {
    But it would be a mistake to accept an answer that did not meet
    the facts that we know.
 */
-func Arlsall(A *mat.Dense, b *mat.VecDense,
-	E *mat.Dense, f *mat.VecDense,
-	G *mat.Dense, h *mat.VecDense) (
-	x *mat.VecDense, nr, ur int, sigma, lambda float64) {
+func Arlsall(A *mat.Dense, b *mat.VecDense, E *mat.Dense, f *mat.VecDense, G *mat.Dense, h *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	ma, na := A.Dims()
-	mb, nb := b.Dims()
+	mb := b.Len()
 	me, ne := E.Dims()
-	mf, nf := f.Dims()
+	mf := f.Len()
 	mg, ng := G.Dims()
-	mh, nh := h.Dims()
-	if ma != mb || nb != 1 ||
-		me != mf || nf != 1 ||
-		mg != mh || nh != 1 ||
-		ne != na || ng != na {
+	mh := h.Len()
+	if ma != mb || me != mf || mg != mh || ne != na || ng != na {
 		panic("Dimensions do not match.")
 	}
 
-	EE := matCopy(E)
-	ff := vecCopy(f)
-	GG := matCopy(G)
-	hh := vecCopy(h)
+	EE := &mat.Dense{}
+	EE.CloneFrom(E)
+	ff := &mat.VecDense{}
+	ff.CloneFromVec(f)
+	GG := &mat.Dense{}
+	GG.CloneFrom(G)
+	hh := &mat.VecDense{}
+	hh.CloneFromVec(h)
 
 	// get initial solution... it might actually be ok
 	x, nr, ur, sigma, lambdah := Arlseq(A, b, EE, ff)
@@ -1285,7 +1141,7 @@ func Arlsall(A *mat.Dense, b *mat.VecDense,
 	}
 
 	// while inequality constraints are not fully satisfied:
-	for true {
+	for {
 		p := get_worst(GG, hh, x)
 		if p < 0 {
 			break
@@ -1299,7 +1155,7 @@ func Arlsall(A *mat.Dense, b *mat.VecDense,
 			ff = mat.NewVecDense(1, nil)
 			ff.SetVec(0, hh.AtVec(p))
 		} else {
-			EE = appendRow(EE, GG.RowView(p))
+			EE = appendRow(EE, GG.RowView(p).(*mat.VecDense))
 			ff = appendElement(ff, hh.AtVec(p))
 		}
 		me, _ = EE.Dims()
@@ -1316,10 +1172,7 @@ func Arlsall(A *mat.Dense, b *mat.VecDense,
   Arlsgt() is the same as Arlsall except that equality constraints
   are not used.
 */
-func Arlsgt(A *mat.Dense, b *mat.VecDense, G *mat.Dense, h *mat.VecDense) (
-	x *mat.VecDense, nr, ur int, sigma, lambda float64) {
+func Arlsgt(A *mat.Dense, b *mat.VecDense, G *mat.Dense, h *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	_, n := A.Dims()
-	E := mat.NewDense(1, n, nil)
-	f := mat.NewVecDense(1, nil)
-	return Arlsall(A, b, E, f, G, h)
+	return Arlsall(A, b, mat.NewDense(1, n, nil), mat.NewVecDense(1, nil), G, h)
 }
