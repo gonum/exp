@@ -1,6 +1,5 @@
 package arls
-
-// Copyright ©2021 The Gonum Authors. All rights reserved.
+// Copyright 2021 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 import (
@@ -13,7 +12,32 @@ import (
 
 func FailMe(t *testing.T, s string) { fmt.Println(s); t.Error(s); t.Fail() }
 
-//test utilities
+// Print routines for use in debugging
+
+func MyVecPrint(x *mat.VecDense) {
+	m, _ := x.Dims()
+	fmt.Println("Vector")
+	for i := 0; i < m; i++ {
+		fmt.Println(x.AtVec(i))
+	}
+	fmt.Println(" ")
+}
+
+func MyMatPrint(A *mat.Dense) {
+	m, n := A.Dims()
+	fmt.Println("Matrix")
+	for i := 0; i < m; i++ {
+		for j := 0; j < n; j++ {
+			fmt.Printf(" %0.5f", A.At(i, j))
+		}
+		fmt.Printf("\n")
+	}
+	fmt.Println(" ")
+}
+
+func squareof(x float64) float64 { 
+  return x*x
+}
 
 func Zeros(m int) *mat.VecDense {
 	x := mat.NewVecDense(m, nil)
@@ -101,32 +125,33 @@ func Sum(x *mat.VecDense) float64 {
 	return sum
 }
 
-func Diffxy(x, y *mat.VecDense) float64 {
-	m, _ := x.Dims()
+func Diffrms(x, y *mat.VecDense) float64 {
+	mx, _ := x.Dims()
 	my, _ := y.Dims()
-	if m != my {
+	if mx != my {
 		return 1.0E9
 	}
 	sum := 0.0
-	for i := 0; i < m; i++ {
-		sum += x.AtVec(i) - y.AtVec(i)
+	for i := 0; i < mx; i++ {
+		sum += squareof(x.AtVec(i) - y.AtVec(i))
 	}
+	sum = math.Sqrt(sum/float64(mx))
 	return sum
 }
 
-func DiffAB(A, B *mat.Dense) float64 {
+func DiffABrms(A, B *mat.Dense) float64 {
 	m, n := A.Dims()
 	mb, nb := B.Dims()
 	if m != mb || n != nb {
 		return 1.0E9
 	}
-
 	sum := 0.0
 	for i := 0; i < m; i++ {
 		for j := 0; j < n; j++ {
-			sum += A.At(i, j) - B.At(i, j)
+			sum += squareof(A.At(i, j) - B.At(i, j))
 		}
 	}
+  sum = math.Sqrt(sum/float64(m*n))
 	return sum
 }
 
@@ -153,27 +178,6 @@ func MyMatRandom(m, n, ibias int) *mat.Dense {
 	return A
 }
 
-func MyVecPrint(x *mat.VecDense) {
-	m, _ := x.Dims()
-	fmt.Println("Vector")
-	for i := 0; i < m; i++ {
-		fmt.Println(x.AtVec(i))
-	}
-	fmt.Println(" ")
-}
-
-func MyMatPrint(A *mat.Dense) {
-	m, n := A.Dims()
-	fmt.Println("Matrix")
-	for i := 0; i < m; i++ {
-		for j := 0; j < n; j++ {
-			fmt.Printf(" %0.5f", A.At(i, j))
-		}
-		fmt.Printf("\n")
-	}
-	fmt.Println(" ")
-}
-
 func NormOfResidual(A *mat.Dense, b *mat.VecDense, x *mat.VecDense) float64 {
 	m, _ := A.Dims()
 	bb := Zeros(m)
@@ -181,7 +185,7 @@ func NormOfResidual(A *mat.Dense, b *mat.VecDense, x *mat.VecDense) float64 {
 	r := Zeros(m)
 	r.SubVec(b, bb)
 	res := mat.Norm(r, 2)
-
+	// for debugging...
 	//MyMatPrint(A)
 	//MyVecPrint(b)
 	//MyVecPrint(x)
@@ -525,9 +529,8 @@ func TestArls(t *testing.T) {
 	m := 3
 	A := mat.NewDense(3, 3, nil)
 	b := Ones(3)
-	bb := Zeros(3)
-	xx := Zeros(3)
-	resid := Zeros(3)
+	bb := b
+	ans := Zeros(3)
 
 	//TEST WITH ZERO MATRIX
 	x, nr, ur, sigma, lambda := Arls(A, b)
@@ -540,55 +543,56 @@ func TestArls(t *testing.T) {
 	b = Zeros(3)
 	var svd mat.SVD
 	ok := svd.Factorize(A, mat.SVDThin)
-	if !ok {
-		FailMe(t, "TestArls(2) failed.")
+	if !ok { 
+	  FailMe(t, "TestArls(2) failed.")	
 	}
 
 	x, nr, ur, sigma, lambda = Arlsvd(svd, b)
-	if mat.Norm(x, 2) != 0.0 {
-		FailMe(t, "TestArls(3) failed.")
+	if mat.Norm(x, 2) != 0.0 { 
+	  FailMe(t, "TestArls(3) failed.")	
 	}
 
 	x, nr, ur, sigma, lambda = Arls(A, b)
-	if mat.Norm(x, 2) != 0.0 {
-		FailMe(t, "TestArls(4) failed.")
+	if mat.Norm(x, 2) != 0.0 { 
+	  FailMe(t, "TestArls(4) failed.")	
 	}
 
 	//DESIRED SOLUTION FOR NEXT SEVERAL TESTS
 	n = 6
-	xx = Ones(n)
+	ans = Ones(n)
 	for i := 0; i < n; i++ {
-		xx.SetVec(i, float64(n-2-i))
+		ans.SetVec(i, float64(n-2-i))
 	}
 
-	//OVERDETERMINED TESTS WITH HILBERT(7,6)
+	//OVERDETERMINED TEST WITH HILBERT(7,6)
 	A = Hilbert(7, 6)
 	m, n = A.Dims()
 	b = Zeros(m)
 	bb = Zeros(m)
-	resid = Zeros(m)
-	b.MulVec(A, xx)
+	b.MulVec(A, ans)
 	b.AddVec(b, MyVecRandom(m, 0.002))
-
 	x, nr, ur, sigma, lambda = Arls(A, b)
 	bb.MulVec(A, x)
-	resid.SubVec(b, bb)
-	if !IsNear(MyVecRms(resid), 0.31871896) {
-		FailMe(t, "TestArls(5) failed.")
+	if Diffrms(x,ans) > 0.21  { 
+	  FailMe(t, "TestArls(5A) failed.") 
+	}
+	if Diffrms(b,bb) > 0.0008 { 
+	  FailMe(t, "TestArls(5B) failed.") 
 	}
 
-	//SQUARE TESTS WITH HILBERT(6,6)
+	//SQUARE TEST WITH HILBERT(6,6)
 	A = Hilbert(6, 6)
 	m, n = A.Dims()
 	b = Zeros(m)
-	bb = Zeros(m)
-	resid = Zeros(m)
-	b.MulVec(A, xx)
+	b.MulVec(A, ans)
 	x, nr, ur, sigma, lambda = Arls(A, b)
+	bb = Zeros(m)
 	bb.MulVec(A, x)
-	resid.SubVec(b, bb)
-	if !IsNear(MyVecRms(resid), 0.0) {
-		FailMe(t, "TestArls(6) failed.")
+	if Diffrms(x,ans) > 2.0E-9 { 
+	  FailMe(t, "TestArls(6A) failed.") 
+	}
+	if Diffrms(b,bb) > 1.0E-12 { 
+	  FailMe(t, "TestArls(6B) failed.") 
 	}
 
 	//DUPLICATE ROW TEST WITH HILBERT(6,6)
@@ -598,14 +602,15 @@ func TestArls(t *testing.T) {
 	}
 	m, n = A.Dims()
 	b = Zeros(m)
-	bb = Zeros(m)
-	resid = Zeros(m)
-	b.MulVec(A, xx)
+	b.MulVec(A, ans)
 	x, nr, ur, sigma, lambda = Arls(A, b)
+	bb = Zeros(m)
 	bb.MulVec(A, x)
-	resid.SubVec(b, bb)
-	if !IsNear(MyVecRms(resid), 0.0) {
-		FailMe(t, "TestArls(7) failed.")
+	if Diffrms(x,ans) > 0.01   { 
+	  FailMe(t, "TestArls(7A) failed.") 
+	}
+	if Diffrms(b,bb) > 1.0E-12 { 
+	  FailMe(t, "TestArls(7B) failed.") 
 	}
 
 	//DUPLICATE COLUMN TEST WITH HILBERT(6,6)
@@ -615,30 +620,72 @@ func TestArls(t *testing.T) {
 	}
 	m, n = A.Dims()
 	b = Zeros(m)
-	bb = Zeros(m)
-	resid = Zeros(m)
-	b.MulVec(A, xx)
+	b.MulVec(A, ans)
 	x, nr, ur, sigma, lambda = Arls(A, b)
+	bb = Zeros(m)
 	bb.MulVec(A, x)
-	resid.SubVec(b, bb)
-	if !IsNear(MyVecRms(resid), 0.0) {
-		FailMe(t, "TestArls(8) failed.")
+	if Diffrms(x,ans) > 0.3 { 
+	  FailMe(t, "TestArls(8A) failed.") 
+	}
+	if Diffrms(b,bb) > 1.0E-12 { 
+	  FailMe(t, "TestArls(8B) failed.") 
 	}
 
-	//UNDERDETERMINED TESTS WITH HILBERT(5,6)
+	//UNDERDETERMINED TEST WITH HILBERT(5,6)
 	A = Hilbert(5, 6)
 	m, n = A.Dims()
 	b = Zeros(m)
-	bb = Zeros(m)
-	resid = Zeros(m)
-	b.MulVec(A, xx)
+	b.MulVec(A, ans)
 	x, nr, ur, sigma, lambda = Arls(A, b)
+	bb = Zeros(m)
 	bb.MulVec(A, x)
-	resid.SubVec(b, bb)
-	if !IsNear(MyVecRms(resid), 0.0) {
-		FailMe(t, "TestArls(9) failed.")
+	if Diffrms(x,ans) > 0.02   { 
+	  FailMe(t, "TestArls(9A) failed.") 
 	}
-	nr = 2*nr + int(ur) + int(sigma) + int(lambda) // to avoid dianostic
+	if Diffrms(b,bb) > 1.0E-12 { 
+	  FailMe(t, "TestArls(9B) failed.") 
+	}
+
+  //TEST LARGER, REAL-LIKE SYSTEM    
+  n = 15
+  ans = Ones(n)
+  for i:=0; i<n; i++ {
+    ans.SetVec(i,float64(n-1-i)) 
+  }
+  A = Hilbert(n,n)
+  m, n = A.Dims()
+  b = Zeros(m)
+  b.MulVec(A,ans)
+  b.AddVec(b,MyVecRandom(m, 0.0001))
+  x, nr, ur, sigma, lambda = Arls(A, b)
+  bb = Zeros(m)
+  bb.MulVec(A,x)
+	if Diffrms(x,ans) > 0.25  { 
+	  FailMe(t, "TestArls(10A) failed.") 
+	}
+	if Diffrms(b,bb) > 4.0E-5 { 
+	  FailMe(t, "TestArls(10B) failed.") 
+	}
+ 
+   //COMPARE TO PYTHON
+  n = 12
+  A = Hilbert(n,n)
+  ans = Ones(n)
+  b = Zeros(n)
+  b.MulVec(A,ans)
+  for i:=0; i<n; i++ {
+    b.SetVec(i,b.AtVec(i) + 0.00001*math.Sin(float64(i + i)))
+  }
+  x, nr, ur, sigma, lambda = Arls(A, b)
+  var xp = mat.NewVecDense(12, 
+        []float64{0.998635, 1.013942, 0.980540, 0.986143,
+                  1.000395, 1.011578, 1.016739, 1.015970,
+                  1.010249, 1.000679, 0.988241, 0.973741})
+	if Diffrms(x,xp) > 0.00001 { 
+	  FailMe(t, "TestArls(11) failed.") 
+	}
+  
+	nr = 2*nr + int(ur) + int(sigma) + int(lambda) // to avoid dianostic 
 }
 
 func TestArlsnn(t *testing.T) {
@@ -646,15 +693,15 @@ func TestArlsnn(t *testing.T) {
 	//as columns are removed arlsnn will deal with square & underdet
 	A := Hilbert(7, 8)
 	m, n := A.Dims()
-	x := Ones(n)
+	ans := Ones(n)
 	for i := 0; i < n; i++ {
-		x.SetVec(i, float64(n-2-i))
+		ans.SetVec(i, float64(n-2-i))
 	}
 	b := Zeros(m)
-	b.MulVec(A, x)
+	b.MulVec(A, ans)
 	b.AddVec(b, MyVecRandom(m, 0.000001))
-	xx, nr, ur, sigma, lambda := Arlsnn(A, b)
-	res := NormOfResidual(A, b, xx)
+	x, nr, ur, sigma, lambda := Arlsnn(A, b)
+	res := NormOfResidual(A, b, x)
 	if res > 1.5 {
 		FailMe(t, "TestArlsnn(1) failed.")
 	}
@@ -662,24 +709,24 @@ func TestArlsnn(t *testing.T) {
 	//TEST "IMPOSSIBLE" PROBLEM WITH ARLSNN
 	A = Eye(3, 3)
 	b = mat.NewVecDense(3, []float64{-1., -1., -1.})
-	xx, nr, ur, sigma, lambda = Arlsnn(A, b)
-	res = NormOfResidual(A, b, xx)
+	x, nr, ur, sigma, lambda = Arlsnn(A, b)
+	res = NormOfResidual(A, b, x)
 	if res > 1.8 {
 		FailMe(t, "TestArlsnn(2) failed.")
 	}
-	if mat.Norm(xx, 2) > 1.0E-8 {
+	if mat.Norm(x, 2) > 1.0E-8 {
 		FailMe(t, "TestArlsnn(3) failed.")
 	}
 
 	//TEST COMPUTED ZERO PROBLEM
 	A = mat.NewDense(2, 3, []float64{1., 1., 1., 0., 0., 0.})
 	b = mat.NewVecDense(2, []float64{0., 1.})
-	xx, nr, ur, sigma, lambda = Arlsnn(A, b)
-	res = NormOfResidual(A, b, xx)
+	x, nr, ur, sigma, lambda = Arlsnn(A, b)
+	res = NormOfResidual(A, b, x)
 	if res > 1.1 {
 		FailMe(t, "Arls_test(4 failed: residual.")
 	}
-	if mat.Norm(xx, 2) > 0.0000001 {
+	if mat.Norm(x, 2) > 0.0000001 {
 		FailMe(t, "TestArlsnn(4) failed: x not zero.")
 	}
 
@@ -704,7 +751,7 @@ func TestRowOps(t *testing.T) {
 	exchangeRowsOf(A, 1, 2)
 	B := mat.NewDense(3, 4,
 		[]float64{1., 0., 0., 0., 0., 0., 1., 0., 0., 1., 0., 0.})
-	if DiffAB(A, B) > 1.0e-9 {
+	if DiffABrms(A, B) > 1.0e-9 {
 		FailMe(t, "TestRowOps(1) failed!")
 	}
 
@@ -713,7 +760,7 @@ func TestRowOps(t *testing.T) {
 	scaleRow(A, 1, 2.0)
 	B = mat.NewDense(3, 3,
 		[]float64{2., 2., 2., 2., 2., 2., 2., 2., 2.})
-	if DiffAB(A, B) > 1.0e-9 {
+	if DiffABrms(A, B) > 1.0e-9 {
 		FailMe(t, "TestRowOps(2) failed!")
 	}
 
@@ -753,14 +800,10 @@ func TestPrepeq(t *testing.T) {
 	f := Zeros(3)
 	f.MulVec(E, x) //[]float64{4.,5.,4.}
 	EE, ff := prepeq(E, f)
-	if DiffAB(EE, Eye(3, 3)) > 1.0e-9 {
-		FailMe(t, "TestPrepeq(1) failed!")
-	}
-
 	y := Zeros(3)
 	y.MulVec(trans(EE), ff)
-	if Diffxy(x, y) > 1.0e-9 {
-		FailMe(t, "TestPrepeq(2) failed!")
+	if Diffrms(x, y) > 1.0e-9 {	
+	  FailMe(t, "TestPrepeq(1) failed!") 
 	}
 }
 
@@ -796,40 +839,40 @@ func TestArlseq(t *testing.T) {
 	f := Zeros(3)
 	ans := Ones(3)
 	x, nr, ur, sigma, lambda := Arlseq(A, b, E, f)
-	if Diffxy(x, ans) > 1.0e-9 {
-		FailMe(t, "TestArlseq(1) failed!")
+	if Diffrms(x, ans) > 1.0e-9 { 
+	  FailMe(t, "TestArlseq(1) failed!") 
 	}
 
 	E.Set(0, 0, 1.0)
 	f.SetVec(0, 2.0)
 	ans.SetVec(0, 2.0)
 	x, nr, ur, sigma, lambda = Arlseq(A, b, E, f)
-	if Diffxy(x, ans) > 1.0e-9 {
-		FailMe(t, "TestArlseq(2) failed!")
+	if Diffrms(x, ans) > 1.0e-9 {	
+	  FailMe(t, "TestArlseq(2) failed!") 
 	}
 
 	E.Set(1, 1, 1.0)
 	f.SetVec(1, 2.0)
 	ans.SetVec(1, 2.0)
 	x, nr, ur, sigma, lambda = Arlseq(A, b, E, f)
-	if Diffxy(x, ans) > 1.0e-9 {
-		FailMe(t, "TestArlseq(3) failed!")
+	if Diffrms(x, ans) > 1.0e-9 { 
+	  FailMe(t, "TestArlseq(3) failed!") 
 	}
 
 	E.Set(2, 2, 1.0)
 	f.SetVec(2, 2.0)
 	ans.SetVec(2, 2.0)
 	x, nr, ur, sigma, lambda = Arlseq(A, b, E, f)
-	if Diffxy(x, ans) > 1.0e-9 {
-		FailMe(t, "TestArlseq(4) failed!")
+	if Diffrms(x, ans) > 1.0e-9 { 
+	  FailMe(t, "TestArlseq(4) failed!")	
 	}
 
 	E = MyMatRandom(3, 3, 3)
 	ans = Ones(3)
 	f.MulVec(E, ans)
 	x, nr, ur, sigma, lambda = Arlseq(A, b, E, f)
-	if Diffxy(x, ans) > 1.0e-9 {
-		FailMe(t, "TestArlseq(5) failed!")
+	if Diffrms(x, ans) > 1.0e-9 { 
+	  FailMe(t, "TestArlseq(5) failed!") 
 	}
 
 	ur = nr + ur + int(sigma) + int(lambda) // to avoid diagnostic
@@ -840,17 +883,17 @@ func TestArlsall(t *testing.T) {
 	fmt.Println("TestArlall")
 	A := Hilbert(7, 6)
 	m, n := A.Dims()
-	x := mat.NewVecDense(6, []float64{4., 3., 2., 1., 0., -1.})
+	ans := mat.NewVecDense(6, []float64{4., 3., 2., 1., 0., -1.})
 	b := Zeros(m)
-	b.MulVec(A, x)
+	b.MulVec(A, ans)
 	b.AddVec(b, MyVecRandom(m, 0.000001))
 
 	E := Mzeros(2, n)
 	f := Zeros(2)
 	for j := 0; j < n; j++ {
 		E.Set(0, j, 1.0)
-	} //first row all 1's
-	f.SetVec(0, Sum(x)) // sum must be exact
+	}
+	f.SetVec(0, Sum(ans)) // sum must be exact
 	E.Set(1, 0, 1.0)
 	f.SetVec(1, 5.0) // x[1] must be exact
 
@@ -862,68 +905,65 @@ func TestArlsall(t *testing.T) {
 	res := 0.0
 
 	// solve with with (A,0,0)
-	xx, nr, ur, sigma, lambda := Arls(A, b)
+	x, nr, ur, sigma, lambda := Arls(A, b)
 	//fmt.Println("after A 0 O")
-	res = NormOfResidual(A, b, xx)
-	if res > 0.000001 {
-		FailMe(t, "TestArlsAll(1) failed.")
+	res = NormOfResidual(A, b, x)
+	if res > 0.000001 { 
+	  FailMe(t, "TestArlsAll(1) failed.")	
 	}
 
 	// Solve with (A,E,0)
-	xx, nr, ur, sigma, lambda = Arlsall(A, b, E, f, Z, z)
+	x, nr, ur, sigma, lambda = Arlsall(A, b, E, f, Z, z)
 	//fmt.Println("after A E O")
-	res = NormOfResidual(A, b, xx)
-	if res > 0.27 {
-		FailMe(t, "TestArlsAll(2) failed.")
+	res = NormOfResidual(A, b, x)
+	if res > 0.27 {	FailMe(t, "TestArlsAll(2) failed.")	}
+	if math.Abs(Sum(ans)-Sum(x)) > 0.00001 { 
+	  FailMe(t,"TestArlsAll(2A) failed.") 
 	}
-	if math.Abs(Sum(x)-Sum(xx)) > 0.00001 {
-		FailMe(t, "TestArlsAll(3) failed.")
-	}
-	if math.Abs(xx.AtVec(0)-5.0) > 0.000001 {
-		FailMe(t, "TestArlsAll(4) failed.")
+	if math.Abs(x.AtVec(0)-5.0) > 0.000001 { 
+	  FailMe(t, "TestArlsAll(2B) failed.")	
 	}
 
 	// Solve with (A,0,G)
-	xx, nr, ur, sigma, lambda = Arlsall(A, b, Z, z, G, h)
+	x, nr, ur, sigma, lambda = Arlsall(A, b, Z, z, G, h)
 	//fmt.Println("after  A 0 G")
-	res = NormOfResidual(A, b, xx)
-
-	if res > 0.002 {
-		FailMe(t, "TestArlsAll(5) failed.")
+	res = NormOfResidual(A, b, x)
+	if res > 0.002         { 
+	  FailMe(t, "TestArlsAll(3A) failed.") 
 	}
-	if vecMin(xx) < -1.0E-9 {
-		FailMe(t, "TestArlsAll(6) failed.")
+	if vecMin(x) < -1.0E-9 { 
+	  FailMe(t, "TestArlsAll(3B) failed.") 
 	}
 
 	// Solve with (A,E,G)
-	xx, nr, ur, sigma, lambda = Arlsall(A, b, E, f, G, h)
+	x, nr, ur, sigma, lambda = Arlsall(A, b, E, f, G, h)
 	//fmt.Println("after A E G")
-	res = NormOfResidual(A, b, xx)
-	if res > 0.29 {
-		FailMe(t, "TestArlsAll(7) failed.")
+	res = NormOfResidual(A, b, x)
+	if res > 0.30 { 
+	  FailMe(t, "TestArlsAll(4A) failed.")	
 	}
-	if math.Abs(Sum(x)-Sum(xx)) > 0.00001 {
-		FailMe(t, "TestArlsAll(8) failed: sum(x).")
+	if math.Abs(Sum(ans)-Sum(x)) > 0.00001 {
+		FailMe(t, "TestArlsAll(4B) failed: sum(ans).")
 	}
-	if math.Abs(xx.AtVec(0)-5.0) > 0.000001 {
-		FailMe(t, "TestArlsAll(9) failed.")
+	if math.Abs(x.AtVec(0)-5.0) > 0.000001 {
+		FailMe(t, "TestArlsAll(4C) failed.")
 	}
-	if vecMin(xx) < -1.0E-9 {
-		FailMe(t, "TestArlsAll(10) failed.")
+	if vecMin(x) < -1.0E-9 {
+		FailMe(t, "TestArlsAll(4D) failed.")
 	}
 
 	// Solve with Arlsgt
-	xx, nr, ur, sigma, lambda = Arlsgt(A, b, G, h)
+	x, nr, ur, sigma, lambda = Arlsgt(A, b, G, h)
 	//fmt.Println("after Arlsgt")
-	res = NormOfResidual(A, b, xx)
+	res = NormOfResidual(A, b, x)
 	if res > 0.002 {
-		FailMe(t, "TestArlsAll(11) failed: residual.")
+		FailMe(t, "TestArlsAll(5A) failed: residual.")
 	}
-	if vecMin(xx) < -1.0E-9 {
-		FailMe(t, "TestArlsAll(12) failed.")
+	if vecMin(x) < -1.0E-9 {
+		FailMe(t, "TestArlsAll(5B) failed.")
 	}
 
-	ur = nr + ur + int(sigma) + int(lambda) + int(xx.AtVec(0))   //junk
+	ur = nr + ur + int(sigma) + int(lambda) + int(x.AtVec(0))   //junk
 	ur += int(G.At(0, 0) + h.AtVec(0) + Z.At(0, 0) + z.AtVec(0)) //junk
 }
 
@@ -931,9 +971,9 @@ func TestArlsgt(t *testing.T) {
 	fmt.Println("TestArlsgt")
 	A := Hilbert(7, 6)
 	m, _ := A.Dims()
-	x := mat.NewVecDense(6, []float64{4., 2., 3., 1., 0., 1.})
+	ans := mat.NewVecDense(6, []float64{4., 2., 3., 1., 0., 1.})
 	b := Zeros(m)
-	b.MulVec(A, x)
+	b.MulVec(A, ans)
 	b.AddVec(b, MyVecRandom(m, 0.000001))
 
 	G := Eye(5, 6)
@@ -943,13 +983,13 @@ func TestArlsgt(t *testing.T) {
 	h := Zeros(5)
 
 	// Solve with Arlsgt
-	xx, nr, ur, sigma, lambda := Arlsgt(A, b, G, h)
+	x, nr, ur, sigma, lambda := Arlsgt(A, b, G, h)
 	for i := 0; i < 5; i++ {
-		if xx.AtVec(i+1) > xx.AtVec(i)+0.00000001 {
+		if x.AtVec(i+1) > x.AtVec(i)+0.00000001 {
 			FailMe(t, "TestArlsgt(1) failed.")
 		}
 	}
-	ur = nr + ur + int(sigma) + int(lambda) + int(xx.AtVec(0)) //junk
+	ur = nr + ur + int(sigma) + int(lambda) + int(x.AtVec(0)) //junk
 	ur += int(G.At(0, 0) + h.AtVec(0))                         //junk
 	//FailMe(t, "THIS IS JUST A TEST OF t.Fail()")
 }
