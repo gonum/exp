@@ -116,26 +116,26 @@ func vecMin(x *mat.VecDense) float64 {
 // Delete a column from a matrix
 // Delete a column from a matrix in place
 func deleteColumn(A *mat.Dense, col int) *mat.Dense {
-	n, m := A.Dims()
-	if m <= 1 {
-		return mat.NewDense(n, 1, nil)
+	m, n := A.Dims()
+	if n <= 1 {
+		return mat.NewDense(m, 1, nil)
 	}
-	if col < m-1 {
-		A.Slice(0, n, col, m).(*mat.Dense).Copy(A.Slice(0, n, col+1, m))
+	if col < n-1 {
+		A.Slice(0, m, col, n).(*mat.Dense).Copy(A.Slice(0, m, col+1, n))
 	}
-	return A.Slice(0, n, 0, m-1).(*mat.Dense)
+	return A.Slice(0, m, 0, n-1).(*mat.Dense)
 }
 
 // Delete a row from a matrix
 func deleteRow(A *mat.Dense, row int) *mat.Dense {
-	n, m := A.Dims()
-	if n <= 1 {
-		return mat.NewDense(1, m, nil)
+	m, n := A.Dims()
+	if m <= 1 {
+		return mat.NewDense(1, n, nil)
 	}
-	if row < n-1 {
-		A.Slice(row, n, 0, m).(*mat.Dense).Copy(A.Slice(row+1, n, 0, m))
+	if row < m-1 {
+		A.Slice(row, m, 0, n).(*mat.Dense).Copy(A.Slice(row+1, m, 0, n))
 	}
-	return A.Slice(0, n-1, 0, m).(*mat.Dense)
+	return A.Slice(0, m-1, 0, n).(*mat.Dense)
 }
 
 // Delete element from vector
