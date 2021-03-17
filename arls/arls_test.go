@@ -1,6 +1,6 @@
 package arls
 
-// Copyright 2021 The Gonum Authors. All rights reserved.
+// Copyright @2021 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 import (
@@ -36,11 +36,11 @@ func MyMatPrint(A *mat.Dense) {
 	fmt.Println(" ")
 }
 
-func squareof(x float64) float64 {
+func Squareof(x float64) float64 {
 	return x * x
 }
 
-func ones(m int) *mat.VecDense {
+func Ones(m int) *mat.VecDense {
 	x := mat.NewVecDense(m, nil)
 	for i := 0; i < m; i++ {
 		x.SetVec(i, 1)
@@ -66,7 +66,7 @@ func Mones(m, n int) *mat.Dense {
 	return A
 }
 
-func eye(m, n int) *mat.Dense {
+func Eye(m, n int) *mat.Dense {
 	A := mat.NewDense(m, n, nil)
 	for i := 0; i < m; i++ {
 		for j := 0; j < n; j++ {
@@ -116,7 +116,7 @@ func Diffrms(x, y *mat.VecDense) float64 {
 	}
 	sum := 0.0
 	for i := 0; i < mx; i++ {
-		sum += squareof(x.AtVec(i) - y.AtVec(i))
+		sum += Squareof(x.AtVec(i) - y.AtVec(i))
 	}
 	sum = math.Sqrt(sum / float64(mx))
 	return sum
@@ -131,7 +131,7 @@ func DiffABrms(A, B *mat.Dense) float64 {
 	sum := 0.0
 	for i := 0; i < m; i++ {
 		for j := 0; j < n; j++ {
-			sum += squareof(A.At(i, j) - B.At(i, j))
+			sum += Squareof(A.At(i, j) - B.At(i, j))
 		}
 	}
 	sum = math.Sqrt(sum / float64(m*n))
@@ -141,9 +141,7 @@ func DiffABrms(A, B *mat.Dense) float64 {
 func MyVecRandom(m int, err float64) *mat.VecDense {
 	b := mat.NewVecDense(m, nil)
 	for i := 0; i < m; i++ {
-		// be sure this stays the same as in python
-		b.SetVec(i, err*Myabs(math.Sin(
-			float64(2*m)+2*float64(i))))
+		b.SetVec(i, err*0.5*math.Sin(4.0*float64(m+i)))
 	}
 	return b
 }
@@ -254,7 +252,7 @@ func TestDeletes(t *testing.T) {
 }
 
 //return number of non-zero elements in A and their sum
-func getStats(A *mat.Dense) (int, float64) {
+func GetStats(A *mat.Dense) (int, float64) {
 	m, n := A.Dims()
 	k := 0
 	sum := 0.0
@@ -271,7 +269,7 @@ func getStats(A *mat.Dense) (int, float64) {
 
 func TestAppends(t *testing.T) {
 	fmt.Println("TestAppends")
-	G := eye(4, 4)
+	G := Eye(4, 4)
 	A := mat.NewDense(4, 4, nil)
 	A = appendRow(A, G.RowView(2).(*mat.VecDense))
 	m, _ := A.Dims()
@@ -281,7 +279,7 @@ func TestAppends(t *testing.T) {
 	if A.At(4, 2) != 1 {
 		FailMe(t, "TestAppends(2) failed!")
 	}
-	k, sum := getStats(A)
+	k, sum := GetStats(A)
 	if k != 1 || sum != 1 {
 		FailMe(t, "TestAppends(3) failed!")
 	}
@@ -441,7 +439,7 @@ func TestArls(t *testing.T) {
 	n := 3
 	m := 3
 	A := mat.NewDense(m, n, nil)
-	b := ones(3)
+	b := Ones(3)
 	bb := b
 
 	//TEST WITH ZERO MATRIX
@@ -451,7 +449,7 @@ func TestArls(t *testing.T) {
 	}
 
 	//TEST WITH ZERO RIGHT HAND SIDE
-	A = eye(3, 3)
+	A = Eye(3, 3)
 	b = mat.NewVecDense(3, nil)
 	var svd mat.SVD
 	ok := svd.Factorize(A, mat.SVDThin)
@@ -485,10 +483,10 @@ func TestArls(t *testing.T) {
 	b.AddVec(b, MyVecRandom(m, 0.002))
 	x, _, _, _, _ = Arls(A, b)
 	bb.MulVec(A, x)
-	if Diffrms(x, ans) > 0.21 {
+	if Diffrms(x, ans) > 0.35 {
 		FailMe(t, "TestArls(5A) failed.")
 	}
-	if Diffrms(b, bb) > 0.0008 {
+	if Diffrms(b, bb) > 0.0015 {
 		FailMe(t, "TestArls(5B) failed.")
 	}
 
@@ -560,7 +558,7 @@ func TestArls(t *testing.T) {
 
 	//TEST LARGER, REAL-LIKE SYSTEM
 	n = 15
-	ans = ones(n)
+	ans = Ones(n)
 	for i := 0; i < n; i++ {
 		ans.SetVec(i, float64(n-1-i))
 	}
@@ -575,14 +573,14 @@ func TestArls(t *testing.T) {
 	if Diffrms(x, ans) > 0.25 {
 		FailMe(t, "TestArls(10A) failed.")
 	}
-	if Diffrms(b, bb) > 4.0E-5 {
+	if Diffrms(b, bb) > 5.0E-5 {
 		FailMe(t, "TestArls(10B) failed.")
 	}
 
 	//COMPARE TO PYTHON
 	n = 12
 	A = Hilbert(n, n)
-	ans = ones(n)
+	ans = Ones(n)
 	b = mat.NewVecDense(n, nil)
 	b.MulVec(A, ans)
 	for i := 0; i < n; i++ {
@@ -603,7 +601,7 @@ func TestArlsnn(t *testing.T) {
 	//as columns are removed arlsnn will deal with square & underdet
 	A := Hilbert(7, 8)
 	m, n := A.Dims()
-	ans := ones(n)
+	ans := Ones(n)
 	for i := 0; i < n; i++ {
 		ans.SetVec(i, float64(n-2-i))
 	}
@@ -617,7 +615,7 @@ func TestArlsnn(t *testing.T) {
 	}
 
 	//TEST "IMPOSSIBLE" PROBLEM WITH ARLSNN
-	A = eye(3, 3)
+	A = Eye(3, 3)
 	b = mat.NewVecDense(3, []float64{-1., -1., -1.})
 	x, _, _, _, _ = Arlsnn(A, b)
 	res = NormOfResidual(A, b, x)
@@ -704,9 +702,9 @@ func TestPrepeq(t *testing.T) {
 
 func TestArlspj(t *testing.T) {
 	fmt.Println("TestArlspj")
-	A := eye(5, 5)
-	b := ones(5)
-	x := ones(5)
+	A := Eye(5, 5)
+	b := Ones(5)
+	x := Ones(5)
 	E := mat.NewDense(5, 5, []float64{
 		0, 0, 0, 0, 0,
 		1, 0, 0, 0, 0,
@@ -728,11 +726,11 @@ func TestArlspj(t *testing.T) {
 
 func TestArlseq(t *testing.T) {
 	fmt.Println("TestArlseq")
-	A := eye(3, 3)
-	b := ones(3)
+	A := Eye(3, 3)
+	b := Ones(3)
 	E := mat.NewDense(3, 3, nil)
 	f := mat.NewVecDense(3, nil)
-	ans := ones(3)
+	ans := Ones(3)
 	x, _, _, _, _ := Arlseq(A, b, E, f)
 	if Diffrms(x, ans) > 1.0e-9 {
 		FailMe(t, "TestArlseq(1) failed!")
@@ -763,7 +761,7 @@ func TestArlseq(t *testing.T) {
 	}
 
 	E = MyMatRandom(3, 3, 3)
-	ans = ones(3)
+	ans = Ones(3)
 	f.MulVec(E, ans)
 	x, _, _, _, _ = Arlseq(A, b, E, f)
 	if Diffrms(x, ans) > 1.0e-9 {
@@ -789,7 +787,7 @@ func TestArlsall(t *testing.T) {
 	E.Set(1, 0, 1)
 	f.SetVec(1, 5) // x[1] must be exact
 
-	G := eye(n, n)
+	G := Eye(n, n)
 	h := mat.NewVecDense(n, nil) // require all x[i] non-neg
 
 	Z := mat.NewDense(1, n, nil) // zero matrix for dummy
@@ -867,7 +865,7 @@ func TestArlsgt(t *testing.T) {
 	b.MulVec(A, ans)
 	b.AddVec(b, MyVecRandom(m, 0.000001))
 
-	G := eye(5, 6)
+	G := Eye(5, 6)
 	for i := 0; i < 5; i++ {
 		G.Set(i, i+1, -1)
 	} // solution must decrease
