@@ -20,12 +20,15 @@ import (
 //  X'(t) = F(t, X, U)
 //  X(0) = X_0
 //
-// Where X' is the vector of first derivatives of the state vector X. t is
+// Where X' is the vector of first derivatives of the state vector X.
+// F would be xequations as returned by Equations(). t is
 // a scalar representing the integrations domain, which is usually time
 // for most physical problems. U is a vector which is a function of the current
-// state. Put simply:
-//  U = F_u(t, X, U)
+// state. Put simply, the next input is a function of all current state variables
+// and, possibly, current input as well.
+//  U_next = F_u(t, X, U)
 //
+// Where F_u is ufunc as returned by Equations()
 // An initial value problem is characterized by boundary conditions imposed
 // on the state vector X at the beginning of the integration domain. These
 // boundary conditions are returned by the IV() method for the state vector

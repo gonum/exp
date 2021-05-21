@@ -32,7 +32,7 @@ func TestSolve(t *testing.T) {
 		for j := range solresults {
 			got := math.Abs(solresults[j] - results[i].X[j])
 			expect := quad.err(stepsize, float64(i))
-			if true || got > expect {
+			if got > expect {
 				t.Errorf("error %g is greater than permitted tolerance %g", got, expect)
 			}
 		}
