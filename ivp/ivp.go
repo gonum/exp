@@ -18,19 +18,23 @@ import (
 //  X'(t) = F(t, X)
 //  X(0) = X_0
 //
-// Where X' is the vector of first derivatives of the state vector X.
-// F would be xequations as returned by Equations(). t is
-// a scalar representing the integrations domain, which is usually time
-// for most physical problems.
+// Where:
+// t is a scalar representing the integration domain, which is time for most physical problems.
+// X' is the vector of first derivatives of the state vector X.
+// F would be xequations as returned by Equations().
+// An initial value problem is characterized by the initial conditions imposed
+// on the state vector X at the beginning of the integration domain. These
+// initial conditions are returned by the IV() method for the state vector
+// as x0 and for the input vector as u0.
 //
 // The term "state vector" and "state variables" are used interchangeably
 // throughout the code and refer to X vector of independent variables.
 type IVP interface {
-	// Initial values vector for state variables x. x0 defines
+	// Initial values vector for state vector x. x0 defines
 	// the first values the state vector takes when integration begins.
 	IV() (x0 mat.Vector)
 	// Equations returns the coupled, non-linear algebraic differential
-	// equations (xequations) for the state variables (x)
+	// equations (xequations) for the state vector (x)
 	// Results are stored in y which are the length of x.
 	// The scalar (float64) argument is the domain over which the
 	// problem is integrated, which is usually time for most physical problems.
