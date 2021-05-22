@@ -7,9 +7,9 @@ import (
 )
 
 type DoPri5 struct {
-	maxError, minStep, maxStep float64
-	adaptive                   bool
-	x                          []float64
+	param    parameters
+	adaptive bool
+	x        []float64
 	// solutions
 	y5, err45 []float64
 	// integration coefficients (for Butcher Tableau)
@@ -116,10 +116,10 @@ SOLVE:
 		floats.AddScaled(dp.y5, a7, dp.k7)
 
 		// compute error between fifth order solution and fourth order solution
-		errRatio := dp.maxError / floats.Norm(floats.SubTo(dp.err45, y4, dp.y5), math.Inf(1))
-		hnew := math.Min(math.Max(0.9*h*math.Pow(errRatio, .2), dp.minStep), dp.maxStep)
+		errRatio := dp.param.atol / floats.Norm(floats.SubTo(dp.err45, y4, dp.y5), math.Inf(1))
+		hnew := math.Min(math.Max(0.9*h*math.Pow(errRatio, .2), dp.param.minStep), dp.param.maxStep)
 		// given "bad" error ratio, algorithm will recompute with a smaller step, given it is not the minimum permissible step or less
-		if errRatio < 1 && h > dp.minStep {
+		if errRatio < 1 && h > dp.param.minStep {
 			h = hnew
 			goto SOLVE
 		}
@@ -133,14 +133,24 @@ SOLVE:
 func (dp *DoPri5) XLen() (nx int) { return len(dp.x) }
 
 // NewDormandPrince5 returns a adaptive-ready Dormand Prince solver of order 5
-func NewDormandPrince5(maxError, maxStep, minStep float64) *DoPri5 {
+//
+// To enable step size adaptivity minimum step size must be set and
+// absolute tolerance must be set. i.e:
+//
+//  NewDormandPrince5(ConfigScalarTolerance(0, 0.1), ConfigStepLimits(1, 1e-3))
+//
+// If a invalid configuration is passed the function panics.
+func NewDormandPrince5(configs ...Configuration) *DoPri5 {
 	dp := new(DoPri5)
-	if maxError > 0 && maxStep > minStep && minStep > 0 {
+	for i := range configs {
+		err := configs[i](&dp.param)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if dp.param.atol > 0 && dp.param.minStep > 0 {
 		dp.adaptive = true
-		dp.maxError = maxError
-		dp.minStep, dp.maxStep = minStep, maxStep
-	} else {
-		panic("NewDormandPrince5 generator requires proper arguments: maxError > 0 && maxStep > minStep && minStep > 0")
 	}
 	return dp
 }
