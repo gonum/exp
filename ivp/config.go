@@ -15,6 +15,8 @@ type parameters struct {
 	// parameters for step size selection.
 	// The new step size is subject to restriction  minStepRatio <= hnew/hold <= maxStepRatio
 	minStepRatio, maxStepRatio float64
+	// relaxation factor offers stability for implicit solvers
+	relax float64
 }
 
 // ConfigStepLimits sets minimum step length and max step length
@@ -60,6 +62,19 @@ func ConfigAdaptiveRatioLimits(min, max float64) Configuration {
 		if max > 0 {
 			p.maxStepRatio = max
 		}
+		return nil
+	}
+}
+
+// ConfigRelaxation sets the relaxation factor for methods
+// like Newton-Raphson which can be unstable in certain cases
+// without it.
+func ConfigRelaxation(alpha float64) Configuration {
+	return func(p *parameters) error {
+		if alpha < 0 || alpha >= 1. {
+			return errors.New("relaxation factor must be in [0,1)")
+		}
+		p.relax = alpha
 		return nil
 	}
 }

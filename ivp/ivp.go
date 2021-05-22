@@ -76,7 +76,6 @@ func Solve(solver Integrator, stepsize, domainLength float64) (results []result,
 		return nil, fmt.Errorf("solution exceeds %dGB or not initialized (size is %dMB)", maxAllocGB, size/1e6)
 	}
 	results = make([]result, 0, expectedLength)
-
 	for integrated < domainLength {
 		res := make([]float64, nx)
 		stepsize, err = solver.Step(res, stepsize)
