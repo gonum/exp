@@ -8,21 +8,21 @@ import "gonum.org/v1/gonum/mat"
 
 // Model implements IVP interface. X vector and equations can not be nil or zero length.
 type Model struct {
-	x0, u0   mat.Vector
-	xeq, ins func(y []float64, dom float64, x, u []float64)
+	x0, u0 mat.Vector
+	xeq    func(y []float64, dom float64, x []float64)
 }
 
 // IV returns initial values of the IVP. First returned parameter is the
 // starting x vector and second parameter are inputs when solving non-autonomous
 // ODEs.
-func (m *Model) IV() (mat.Vector, mat.Vector) { return m.x0, m.u0 }
+func (m *Model) IV() mat.Vector { return m.x0 }
 
 // Equations returns differential equations relating to state vector x and input functions
 // for non-autonomous ODEs.
 //
 // Input functions may be nil (ueq).
-func (m *Model) Equations() (xeq, ueq func(y []float64, dom float64, x, u []float64)) {
-	return m.xeq, m.ins
+func (m *Model) Equations() (xeq func(y []float64, dom float64, x []float64)) {
+	return m.xeq
 }
 
 // Dims returns dimension of state and input (x length and u length, respectively).
@@ -41,6 +41,6 @@ func (m *Model) Dims() (nx, nu int) {
 
 // NewModel returns a IVP given initial conditions (x0,u0), differential equations (xeq) and
 // input functions for non-autonomous ODEs (ueq).
-func NewModel(x0, u0 mat.Vector, xeq, ueq func(y []float64, dom float64, x, u []float64)) (*Model, error) {
-	return &Model{xeq: xeq, ins: ueq, x0: x0, u0: u0}, nil
+func NewModel(x0, u0 mat.Vector, xeq, ueq func(y []float64, dom float64, x []float64)) (*Model, error) {
+	return &Model{xeq: xeq, x0: x0, u0: u0}, nil
 }

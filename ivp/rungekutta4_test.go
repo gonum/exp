@@ -10,7 +10,7 @@ import (
 	"math"
 	"testing"
 
-	"gonum.org/v1/gonum/ivp"
+	"gonum.org/v1/exp/ivp"
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -36,13 +36,13 @@ func TestQuadratic(t *testing.T) {
 	results := make([]float64, nx)
 
 	solmodel := Quadratic.solution
-	soleq, _ := solmodel.Equations()
+	soleq := solmodel.Equations()
 	solDims, _ := solmodel.Dims()
 	solution := make([]float64, solDims)
 	for i := 1.; i < float64(steps+1); i++ {
 		dom := i * dt
 		solver.Step(results, dt)
-		soleq(solution, dom, results, nil)
+		soleq(solution, dom, results)
 		for j := range results {
 			got := math.Abs(solution[j] - results[j])
 			expected := Quadratic.err(dt, i)
@@ -60,7 +60,7 @@ func Example_fallingBall() {
 	)
 	// we declare our physical model in the following function
 	ballModel, err := ivp.NewModel(mat.NewVecDense(2, []float64{100., 0.}),
-		nil, func(yvec []float64, _ float64, xvec, _ []float64) {
+		nil, func(yvec []float64, _ float64, xvec []float64) {
 			// this anonymous function defines the physics.
 			// The first variable xvec[0] corresponds to position
 			// second variable xvec[1] is velocity.
@@ -109,7 +109,7 @@ func Example_fallingBall() {
 func quadTestModel(t *testing.T) *TestModel {
 	Quadratic := new(TestModel)
 	quad, err := ivp.NewModel(mat.NewVecDense(2, []float64{0, 0}),
-		nil, func(y []float64, dom float64, x, u []float64) {
+		nil, func(y []float64, dom float64, x []float64) {
 			y[0], y[1] = x[1], 1.
 		}, nil)
 	if err != nil {
@@ -117,7 +117,7 @@ func quadTestModel(t *testing.T) *TestModel {
 	}
 	Quadratic.Model = quad
 	quadsol, err := ivp.NewModel(mat.NewVecDense(2, []float64{0, 0}),
-		nil, func(y []float64, dom float64, x, u []float64) {
+		nil, func(y []float64, dom float64, x []float64) {
 			y[0], y[1] = dom*dom/2., dom
 		}, nil)
 	if err != nil {

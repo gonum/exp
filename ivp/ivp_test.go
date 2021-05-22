@@ -10,7 +10,8 @@ import (
 	"math"
 	"testing"
 
-	"gonum.org/v1/gonum/ivp"
+	"gonum.org/v1/exp/ivp"
+
 	"gonum.org/v1/gonum/mat"
 )
 
@@ -21,14 +22,14 @@ func TestSolve(t *testing.T) {
 	stepsize := 0.1
 	results, err := ivp.Solve(solver, stepsize, 10)
 	quadsol := quad.solution
-	sol, _ := quadsol.Equations()
+	sol := quadsol.Equations()
 	if err != nil {
 		t.Fatal(err)
 	}
 	nxs, _ := quadsol.Dims()
 	solresults := make([]float64, nxs)
 	for i := range results {
-		sol(solresults, results[i].DomainStartOffset, results[i].X, nil)
+		sol(solresults, results[i].DomainStartOffset, results[i].X)
 		for j := range solresults {
 			got := math.Abs(solresults[j] - results[i].X[j])
 			expect := quad.err(stepsize, float64(i))
@@ -45,7 +46,7 @@ func Example_solve() {
 	)
 	// we declare our physical model in the following function
 	ballModel, err := ivp.NewModel(mat.NewVecDense(2, []float64{100., 0.}),
-		nil, func(yvec []float64, _ float64, xvec, _ []float64) {
+		nil, func(yvec []float64, _ float64, xvec []float64) {
 			// this anonymous function defines the physics.
 			// The first variable xvec[0] corresponds to position
 			// second variable xvec[1] is velocity.

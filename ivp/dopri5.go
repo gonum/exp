@@ -9,30 +9,32 @@ import (
 type DoPri5 struct {
 	maxError, minStep, maxStep float64
 	adaptive                   bool
-	x, u                       []float64
+	x                          []float64
 	// solutions
 	y5, err45 []float64
 	// integration coefficients (for Butcher Tableau)
 	k1, k2, k3, k4, k5, k6, k7 []float64
 	dom                        float64
-	fx, fu                     func(y []float64, t float64, x, u []float64)
+	fx                         func(y []float64, t float64, x []float64)
 }
 
 // Set implements the Integrator interface. Initializes a Dormand Prince method
 // for use as a solver
 func (dp *DoPri5) Set(t0 float64, ivp IVP) error {
 	dp.dom = t0
-	xequations, ufunc := ivp.Equations()
+	xequations := ivp.Equations()
 	dp.fx = xequations
-	dp.fu = ufunc
-	nx, nu := ivp.Dims()
+	// dp.fu = ufunc
+	nx := ivp.IV().Len()
 	dp.k1, dp.k2, dp.k3 = make([]float64, nx), make([]float64, nx), make([]float64, nx)
 	dp.k4, dp.k5, dp.k6 = make([]float64, nx), make([]float64, nx), make([]float64, nx)
 	dp.k7 = make([]float64, nx)
 	dp.x = make([]float64, nx)
+	for i := range dp.x {
+		dp.x[i] = ivp.IV().AtVec(i)
+	}
 	dp.y5 = make([]float64, nx)
 	dp.err45 = make([]float64, nx)
-	dp.u = make([]float64, nu)
 	return nil
 }
 
@@ -51,34 +53,34 @@ func (dp *DoPri5) Step(y4 []float64, h float64) (float64, error) {
 	const b1, b3, b4, b5, b6 = 35. / 384., 500. / 1113., 125. / 192., -2187. / 6784., 11. / 84.
 
 	// prettier variable names, also someone once said pointers are equivalent to JMP
-	x, u := dp.x, dp.u
+	x := dp.x
 	F := dp.fx
 	t := dp.dom
 	// if adaptive then this tag will be used until h==DoPri5.MinStep
 SOLVE:
-	F(dp.k1, t, x, u)
+	F(dp.k1, t, x)
 	floats.Scale(h, dp.k1)
 
 	floats.AddScaledTo(dp.k2, x, c21, dp.k1)
-	F(dp.k2, t+c20*h, x, u)
+	F(dp.k2, t+c20*h, x)
 	floats.Scale(h, dp.k2)
 
 	floats.AddScaledTo(dp.k3, x, c31, dp.k1)
 	floats.AddScaled(dp.k3, c32, dp.k2)
-	F(dp.k3, t+c30*h, x, u)
+	F(dp.k3, t+c30*h, x)
 	floats.Scale(h, dp.k3)
 
 	floats.AddScaledTo(dp.k4, x, c41, dp.k1)
 	floats.AddScaled(dp.k4, c42, dp.k2)
 	floats.AddScaled(dp.k4, c43, dp.k3)
-	F(dp.k4, t+c40*h, x, u)
+	F(dp.k4, t+c40*h, x)
 	floats.Scale(h, dp.k4)
 
 	floats.AddScaledTo(dp.k5, x, c51, dp.k1)
 	floats.AddScaled(dp.k5, c52, dp.k2)
 	floats.AddScaled(dp.k5, c53, dp.k3)
 	floats.AddScaled(dp.k5, c54, dp.k4)
-	F(dp.k5, t+c50*h, x, u)
+	F(dp.k5, t+c50*h, x)
 	floats.Scale(h, dp.k5)
 
 	floats.AddScaledTo(dp.k6, x, c61, dp.k1)
@@ -86,7 +88,7 @@ SOLVE:
 	floats.AddScaled(dp.k6, c63, dp.k3)
 	floats.AddScaled(dp.k6, c64, dp.k4)
 	floats.AddScaled(dp.k6, c65, dp.k5)
-	F(dp.k6, t+c60*h, x, u)
+	F(dp.k6, t+c60*h, x)
 	floats.Scale(h, dp.k6)
 
 	// fourth order approximation used to advance solution
@@ -103,7 +105,7 @@ SOLVE:
 		floats.AddScaled(dp.k7, c74, dp.k4)
 		floats.AddScaled(dp.k7, c75, dp.k5)
 		floats.AddScaled(dp.k7, c76, dp.k6)
-		F(dp.k7, t+h*c70, x, u)
+		F(dp.k7, t+h*c70, x)
 		floats.Scale(h, dp.k7)
 
 		floats.AddScaledTo(dp.y5, x, a1, dp.k1)
@@ -124,11 +126,11 @@ SOLVE:
 	}
 	// advance solution with fourth order solution
 	copy(dp.x, y4)
-	if dp.fu != nil {
-		dp.fu(u, t+h, dp.x, u)
-	}
 	return h, nil
 }
+
+// XLen returns length of x state vector
+func (dp *DoPri5) XLen() (nx int) { return len(dp.x) }
 
 // NewDormandPrince5 returns a adaptive-ready Dormand Prince solver of order 5
 func NewDormandPrince5(maxError, maxStep, minStep float64) *DoPri5 {
