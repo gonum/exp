@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package ivp
+package ode
 
 import (
 	"errors"
-	"fmt"
+	"math"
 
 	"gonum.org/v1/gonum/mat"
 )
@@ -32,13 +32,13 @@ import (
 type IVP interface {
 	// Initial values vector for state vector x. x0 defines
 	// the first values the state vector takes when integration begins.
-	IV() (x0 mat.Vector)
-	// Equations returns the coupled, non-linear algebraic differential
-	// equations (xequations) for the state vector (x)
-	// Results are stored in y which are the length of x.
+	IV() (t0 float64, x0 mat.Vector)
+	// Func is the coupled, non-linear algebraic differential
+	// equations for the state vector (x)
+	// Results are stored in dst which are the length of x.
 	// The scalar (float64) argument is the domain over which the
 	// problem is integrated, which is usually time for most physical problems.
-	Equations() (xequations func(y []float64, t float64, x []float64))
+	Func(dst *mat.VecDense, t float64, x mat.Vector)
 }
 
 // Integrator abstracts algorithm specifics. For anyone looking to
@@ -50,38 +50,39 @@ type IVP interface {
 type Integrator interface {
 	// Set initializes an initial value problem. First argument
 	// is the initial domain integration point, is usually zero.
-	Set(float64, IVP) error
-	// Length of state vector x
-	XLen() (nx int)
-	// Step integrates IVP and stores result in y. step is a suggested step
+	Set(IVP)
+	// Step integrates IVP and stores result in dst. step is a suggested step
 	// for the algorithm to take. The algorithm may decide that it is not sufficiently
 	// small or big enough (these are adaptive algorithms) and take a different step.
 	// The resulting step is returned as the first parameter
-	Step(y []float64, step float64) (float64, error)
+	Step(dst *mat.VecDense, step float64) (float64, error)
 }
 
 type result = struct {
-	DomainStartOffset float64
-	X                 []float64
+	T float64
+	X *mat.VecDense
 }
 
 // Solve solves an already initialized Integrator returning state vector results.
-// Returns error upon needing to allocate over 2GB of memory
-func Solve(solver Integrator, stepsize, domainLength float64) (results []result, err error) {
-	const maxAllocGB = 2
-	integrated := 0.
-	expectedLength := int(domainLength/stepsize) + 1
-	nx := solver.XLen()
+func Solve(p IVP, solver Integrator, stepsize, tend float64) (results []result, err error) {
+	t0, x0 := p.IV()
+	nx := x0.Len()
 	if nx == 0 {
 		return nil, errors.New("state vector length can not be equal to zero. Has ivp been set?")
 	}
-	size := 8 * (nx + 1) * expectedLength
-	if size > maxAllocGB*1e9 {
-		return nil, fmt.Errorf("solution exceeds %dGB or not initialized (size is %dMB)", maxAllocGB, size/1e6)
-	}
+	// calculate expected size of results, these may differ
+	domainLength := tend - t0
+	expectedLength := int(domainLength/stepsize) + 1
 	results = make([]result, 0, expectedLength)
-	for integrated < domainLength {
-		res := make([]float64, nx)
+
+	// t stores current domain
+	t := t0
+	for t < tend {
+		res := mat.NewVecDense(nx, nil)
+
+		if t-tend > 1e-10 {
+			stepsize = math.Min(stepsize, (t-tend)*(1+1e-3))
+		}
 		stepsize, err = solver.Step(res, stepsize)
 		if err != nil {
 			return results, err
@@ -89,8 +90,8 @@ func Solve(solver Integrator, stepsize, domainLength float64) (results []result,
 		if stepsize <= 0 {
 			return results, errors.New("got zero or negative step size from Integrator")
 		}
-		integrated += stepsize
-		results = append(results, result{DomainStartOffset: integrated, X: res})
+		t += stepsize
+		results = append(results, result{T: t, X: res})
 	}
 	return results, nil
 }

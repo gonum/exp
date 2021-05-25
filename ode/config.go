@@ -1,4 +1,4 @@
-package ivp
+package ode
 
 import "errors"
 
