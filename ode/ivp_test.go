@@ -28,7 +28,7 @@ func TestSolve(t *testing.T) {
 	solver.Init(ivp)
 	stepsize := 0.5 / 15.
 	end := 0.5
-	results, err := ode.Solve(ivp, solver, stepsize, end)
+	results, err := ode.SolveIVP(ivp, solver, stepsize, end)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func Example_solve() {
 	// Solve function makes it easy to integrate a problem without having
 	// to implement the `for` loop. This example integrates the IVP with a step size
 	// of 0.1 over a domain of 10. arbitrary units, in this case, 10 seconds.
-	results, err := ode.Solve(ballModel, solver, 0.1, 10.)
+	results, err := ode.SolveIVP(ballModel, solver, 0.1, 10.)
 	fmt.Println(results)
 }
 

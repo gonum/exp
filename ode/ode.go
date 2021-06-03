@@ -30,8 +30,8 @@ type State struct {
 	Y *mat.VecDense
 }
 
-// Solve solves an already initialized Integrator returning state vector results.
-func Solve(p IVP, solver Integrator, stepsize, tend float64) (results []State, err error) {
+// SolveIVP solves an already initialized Integrator returning state vector results.
+func SolveIVP(p IVP, solver Integrator, stepsize, tend float64) (results []State, err error) {
 	t0, x0 := p.T0, mat.VecDenseCopyOf(p.Y0)
 	nx := x0.Len()
 	if nx == 0 {
