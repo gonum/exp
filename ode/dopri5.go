@@ -11,7 +11,7 @@ type DoPri5 struct {
 	adaptive bool
 	x, aux   *mat.VecDense
 	// solutions
-	y5, err45 *mat.VecDense
+	y4, y5, err45 *mat.VecDense
 	// integration coefficients (for Butcher Tableau)
 	k1, k2, k3, k4, k5, k6, k7 *mat.VecDense
 	dom                        float64
@@ -20,11 +20,11 @@ type DoPri5 struct {
 
 // Set implements the Integrator interface. Initializes a Dormand Prince method
 // for use as a solver
-func (dp *DoPri5) Set(ivp IVP) {
+func (dp *DoPri5) Init(ivp IVP) {
 
 	dp.fx = ivp.Func
 
-	t0, x0 := ivp.IV()
+	t0, x0 := ivp.T0, mat.VecDenseCopyOf(ivp.Y0)
 	dp.dom = t0
 	nx := x0.Len()
 	dp.k1, dp.k2, dp.k3 = mat.NewVecDense(nx, nil), mat.NewVecDense(nx, nil), mat.NewVecDense(nx, nil)
@@ -34,14 +34,20 @@ func (dp *DoPri5) Set(ivp IVP) {
 	dp.x = mat.NewVecDense(nx, nil)
 	dp.x.CloneFromVec(x0)
 
+	dp.y4 = mat.NewVecDense(nx, nil)
 	dp.y5 = mat.NewVecDense(nx, nil)
 	dp.err45 = mat.NewVecDense(nx, nil)
 
 }
 
+func (dp *DoPri5) State(s *State) {
+	s.T = dp.dom
+	s.Y.CloneFromVec(dp.x)
+}
+
 // Step implements Integrator interface. Advances solution by step h. If algorithm
 // is set to adaptive then h is just a suggestion
-func (dp *DoPri5) Step(y4 *mat.VecDense, h float64) (float64, error) {
+func (dp *DoPri5) Step(h float64) (float64, error) {
 	const c20, c21 = 1. / 5., 1. / 5.
 	const c30, c31, c32 = 3. / 10., 3. / 40., 9. / 40.
 	const c40, c41, c42, c43 = 4. / 5., 44. / 45., -56. / 15., 32. / 9.
@@ -59,6 +65,7 @@ func (dp *DoPri5) Step(y4 *mat.VecDense, h float64) (float64, error) {
 	aux := dp.aux
 	F := dp.fx
 	t := dp.dom
+	y4 := dp.y4
 	// if adaptive then this tag will be used until h==DoPri5.MinStep
 SOLVE:
 	F(aux, t, x)
@@ -94,6 +101,7 @@ SOLVE:
 	F(aux, t+h*c60, dp.k6)
 	dp.k6.ScaleVec(h, aux)
 
+	// TODO y4 could be dp.x, is there a disadvantage to this change?
 	y4.AddScaledVec(x, b1, dp.k1)
 	y4.AddScaledVec(y4, b3, dp.k3)
 	y4.AddScaledVec(y4, b4, dp.k4)

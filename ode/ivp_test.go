@@ -15,35 +15,36 @@ import (
 )
 
 type TestModel struct {
-	*ode.Model
-	solution *ode.Model
+	ode.IVP
+	solution ode.IVP
 	err      func(h, i float64) float64
 }
 
 func TestSolve(t *testing.T) {
 	// domain start
 	quad := quadTestModel(t)
+	ivp := quad.IVP
 	solver := ode.NewDormandPrince5()
-	solver.Set(quad)
+	solver.Init(ivp)
 	stepsize := 0.5 / 15.
 	end := 0.5
-	results, err := ode.Solve(quad, solver, stepsize, end)
+	results, err := ode.Solve(ivp, solver, stepsize, end)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// run the solver and corsscheck values
 	quadsol := quad.solution
-	_, x0 := quadsol.IV()
+	x0 := quadsol.Y0
 
 	sol := quadsol.Func
 
 	solresults := mat.NewVecDense(x0.Len(), nil)
 	for i := range results {
-		sol(solresults, results[i].T, results[i].X)
+		sol(solresults, results[i].T, results[i].Y)
 		for j := range solresults.RawVector().Data {
 			sol := solresults.AtVec(j)
-			res := results[i].X.AtVec(j)
-			got := math.Abs(solresults.AtVec(j) - results[i].X.AtVec(j))
+			res := results[i].Y.AtVec(j)
+			got := math.Abs(solresults.AtVec(j) - results[i].Y.AtVec(j))
 			expect := quad.err(stepsize, float64(i))
 			if got > expect {
 				t.Errorf("error %g is greater than permitted tolerance %g. solution:[%0.3g],  result:[%0.3g]", got, expect, sol, res)
@@ -60,7 +61,7 @@ func Example_solve() {
 	// we declare our physical model. First argument is initial time, which is 0 seconds.
 	// Next is the initial state vector, which corresponds to 100 meters above the ground
 	// with 0 m/s velocity.
-	ballModel, err := ode.NewModel(0, mat.NewVecDense(2, []float64{100., 0.}),
+	ballModel, err := ode.NewIVP(0, mat.NewVecDense(2, []float64{100., 0.}),
 		func(yvec *mat.VecDense, _ float64, xvec mat.Vector) {
 			// this anonymous function defines the physics.
 			// The first variable xvec[0] corresponds to position
@@ -89,7 +90,7 @@ func Example_solve() {
 func quadTestModel(t *testing.T) *TestModel {
 	t0 := 0.0
 	Quadratic := new(TestModel)
-	quad, err := ode.NewModel(t0, mat.NewVecDense(2, []float64{0, 0}),
+	quad, err := ode.NewIVP(t0, mat.NewVecDense(2, []float64{0, 0}),
 		func(dst *mat.VecDense, t float64, x mat.Vector) {
 			dst.SetVec(0, x.AtVec(1))
 			dst.SetVec(1, 1.)
@@ -97,8 +98,8 @@ func quadTestModel(t *testing.T) *TestModel {
 	if err != nil {
 		t.Fatal(err)
 	}
-	Quadratic.Model = quad
-	quadsol, err := ode.NewModel(t0, mat.NewVecDense(2, []float64{0, 0}),
+	Quadratic.IVP = quad
+	quadsol, err := ode.NewIVP(t0, mat.NewVecDense(2, []float64{0, 0}),
 		func(dst *mat.VecDense, t float64, x mat.Vector) {
 			dst.SetVec(0, t*t/2.)
 			dst.SetVec(1, t)
@@ -119,15 +120,15 @@ func exp1DTestModel(t *testing.T) *TestModel {
 	tau := -2.
 	t0 := 0.0
 	Quadratic := new(TestModel)
-	quad, err := ode.NewModel(t0, mat.NewVecDense(1, []float64{1.}),
+	quad, err := ode.NewIVP(t0, mat.NewVecDense(1, []float64{1.}),
 		func(dst *mat.VecDense, t float64, x mat.Vector) {
 			dst.SetVec(0, tau*x.AtVec(0))
 		})
 	if err != nil {
 		t.Fatal(err)
 	}
-	Quadratic.Model = quad
-	quadsol, err := ode.NewModel(t0, mat.NewVecDense(1, []float64{0}),
+	Quadratic.IVP = quad
+	quadsol, err := ode.NewIVP(t0, mat.NewVecDense(1, []float64{0}),
 		func(dst *mat.VecDense, t float64, x mat.Vector) {
 			dst.SetVec(0, math.Exp(tau*t))
 
