@@ -2,6 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// package ode provides interfaces and structures to solve
-// multivariable ODE initial value problems.
-package ode // import "gonum.org/v1/gonum/ode"
+// Package posit implements a generalized unum type II implementation
+// as a byte slice and provides primitives for working with posits.
+package posit
