@@ -1,4 +1,4 @@
-// Copyright ©2021 The Gonum Authors. All rights reserved.
+// Copyright ©2022 The Gonum Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -21,7 +21,7 @@ type TestModel struct {
 }
 
 func TestSolve(t *testing.T) {
-	// domain start
+	// domain start.
 	quad := quadTestModel(t)
 	ivp := quad.IVP
 	solver := ode.NewDormandPrince5(ode.DefaultParam)
@@ -32,7 +32,7 @@ func TestSolve(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// run the solver and corsscheck values
+	// run the solver and crosscheck values.
 	quadsol := quad.solution
 	x0 := quadsol.Y0
 
@@ -56,7 +56,7 @@ func TestSolve(t *testing.T) {
 
 func Example_solve() {
 	const (
-		g = -10. // gravity field [m.s^-2]
+		g = -10.0 // local gravity field [m.s^-2]
 	)
 	// we declare our physical model. First argument is initial time, which is 0 seconds.
 	// Next is the initial state vector, which corresponds to 100 meters above the ground
@@ -139,6 +139,51 @@ func exp1DTestModel(t *testing.T) *TestModel {
 	Quadratic.solution = quadsol
 	Quadratic.err = func(h, i float64) float64 { return math.Pow(h*i, 4) + 1e-10 }
 	return Quadratic
+}
+
+func TestRK1210_fallingball(t *testing.T) {
+	const (
+		tol = 1e-10
+		dt  = 0.5
+		// local gravity field of hypothetical planet [m.s^-2]
+		gravity = -10.0
+		initPos = 10
+		initVel = 0.0
+	)
+	// Falling ball from initPos height at initial velocity initVel.
+	ivp := ode.IVP2{
+		Y0:  mat.NewVecDense(1, []float64{initPos}),
+		DY0: mat.NewVecDense(1, []float64{initVel}),
+		Func: func(dst *mat.VecDense, t float64, y mat.Vector) {
+			dst.SetVec(0, gravity)
+		},
+	}
+	integrator := ode.NewRKN1210(ode.DefaultParam)
+	integrator.Init(ivp)
+	state := ode.State2{Y: mat.NewVecDense(1, nil), DY: mat.NewVecDense(1, nil)}
+	var time, position, velocity float64 = 0, initPos, initVel
+	var y, dy []float64
+	for position > 0 {
+		_, err := integrator.Step(dt)
+		if err != nil {
+			t.Fatal(err)
+		}
+		integrator.State(&state)
+		time = state.T
+		position = state.Y.AtVec(0)
+		velocity = state.DY.AtVec(0)
+		// Contrast results with analytic solutions.
+		expectedPos := 0.5*gravity*time*time + time*initVel + initPos
+		expectedVel := gravity*time + initVel
+		if math.Abs(position-expectedPos) > tol {
+			t.Errorf("position error @%gs. expected %gm, got %.6gm", time, expectedPos, position)
+		}
+		if math.Abs(velocity-expectedVel) > tol {
+			t.Errorf("velocity error @%gs. expected %gm/s, got %.6gm/s", time, expectedVel, velocity)
+		}
+		y = append(y, position)
+		dy = append(dy, velocity)
+	}
 }
 
 // func TestQuadratic(t *testing.T) {

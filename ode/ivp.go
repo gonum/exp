@@ -15,7 +15,7 @@ import (
 //
 // These problems have the form
 //  y'(t) = f(t, y(t))
-//  y(0) = y_0
+//  y(t_0) = y_0
 //
 // Where:
 // t is a scalar representing the integration domain, which is time for most physical problems.
@@ -34,8 +34,8 @@ type IVP struct {
 	Y0 mat.Vector
 	// Independent variable point at which Y0 is evaluated
 	T0 float64
-	// Func are the differential equations f(t,y(t)).
-	// The result is y'(t) and is stored in dst.
+	// Func are the differential equations f(t,y(t)) such that
+	//  dst = y'(t) = Func(t, y(t))
 	Func func(dst *mat.VecDense, t float64, y mat.Vector)
 }
 
@@ -46,4 +46,28 @@ func NewIVP(t0 float64, y0 mat.Vector, f func(y *mat.VecDense, dom float64, x ma
 		return IVP{}, errors.New("bad model value")
 	}
 	return IVP{Func: f, Y0: y0, T0: t0}, nil
+}
+
+// IVP2 defines a multivariable, initial value problem represented by a
+// second order system of ordinary differential equations.
+//
+// These problems have the form
+//  y''(t)   = f(t, y(t))
+//  y(t_0)   = y_0
+//  y'(t_0)  = y'_0
+type IVP2 struct {
+	Y0  mat.Vector
+	DY0 mat.Vector
+	T0  float64
+	// Func are the second derivatives of the solution such that
+	//  dst = y''(t) = Func(t, y(t))
+	Func func(dst *mat.VecDense, t float64, y mat.Vector)
+}
+
+// NewIVP2 returns a second order initial value problem.
+func NewIVP2(t0 float64, y0, dy0 mat.Vector, f func(y *mat.VecDense, dom float64, x mat.Vector)) (IVP2, error) {
+	if y0 == nil || dy0 == nil || math.IsNaN(t0) || f == nil || y0.Len() != dy0.Len() {
+		return IVP2{}, errors.New("bad model value")
+	}
+	return IVP2{Func: f, Y0: y0, DY0: dy0, T0: t0}, nil
 }

@@ -25,9 +25,18 @@ type Integrator interface {
 	State(dst *State)
 }
 
+// State represents the state of a system Y at a domain point T.
 type State struct {
 	T float64
 	Y *mat.VecDense
+}
+
+// State represents the state of a system Y
+// and the derivative of the state DY at a domain point T.
+type State2 struct {
+	T  float64
+	Y  *mat.VecDense
+	DY *mat.VecDense
 }
 
 // SolveIVP solves an already initialized Integrator returning state vector results.
