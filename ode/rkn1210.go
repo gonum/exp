@@ -10,7 +10,11 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-// RKN1210 Runge-Kutta-Nyström integrator of order 12(10).
+// RKN1210 Runge-Kutta-Nyström integrator of order 12(10). This method was
+// sourced from J. R. DORMAND, M. E. A. EL-MIKKAWY, P. J. PRINCE,
+// High-Order Embedded Runge-Kutta-Nystrom Formulae,
+// IMA Journal of Numerical Analysis, Volume 7, Issue 4, October 1987,
+// Pages 423–430, https://doi.org/10.1093/imanum/7.4.423
 type RKN1210 struct {
 	dom        float64
 	y, dy, aux *mat.VecDense
@@ -62,43 +66,29 @@ func (rk *RKN1210) SetState(s State2) {
 // is set to adaptive then h is just a suggestion.
 func (rk *RKN1210) Step(h float64) (float64, error) {
 	adaptive := rk.atol > 0
-	// Declare shorthand variable names.
-	y := rk.y
-	dy := rk.dy
-	aux := rk.aux
-	// high order B's.
-	hFDbH := rk.hFDbhat
-	hFbH := rk.hFbhat
-	// Low order B's for error estimation.
-	hFDb := rk.hFDb
-	hFb := rk.hFb
-
-	fun := rk.fx
-	F := rk.diffs
-	t := rk.dom
 
 solve:
-	hFDbH.Zero()
-	hFbH.Zero()
-	hFb.Zero()
-	hFDb.Zero()
+	rk.hFDbhat.Zero()
+	rk.hFbhat.Zero()
+	rk.hFb.Zero()
+	rk.hFDb.Zero()
 	h2 := h * h
-	for j, Fj := range F {
+	for j, Fj := range rk.diffs {
 		// aux = y + h*c[j] + F*h*h*a[j]
 		hc := h * rkn12c[j]
-		aux.AddScaledVec(y, hc, dy)
-		for i, Fi := range F[:j] {
-			aux.AddScaledVec(aux, h2*rkn12A[j][i], Fi)
+		rk.aux.AddScaledVec(rk.y, hc, rk.dy)
+		for i, Fi := range rk.diffs[:j] {
+			rk.aux.AddScaledVec(rk.aux, h2*rkn12A[j][i], Fi)
 		}
 		// finally F[:,j] = Func( aux ) @ t+h*c[j]
-		fun(Fj, t+hc, aux) // 17 function evaluations.
+		rk.fx(Fj, rk.dom+hc, rk.aux) // 17 function evaluations.
 		// Calculate high order h*F*b
-		hFDbH.AddScaledVec(hFDbH, h*rkn12bphat[j], Fj)
-		hFbH.AddScaledVec(hFbH, h*rkn12bhat[j], Fj)
+		rk.hFDbhat.AddScaledVec(rk.hFDbhat, h*rkn12bphat[j], Fj)
+		rk.hFbhat.AddScaledVec(rk.hFbhat, h*rkn12bhat[j], Fj)
 		if adaptive {
 			// Low order h*F*b for error estimation if user requested tolerance.
-			hFb.AddScaledVec(hFb, h*rkn12b[j], Fj)
-			hFDb.AddScaledVec(hFDb, h*rkn12bp[j], Fj)
+			rk.hFb.AddScaledVec(rk.hFb, h*rkn12b[j], Fj)
+			rk.hFDb.AddScaledVec(rk.hFDb, h*rkn12bp[j], Fj)
 		}
 	}
 	if adaptive {
@@ -107,11 +97,11 @@ solve:
 			relax   = 0.9
 		)
 		// Calculate the difference between high and low order terms.
-		aux.SubVec(hFb, hFbH)
-		errMax := h * mat.Norm(aux, math.Inf(1)) // error ~ h*| y_l- y_h |
-		aux.SubVec(hFDb, hFDbH)
+		rk.aux.SubVec(rk.hFb, rk.hFbhat)
+		errMax := h * mat.Norm(rk.aux, math.Inf(1)) // error ~ h*| y_l- y_h |
+		rk.aux.SubVec(rk.hFDb, rk.hFDbhat)
 		// In taking the Max we use worst case error.
-		errMax = math.Max(mat.Norm(aux, math.Inf(1)), errMax) // error ~ | y'_l- y'_h |
+		errMax = math.Max(mat.Norm(rk.aux, math.Inf(1)), errMax) // error ~ | y'_l- y'_h |
 		errRatio := rk.atol / (errMax * h * preCond)
 		hnew := relax * math.Pow(errRatio, 1./11.)
 		hnew = math.Min(math.Max(hnew, rk.minStep), rk.maxStep)
@@ -127,9 +117,9 @@ solve:
 	// Calculate next step solutions with high order B's:
 	//  y[i+1] = y[i] + h*(dy[i] + hFbhat)
 	//  dy[i+1] = dy[i] + hFDbhat
-	aux.AddVec(dy, hFbH)
-	y.AddScaledVec(y, h, aux)
-	dy.AddVec(dy, hFDbH)
+	rk.aux.AddVec(rk.dy, rk.hFbhat)
+	rk.y.AddScaledVec(rk.y, h, rk.aux)
+	rk.dy.AddVec(rk.dy, rk.hFDbhat)
 	rk.dom += h
 	return h, nil
 }
