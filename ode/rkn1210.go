@@ -42,8 +42,10 @@ func (rk *RKN1210) Init(ivp IVP2) {
 	rk.hFbhat = mat.NewVecDense(ny, nil)
 	rk.hFDb = mat.NewVecDense(ny, nil)
 	rk.hFb = mat.NewVecDense(ny, nil)
+	// Vectors in diffs are rows to keep unitary inc in vectors.
+	diffs := mat.NewDense(rk1210Len, ny, nil)
 	for j := range rk.diffs {
-		rk.diffs[j] = mat.NewVecDense(ny, nil)
+		rk.diffs[j] = diffs.RowView(j).(*mat.VecDense)
 	}
 }
 
@@ -64,55 +66,57 @@ func (rk *RKN1210) SetState(s State2) {
 
 // Step implements Integrator interface. Advances solution by step h. If algorithm
 // is set to adaptive then h is just a suggestion.
-func (rk *RKN1210) Step(h float64) (float64, error) {
+func (rk *RKN1210) Step(h float64) (step float64, err error) {
+	step = h
 	adaptive := rk.atol > 0
 
-solve:
-	rk.hFDbhat.Zero()
-	rk.hFbhat.Zero()
-	rk.hFb.Zero()
-	rk.hFDb.Zero()
-	h2 := h * h
-	for j, Fj := range rk.diffs {
-		// aux = y + h*c[j] + F*h*h*a[j]
-		hc := h * rkn12c[j]
-		rk.aux.AddScaledVec(rk.y, hc, rk.dy)
-		for i, Fi := range rk.diffs[:j] {
-			rk.aux.AddScaledVec(rk.aux, h2*rkn12A[j][i], Fi)
+	for {
+		rk.hFDbhat.Zero()
+		rk.hFbhat.Zero()
+		rk.hFb.Zero()
+		rk.hFDb.Zero()
+		h2 := h * h
+		for j, Fj := range rk.diffs {
+			// aux = y + h*c[j] + F*h*h*a[j]
+			hc := h * rkn12c[j]
+			rk.aux.AddScaledVec(rk.y, hc, rk.dy)
+			for i, Fi := range rk.diffs[:j] {
+				rk.aux.AddScaledVec(rk.aux, h2*rkn12A[j][i], Fi)
+			}
+			// finally F[:,j] = Func( aux ) @ t+h*c[j]
+			rk.fx(Fj, rk.dom+hc, rk.aux) // 17 function evaluations.
+			// Calculate high order h*F*b
+			rk.hFDbhat.AddScaledVec(rk.hFDbhat, h*rkn12bphat[j], Fj)
+			rk.hFbhat.AddScaledVec(rk.hFbhat, h*rkn12bhat[j], Fj)
+			if adaptive {
+				// Low order h*F*b for error estimation if user requested tolerance.
+				rk.hFb.AddScaledVec(rk.hFb, h*rkn12b[j], Fj)
+				rk.hFDb.AddScaledVec(rk.hFDb, h*rkn12bp[j], Fj)
+			}
 		}
-		// finally F[:,j] = Func( aux ) @ t+h*c[j]
-		rk.fx(Fj, rk.dom+hc, rk.aux) // 17 function evaluations.
-		// Calculate high order h*F*b
-		rk.hFDbhat.AddScaledVec(rk.hFDbhat, h*rkn12bphat[j], Fj)
-		rk.hFbhat.AddScaledVec(rk.hFbhat, h*rkn12bhat[j], Fj)
 		if adaptive {
-			// Low order h*F*b for error estimation if user requested tolerance.
-			rk.hFb.AddScaledVec(rk.hFb, h*rkn12b[j], Fj)
-			rk.hFDb.AddScaledVec(rk.hFDb, h*rkn12bp[j], Fj)
+			const (
+				preCond = 11.0
+				relax   = 0.9
+			)
+			// Calculate the difference between high and low order terms.
+			rk.aux.SubVec(rk.hFb, rk.hFbhat)
+			errMax := h * mat.Norm(rk.aux, math.Inf(1)) // error ~ h*| y_l- y_h |
+			rk.aux.SubVec(rk.hFDb, rk.hFDbhat)
+			// In taking the Max we use worst case error.
+			errMax = math.Max(mat.Norm(rk.aux, math.Inf(1)), errMax) // error ~ | y'_l- y'_h |
+			errRatio := rk.atol / (errMax * h * preCond)
+			hnew := relax * math.Pow(errRatio, 1./11.)
+			hnew = math.Min(math.Max(hnew, rk.minStep), rk.maxStep)
+			if errMax > rk.atol && h > rk.minStep {
+				// Error is not permissible and we may redo the step.
+				h = hnew
+				continue
+			}
+			// The error is within tolerance and we may suggest the user use a larger step.
+			step = hnew
 		}
-	}
-	if adaptive {
-		const (
-			preCond = 11.0
-			relax   = 0.9
-		)
-		// Calculate the difference between high and low order terms.
-		rk.aux.SubVec(rk.hFb, rk.hFbhat)
-		errMax := h * mat.Norm(rk.aux, math.Inf(1)) // error ~ h*| y_l- y_h |
-		rk.aux.SubVec(rk.hFDb, rk.hFDbhat)
-		// In taking the Max we use worst case error.
-		errMax = math.Max(mat.Norm(rk.aux, math.Inf(1)), errMax) // error ~ | y'_l- y'_h |
-		errRatio := rk.atol / (errMax * h * preCond)
-		hnew := relax * math.Pow(errRatio, 1./11.)
-		hnew = math.Min(math.Max(hnew, rk.minStep), rk.maxStep)
-		if errMax > rk.atol && h > rk.minStep {
-			// Error is not permissible and we may redo the step.
-			h = hnew
-			goto solve
-		}
-		// The error is within tolerance and we may suggest the user use a larger step.
-		// Modify return value to suggest new step.
-		defer func() { h = hnew }()
+		break
 	}
 	// Calculate next step solutions with high order B's:
 	//  y[i+1] = y[i] + h*(dy[i] + hFbhat)
@@ -121,7 +125,7 @@ solve:
 	rk.y.AddScaledVec(rk.y, h, rk.aux)
 	rk.dy.AddVec(rk.dy, rk.hFDbhat)
 	rk.dom += h
-	return h, nil
+	return step, nil
 }
 
 // NewRKN1210 configures a new RKN1210 instance.
