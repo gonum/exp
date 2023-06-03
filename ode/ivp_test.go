@@ -82,8 +82,24 @@ func Example_solve() {
 	// Solve function makes it easy to integrate a problem without having
 	// to implement the `for` loop. This example integrates the IVP with a step size
 	// of 0.1 over a domain of 10. arbitrary units, in this case, 10 seconds.
-	results, err := ode.SolveIVP(ballModel, solver, 0.1, 10.)
-	fmt.Println(results)
+	results, err := ode.SolveIVP(ballModel, solver, 0.5, 5.)
+	for _, state := range results {
+		t := state.T
+		y := state.Y
+		fmt.Printf("time=%0.3g, position=%0.3g, velocity=%0.3g\n", t, y.AtVec(0), y.AtVec(1))
+	}
+	//Output:
+	// time=0, position=100, velocity=0
+	// time=0.5, position=98.8, velocity=-5
+	// time=1, position=95, velocity=-10
+	// time=1.5, position=88.8, velocity=-15
+	// time=2, position=80, velocity=-20
+	// time=2.5, position=68.8, velocity=-25
+	// time=3, position=55, velocity=-30
+	// time=3.5, position=38.8, velocity=-35
+	// time=4, position=20, velocity=-40
+	// time=4.5, position=-1.25, velocity=-45
+	// time=5, position=-25, velocity=-50
 }
 
 // Quadratic model may be used for future algorithms
@@ -113,9 +129,10 @@ func quadTestModel(t *testing.T) *TestModel {
 }
 
 // exponential unidimensional model may be used for future algorithms
-//  y'(t) = -15*y(t)
-//  y(t=0) = 1
-//  solution: y(t) = exp(-15*t)
+//
+//	y'(t) = -15*y(t)
+//	y(t=0) = 1
+//	solution: y(t) = exp(-15*t)
 func exp1DTestModel(t *testing.T) *TestModel {
 	tau := -2.
 	t0 := 0.0
