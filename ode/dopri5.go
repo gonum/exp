@@ -27,9 +27,8 @@ type DoPri5 struct {
 // Set implements the Integrator interface. Initializes a Dormand Prince method
 // for use as a solver
 func (dp *DoPri5) Init(ivp IVP) {
-
+	ivp.mustValidate()
 	dp.fx = ivp.Func
-
 	t0, x0 := ivp.T0, mat.VecDenseCopyOf(ivp.Y0)
 	dp.dom = t0
 	nx := x0.Len()
@@ -52,8 +51,9 @@ func (dp *DoPri5) State(s *State) {
 }
 
 // Step implements Integrator interface. Advances solution by step h. If algorithm
-// is set to adaptive then h is just a suggestion
-func (dp *DoPri5) Step(h float64) (float64, error) {
+// is set to adaptive then h is just a suggestion. The returned stepTaken is the
+// actual step taken by the algorithm.
+func (dp *DoPri5) Step(h float64) (stepTaken float64, _ error) {
 	const c20, c21 = 1. / 5., 1. / 5.
 	const c30, c31, c32 = 3. / 10., 3. / 40., 9. / 40.
 	const c40, c41, c42, c43 = 4. / 5., 44. / 45., -56. / 15., 32. / 9.
@@ -151,26 +151,18 @@ SOLVE:
 	return h, nil
 }
 
-// NewDormandPrince5 returns a adaptive-ready Dormand Prince solver of order 5
-//
+// NewDormandPrince5 returns a adaptive-ready Dormand Prince solver of order 5.
 // To enable step size adaptivity minimum step size must be set and
-// absolute tolerance must be set. i.e:
-//
-//  NewDormandPrince5(ConfigScalarTolerance(0, 0.1), ConfigStepLimits(1, 1e-3))
+// absolute tolerance must be set. A zero value of Parameters is a valid
+// configuration.
 //
 // If a invalid configuration is passed the function panics.
-func NewDormandPrince5(cfg Parameters) *DoPri5 {
-	dp := new(DoPri5)
-	if cfg.AbsTolerance == 0 {
-		cfg.AbsTolerance = 1e-3
+func NewDormandPrince5(params Parameters) *DoPri5 {
+	params.mustValidate()
+	return &DoPri5{
+		minStep:  params.MinStep,
+		maxStep:  params.MaxStep,
+		atol:     params.AbsTolerance,
+		adaptive: params.AbsTolerance > 0,
 	}
-	if cfg.MinStep == 0 {
-		cfg.MinStep = 1e-4
-	}
-	if cfg.MaxStep == 0 {
-		cfg.MaxStep = 1e3
-	}
-	dp.atol = cfg.AbsTolerance
-
-	return dp
 }
