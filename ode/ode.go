@@ -15,11 +15,15 @@ import (
 // system of ordinary differential equations (ODEs).
 type Integrator interface {
 	// Init initializes the integrator and sets the initial condition.
+	// It should be called before the first call to Step or State.
 	Init(IVP)
 
-	// Step advances the current state by taking at most the given step. It returns a proposed step size
-	// for the next step and an error indicating whether the step was successful.
-	Step(step float64) (stepNext float64, err error)
+	// Step advances the current state by taking at most the argument step. The step taken
+	// will depend on whether the integrator implementation is adaptive or not.
+	// Non-adaptive methods will always take the argument step.
+	// If an error is returned by Step the integrator should be considered invalidated
+	// and not be used again.
+	Step(step float64) (stepTaken float64, err error)
 
 	// State stores the current state of the integrator in-place in dst.
 	State(dst *State)

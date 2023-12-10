@@ -14,8 +14,9 @@ import (
 // IVP defines a multivariable, initial value problem represented by a system of ordinary differential equations.
 //
 // These problems have the form
-//  y'(t) = f(t, y(t))
-//  y(t_0) = y_0
+//
+//	y'(t) = f(t, y(t))
+//	y(t_0) = y_0
 //
 // Where:
 // t is a scalar representing the integration domain, which is time for most physical problems.
@@ -39,10 +40,19 @@ type IVP struct {
 	Func func(dst *mat.VecDense, t float64, y mat.Vector)
 }
 
+func (ivp IVP) mustValidate() {
+	if ivp.Y0 == nil || ivp.Func == nil {
+		panic("ode: nil value in IVP")
+	}
+	if math.IsNaN(ivp.T0) || math.IsInf(ivp.T0, 0) {
+		panic("ode: infinite or NaN initial domain value")
+	}
+}
+
 // NewModel returns a IVP given initial conditions (x0,u0), differential equations (xeq) and
 // input functions for non-autonomous ODEs (ueq).
 func NewIVP(t0 float64, y0 mat.Vector, f func(y *mat.VecDense, dom float64, x mat.Vector)) (IVP, error) {
-	if y0 == nil || math.IsNaN(t0) || f == nil {
+	if y0 == nil || math.IsNaN(t0) || math.IsInf(t0, 0) || f == nil {
 		return IVP{}, errors.New("bad model value")
 	}
 	return IVP{Func: f, Y0: y0, T0: t0}, nil
@@ -52,9 +62,10 @@ func NewIVP(t0 float64, y0 mat.Vector, f func(y *mat.VecDense, dom float64, x ma
 // second order system of ordinary differential equations.
 //
 // These problems have the form
-//  y''(t)   = f(t, y(t))
-//  y(t_0)   = y_0
-//  y'(t_0)  = y'_0
+//
+//	y''(t)   = f(t, y(t))
+//	y(t_0)   = y_0
+//	y'(t_0)  = y'_0
 type IVP2 struct {
 	Y0  mat.Vector
 	DY0 mat.Vector
@@ -64,9 +75,18 @@ type IVP2 struct {
 	Func func(dst *mat.VecDense, t float64, y mat.Vector)
 }
 
+func (ivp IVP2) mustValidate() {
+	if ivp.Y0 == nil || ivp.DY0 == nil || ivp.Func == nil {
+		panic("ode: nil value in IVP2")
+	}
+	if math.IsNaN(ivp.T0) || math.IsInf(ivp.T0, 0) {
+		panic("ode: infinite or NaN initial domain value")
+	}
+}
+
 // NewIVP2 returns a second order initial value problem.
 func NewIVP2(t0 float64, y0, dy0 mat.Vector, f func(y *mat.VecDense, dom float64, x mat.Vector)) (IVP2, error) {
-	if y0 == nil || dy0 == nil || math.IsNaN(t0) || f == nil || y0.Len() != dy0.Len() {
+	if y0 == nil || dy0 == nil || math.IsNaN(t0) || math.IsInf(t0, 0) || f == nil || y0.Len() != dy0.Len() {
 		return IVP2{}, errors.New("bad model value")
 	}
 	return IVP2{Func: f, Y0: y0, DY0: dy0, T0: t0}, nil

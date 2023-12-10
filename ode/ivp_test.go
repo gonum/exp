@@ -24,7 +24,7 @@ func TestSolve(t *testing.T) {
 	// domain start.
 	quad := quadTestModel(t)
 	ivp := quad.IVP
-	solver := ode.NewDormandPrince5(ode.DefaultParam)
+	solver := ode.NewDormandPrince5(ode.Parameters{})
 	solver.Init(ivp)
 	stepsize := 0.5 / 15.
 	end := 0.5
@@ -78,7 +78,7 @@ func Example_solve() {
 		log.Fatal(err)
 	}
 	// Here we choose our algorithm. Runge-Kutta 4th order is used
-	var solver ode.Integrator = ode.NewDormandPrince5(ode.DefaultParam)
+	var solver ode.Integrator = ode.NewDormandPrince5(ode.Parameters{})
 	// Solve function makes it easy to integrate a problem without having
 	// to implement the `for` loop. This example integrates the IVP with a step size
 	// of 0.1 over a domain of 10. arbitrary units, in this case, 10 seconds.
@@ -113,9 +113,10 @@ func quadTestModel(t *testing.T) *TestModel {
 }
 
 // exponential unidimensional model may be used for future algorithms
-//  y'(t) = -15*y(t)
-//  y(t=0) = 1
-//  solution: y(t) = exp(-15*t)
+//
+//	y'(t) = -15*y(t)
+//	y(t=0) = 1
+//	solution: y(t) = exp(-15*t)
 func exp1DTestModel(t *testing.T) *TestModel {
 	tau := -2.
 	t0 := 0.0
@@ -158,7 +159,7 @@ func TestRK1210_fallingball(t *testing.T) {
 			dst.SetVec(0, gravity)
 		},
 	}
-	integrator := ode.NewRKN1210(ode.DefaultParam)
+	integrator := ode.NewRKN1210(ode.Parameters{})
 	integrator.Init(ivp)
 	state := ode.State2{Y: mat.NewVecDense(1, nil), DY: mat.NewVecDense(1, nil)}
 	var time, position, velocity float64 = 0, initPos, initVel
