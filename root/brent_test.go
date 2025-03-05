@@ -1,11 +1,15 @@
-package findroot_test
+// Copyright ©2025 The Gonum Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package root_test
 
 import (
 	"fmt"
 	"math"
 	"testing"
 
-	"gonum.org/v1/exp/findroot"
+	"gonum.org/v1/exp/root"
 	"gonum.org/v1/gonum/floats/scalar"
 )
 
@@ -32,12 +36,12 @@ func TestBrent(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("%s", test.name), func(t *testing.T) {
-			root, err := findroot.Brent(test.f, test.a, test.b, test.tol)
-			if !scalar.EqualWithinAbsOrRel(root, test.want, 2e-12, test.tol) {
+			got, err := root.Brent(test.f, test.a, test.b, test.tol)
+			if !scalar.EqualWithinAbsOrRel(got, test.want, 2e-12, test.tol) {
 				if err != nil {
 					t.Fatalf("%s: %s", test.name, err)
 				}
-				t.Fatalf("%s: got %f want %f", test.name, root, test.want)
+				t.Fatalf("%s: got %f want %f", test.name, got, test.want)
 			}
 		})
 	}
@@ -53,13 +57,13 @@ func TestScipyIssue5557(t *testing.T) {
 		return x - 0.6
 	}
 	tol := 4 * eps
-	root, err := findroot.Brent(f, 0., 1., tol)
+	got, err := root.Brent(f, 0., 1., tol)
 	if err != nil {
 		t.Fatalf("Brent(%f, %f, %f): %s", 0., 1., tol, err)
 	}
 	const want = 0.6
-	if !scalar.EqualWithinRel(root, want, tol) {
-		t.Fatalf("Brent(%f, %f, %f): got %f want %f", 0., 1., tol, root, want)
+	if !scalar.EqualWithinRel(got, want, tol) {
+		t.Fatalf("Brent(%f, %f, %f): got %f want %f", 0., 1., tol, got, want)
 	}
 }
 
@@ -80,12 +84,12 @@ func TestScipyIssue13737(t *testing.T) {
 			c := math.Exp(test.root)
 			f := func(x float64) float64 { return math.Exp(x) - c }
 			tol := eps
-			root, err := findroot.Brent(f, test.a, test.b, tol)
+			got, err := root.Brent(f, test.a, test.b, tol)
 			if err != nil {
 				t.Fatalf("Brent(%f, %f, %f): %s", test.a, test.b, tol, err)
 			}
-			if !scalar.EqualWithinRel(root, test.root, tol) {
-				t.Fatalf("Brent(%f, %f, %f): got %f want %f", test.a, test.b, tol, root, test.root)
+			if !scalar.EqualWithinRel(got, test.root, tol) {
+				t.Fatalf("Brent(%f, %f, %f): got %f want %f", test.a, test.b, tol, got, test.root)
 			}
 		})
 	}
@@ -99,14 +103,14 @@ func TestScipyIssue5584(t *testing.T) {
 	// Report failure when signs are the same.
 	a, b := -0.5, -0.4
 	tol := eps
-	x0, err := findroot.Brent(f, a, b, tol)
+	x0, err := root.Brent(f, a, b, tol)
 	if err == nil {
 		t.Fatalf("Brent(%f, %f, %f) should error", a, b, tol)
 	}
 
 	// Solve successfully when signs are different.
 	a, b = -0.5, 0.4
-	x0, err = findroot.Brent(f, a, b, tol)
+	x0, err = root.Brent(f, a, b, tol)
 	if err != nil {
 		t.Fatalf("Brent(%f, %f, %f): %s", a, b, tol, err)
 	}
@@ -117,7 +121,7 @@ func TestScipyIssue5584(t *testing.T) {
 
 	// Solve successfully when one side is negative zero.
 	a, b = -0.5, -0.
-	x0, err = findroot.Brent(f, a, b, tol)
+	x0, err = root.Brent(f, a, b, tol)
 	if err != nil {
 		t.Fatalf("Brent(%f, %f, %f): %s", a, b, tol, err)
 	}
