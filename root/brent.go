@@ -87,18 +87,11 @@ func Brent(f func(float64) float64, a, b, tol float64) (float64, error) {
 		if math.Abs(d) > tol1 {
 			b += d
 		} else {
-			b += sign(tol1, xm)
+			b += math.Copysign(tol1, xm)
 		}
 		fb = f(b)
 	}
 	return b, errors.New("maximum iterations exceeded")
-}
-
-func sign(x, s float64) float64 {
-	if s > 0 {
-		return x
-	}
-	return -x
 }
 
 func min(x, y float64) float64 {
