@@ -1,6 +1,6 @@
 module gonum.org/v1/exp
 
-go 1.19
+go 1.23.0
 
 require (
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948
