@@ -66,7 +66,7 @@ func Brent(f func(float64) float64, a, b, tol float64) (float64, error) {
 			}
 
 			p = math.Abs(p)
-			if 2*p < min(3*xm*q-math.Abs(tol1*q), math.Abs(e*q)) {
+			if 2*p < math.Min(3*xm*q-math.Abs(tol1*q), math.Abs(e*q)) {
 				// Accept interpolation.
 				e = d
 				d = p / q
@@ -92,11 +92,4 @@ func Brent(f func(float64) float64, a, b, tol float64) (float64, error) {
 		fb = f(b)
 	}
 	return b, errors.New("maximum iterations exceeded")
-}
-
-func min(x, y float64) float64 {
-	if x < y {
-		return x
-	}
-	return y
 }
