@@ -35,7 +35,8 @@ func Rectangular(theta Angle, r vg.Length) vg.Point {
 	if r == 0 {
 		return vg.Point{0, 0}
 	}
-	return vg.Point{X: vg.Length(math.Cos(float64(theta)) * float64(r)), Y: vg.Length(math.Sin(float64(theta)) * float64(r))}
+	sin, cos := math.Sincos(float64(theta))
+	return vg.Point{X: vg.Length(cos * float64(r)), Y: vg.Length(sin * float64(r))}
 }
 
 // Polar returns the polar coordinates of a point.
