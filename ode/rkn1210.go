@@ -33,6 +33,7 @@ const rk1210Len = 17
 // Init initializes the Runge-Kutta-Nyström integrator with a second order
 // ODE initial value problem.
 func (rk *RKN1210) Init(ivp IVP2) {
+	ivp.mustValidate()
 	rk.fx = ivp.Func
 	rk.dom, rk.y = ivp.T0, mat.VecDenseCopyOf(ivp.Y0)
 	rk.dy = mat.VecDenseCopyOf(ivp.DY0)
@@ -66,8 +67,8 @@ func (rk *RKN1210) SetState(s State2) {
 
 // Step implements Integrator interface. Advances solution by step h. If algorithm
 // is set to adaptive then h is just a suggestion.
-func (rk *RKN1210) Step(h float64) (step float64, err error) {
-	step = h
+func (rk *RKN1210) Step(h float64) (stepTaken float64, err error) {
+	stepTaken = h
 	adaptive := rk.atol > 0
 
 	for {
@@ -114,7 +115,7 @@ func (rk *RKN1210) Step(h float64) (step float64, err error) {
 				continue
 			}
 			// The error is within tolerance and we may suggest the user use a larger step.
-			step = hnew
+			stepTaken = hnew
 		}
 		break
 	}
@@ -125,14 +126,12 @@ func (rk *RKN1210) Step(h float64) (step float64, err error) {
 	rk.y.AddScaledVec(rk.y, h, rk.aux)
 	rk.dy.AddVec(rk.dy, rk.hFDbhat)
 	rk.dom += h
-	return step, nil
+	return stepTaken, nil
 }
 
 // NewRKN1210 configures a new RKN1210 instance.
 func NewRKN1210(cfg Parameters) *RKN1210 {
-	if (cfg.AbsTolerance != 0 && cfg.MaxStep <= 0) || cfg.MaxStep < cfg.MinStep || cfg.MinStep < 0 {
-		panic("invalid parameter supplied")
-	}
+	cfg.mustValidate()
 	return &RKN1210{
 		atol:    cfg.AbsTolerance,
 		minStep: cfg.MinStep,
