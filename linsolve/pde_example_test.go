@@ -20,11 +20,14 @@ import (
 
 // AllenCahnFD implements a semi-implicit finite difference scheme for the
 // solution of the one-dimensional Allen-Cahn equation
-//   u_t = u_xx - 1/ξ²·f'(u)  in (0,L)×(0,T)
-//   u_x = 0                  on (0,T)
-//  u(0) = u0                 on (0,L)
+//
+//	 u_t = u_xx - 1/ξ²·f'(u)  in (0,L)×(0,T)
+//	 u_x = 0                  on (0,T)
+//	u(0) = u0                 on (0,L)
+//
 // where f is a double-well-shaped function with two minima at ±1
-//  f(s) = 1/4·(s²-1)²
+//
+//	f(s) = 1/4·(s²-1)²
 //
 // The equation arises in materials science in the description of phase
 // transitions, e.g. solidification in crystal growth, but also in other areas
@@ -56,7 +59,8 @@ type AllenCahnFD struct {
 }
 
 // FPrime returns the value of the derivative of the double-well potential f at s.
-//  f'(s) = s·(s²-1)
+//
+//	f'(s) = s·(s²-1)
 func FPrime(s float64) float64 {
 	return s * (s*s - 1)
 }

@@ -14,8 +14,9 @@ import (
 // IVP defines a multivariable, initial value problem represented by a system of ordinary differential equations.
 //
 // These problems have the form
-//  y'(t) = f(t, y(t))
-//  y(t_0) = y_0
+//
+//	y'(t) = f(t, y(t))
+//	y(t_0) = y_0
 //
 // Where:
 // t is a scalar representing the integration domain, which is time for most physical problems.
@@ -52,9 +53,10 @@ func NewIVP(t0 float64, y0 mat.Vector, f func(y *mat.VecDense, dom float64, x ma
 // second order system of ordinary differential equations.
 //
 // These problems have the form
-//  y''(t)   = f(t, y(t))
-//  y(t_0)   = y_0
-//  y'(t_0)  = y'_0
+//
+//	y''(t)   = f(t, y(t))
+//	y(t_0)   = y_0
+//	y'(t_0)  = y'_0
 type IVP2 struct {
 	Y0  mat.Vector
 	DY0 mat.Vector

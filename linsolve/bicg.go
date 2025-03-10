@@ -12,17 +12,19 @@ import (
 
 // BiCG implements the Bi-Conjugate Gradient method with preconditioning for
 // solving systems of linear equations
-//  A * x = b,
+//
+//	A * x = b,
+//
 // where A is a nonsymmetric, nonsingular matrix. It uses limited memory storage
 // but the convergence may be irregular and the method may break down. BiCG
 // requires a multiplication with A and Aᵀ at each iteration. BiCGStab is a
 // related method that does not use Aᵀ.
 //
 // References:
-//  - Barrett, R. et al. (1994). Section 2.3.5 BiConjugate Gradient (BiCG).
-//    In Templates for the Solution of Linear Systems: Building Blocks
-//    for Iterative Methods (2nd ed.) (pp. 19-20). Philadelphia, PA: SIAM.
-//    Retrieved from http://www.netlib.org/templates/templates.pdf
+//   - Barrett, R. et al. (1994). Section 2.3.5 BiConjugate Gradient (BiCG).
+//     In Templates for the Solution of Linear Systems: Building Blocks
+//     for Iterative Methods (2nd ed.) (pp. 19-20). Philadelphia, PA: SIAM.
+//     Retrieved from http://www.netlib.org/templates/templates.pdf
 type BiCG struct {
 	x     mat.VecDense
 	r, rt mat.VecDense
@@ -62,13 +64,14 @@ func (b *BiCG) Init(x, residual *mat.VecDense) {
 // Iterate performs an iteration of the linear solve. See the Method interface for more details.
 //
 // BiCG will command the following operations:
-//  MulVec
-//  MulVec|Trans
-//  PreconSolve
-//  PreconSolve|Trans
-//  CheckResidualNorm
-//  MajorIteration
-//  NoOperation
+//
+//	MulVec
+//	MulVec|Trans
+//	PreconSolve
+//	PreconSolve|Trans
+//	CheckResidualNorm
+//	MajorIteration
+//	NoOperation
 func (b *BiCG) Iterate(ctx *Context) (Operation, error) {
 	switch b.resume {
 	case 1:

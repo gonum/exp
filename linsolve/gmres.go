@@ -14,7 +14,9 @@ import (
 
 // GMRES implements the Generalized Minimum Residual method with the modified
 // Gram-Schmidt orthogonalization for solving systems of linear equations
-//  A * x = b,
+//
+//	A * x = b,
+//
 // where A is a nonsymmetric, nonsingular matrix. It may find a solution in
 // fewer iterations and with fewer matrix-vector products compared to BiCG or
 // BiCGStab at the price of much large memory storage. This implementation uses
@@ -22,14 +24,14 @@ import (
 // multiplication with Aᵀ.
 //
 // References:
-//  - Barrett, R. et al. (1994). Section 2.3.4 Generalized Minimal Residual
-//    (GMRES). In Templates for the Solution of Linear Systems: Building Blocks
-//    for Iterative Methods (2nd ed.) (pp. 17-19). Philadelphia, PA: SIAM.
-//    Retrieved from http://www.netlib.org/templates/templates.pdf
-//  - Saad, Y., and Schultz, M. (1986). GMRES: A generalized minimal residual
-//    algorithm for solving nonsymmetric linear systems. SIAM J. Sci. Stat.
-//    Comput., 7(3), 856. doi:10.6028/jres.049.044
-//    Retrieved from https://web.stanford.edu/class/cme324/saad-schultz.pdf
+//   - Barrett, R. et al. (1994). Section 2.3.4 Generalized Minimal Residual
+//     (GMRES). In Templates for the Solution of Linear Systems: Building Blocks
+//     for Iterative Methods (2nd ed.) (pp. 17-19). Philadelphia, PA: SIAM.
+//     Retrieved from http://www.netlib.org/templates/templates.pdf
+//   - Saad, Y., and Schultz, M. (1986). GMRES: A generalized minimal residual
+//     algorithm for solving nonsymmetric linear systems. SIAM J. Sci. Stat.
+//     Comput., 7(3), 856. doi:10.6028/jres.049.044
+//     Retrieved from https://web.stanford.edu/class/cme324/saad-schultz.pdf
 type GMRES struct {
 	// Restart is the restart parameter which limits the computation and
 	// storage costs. It must hold that
@@ -105,11 +107,12 @@ func (g *GMRES) Init(x, residual *mat.VecDense) {
 // Iterate performs an iteration of the linear solve. See the Method interface for more details.
 //
 // GMRES will command the following operations:
-//  MulVec
-//  PreconSolve
-//  CheckResidualNorm
-//  MajorIteration
-//  NoOperation
+//
+//	MulVec
+//	PreconSolve
+//	CheckResidualNorm
+//	MajorIteration
+//	NoOperation
 func (g *GMRES) Iterate(ctx *Context) (Operation, error) {
 	switch g.resume {
 	case 1:
@@ -229,7 +232,8 @@ func (g *GMRES) qr(k int, givs []givens, h *mat.Dense, s *mat.VecDense) {
 }
 
 // solveLeastSquares solves the upper triangular linear system
-//  H * y = s
+//
+//	H * y = s
 func (g *GMRES) solveLeastSquares(k int, y *mat.VecDense, h *mat.Dense, s *mat.VecDense) {
 	// Copy the first k elements of s into y.
 	y.CopyVec(s.SliceVec(0, k))
@@ -248,7 +252,8 @@ func (g *GMRES) solveLeastSquares(k int, y *mat.VecDense, h *mat.Dense, s *mat.V
 
 // updateSolution updates the current solution vector x with a linear
 // combination of the first k columns of V:
-//  x = x + V * y = x + \sum y_j * v_j
+//
+//	x = x + V * y = x + \sum y_j * v_j
 func (g *GMRES) updateSolution(k int, x *mat.VecDense, v *mat.Dense, y *mat.VecDense) {
 	for j := 0; j < k; j++ {
 		vj := v.ColView(j)

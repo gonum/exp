@@ -143,7 +143,9 @@ type Stats struct {
 }
 
 // Iterative finds an approximate solution of the system of n linear equations
-//  A*x = b,
+//
+//	A*x = b,
+//
 // where A is a nonsingular square matrix of order n and b is the right-hand
 // side vector, using an iterative method m. If m is nil, default GMRES will be
 // used.

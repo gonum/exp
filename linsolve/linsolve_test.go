@@ -160,13 +160,17 @@ func newRandomDiagonal(n int, rnd *rand.Rand) testCase {
 
 // newGreenbaum41 returns a test case with a symmetric positive definite matrix
 // A defined as
-//  A = U * D * Uᵀ,
+//
+//	A = U * D * Uᵀ,
+//
 // where U is a random orthogonal matrix and D is a diagonal matrix with entries
 // given by
-//  d_i = d_1 + (i-1)/(n-1)*(d_n-d_1)*rho^{n-i},   i = 2,...,n-1.
+//
+//	d_i = d_1 + (i-1)/(n-1)*(d_n-d_1)*rho^{n-i},   i = 2,...,n-1.
 //
 // This matrix is described in Section 4.1 of
-//  Greenbaum, A. (1997). Iterative Methods for Solving Linear Systems. SIAM.
+//
+//	Greenbaum, A. (1997). Iterative Methods for Solving Linear Systems. SIAM.
 func newGreenbaum41(n int, d1, dn, rho float64, rnd *rand.Rand) testCase {
 	if n < 2 || dn < d1 {
 		panic("bad test")
@@ -276,7 +280,8 @@ func nonsymTridiag(n int) testCase {
 
 // newPoisson1D returns a test case that arises from a finite-difference discretization
 // of the Poisson equation
-//  - ∂_x ∂_x u = f
+//   - ∂_x ∂_x u = f
+//
 // on the interval [0,1].
 func newPoisson1D(nx int, f func(float64, float64) float64) testCase {
 	tc := newPDE(nx, 1, negOne, nil, zero, nil, zero, f)
@@ -286,7 +291,8 @@ func newPoisson1D(nx int, f func(float64, float64) float64) testCase {
 
 // newPoisson2D returns a test case that arises from a finite-difference discretization
 // of the Poisson equation
-//  - Δu = f
+//   - Δu = f
+//
 // on the unit square [0,1]×[0,1].
 func newPoisson2D(nx, ny int, f func(float64, float64) float64) testCase {
 	tc := newPDE(nx, ny, negOne, negOne, zero, zero, zero, f)
@@ -297,12 +303,15 @@ func newPoisson2D(nx, ny int, f func(float64, float64) float64) testCase {
 
 // newGreenbaum54 returns a test case with a general unsymmetric matrix
 // A defined as
-//  A = V*D*V^{-1},
+//
+//	A = V*D*V^{-1},
+//
 // where V is a random matrix and D is a block-diagonal matrix with n1 complex
 // and n2 real eigenvalues.
 //
 // This matrix is described in Section 5.4 of
-//  Greenbaum, A. (1997). Iterative Methods for Solving Linear Systems. SIAM.
+//
+//	Greenbaum, A. (1997). Iterative Methods for Solving Linear Systems. SIAM.
 func newGreenbaum54(n1, n2 int, rnd *rand.Rand) testCase {
 	n := 2*n1 + n2
 	// Generate the block-diagonal matrix D.
@@ -390,10 +399,11 @@ func newGreenbaum54(n1, n2 int, rnd *rand.Rand) testCase {
 
 // newGreenbaum73 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  - Δu + 40*(x*∂_x u + y*∂_y u) - 100*u = f
+//   - Δu + 40*(x*∂_x u + y*∂_y u) - 100*u = f
 //
 // This test problem is described in Section 7.3 of
-//  Greenbaum, A. (1997). Iterative Methods for Solving Linear Systems. SIAM.
+//
+//	Greenbaum, A. (1997). Iterative Methods for Solving Linear Systems. SIAM.
 func newGreenbaum73(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny,
 		negOne, negOne, // - ∂_x ∂_x u - ∂_y ∂_y u
@@ -407,11 +417,14 @@ func newGreenbaum73(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDENonsymmetric returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  Δu + henk*∂_x u + (∂_x henk/2)*u = f
+//
+//	Δu + henk*∂_x u + (∂_x henk/2)*u = f
+//
 // where henk(x,y) := 20*exp(3.5*(x^2 + y^2))
 //
 // This test case is adapted from
-//  http://www.netlib.org/templates/dftemplates.tgz
+//
+//	http://www.netlib.org/templates/dftemplates.tgz
 func newPDENonsymmetric(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny, one, one, henk, zero, dhenkdx, random(rnd))
 	tc.name = fmt.Sprintf("PDE Nonsymmetric nx=%v,ny=%v", nx, ny)
@@ -428,11 +441,14 @@ func dhenkdx(x, y float64) float64 {
 
 // newPDEYang47 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  Δu + 1000*∂_x u = f
+//
+//	Δu + 1000*∂_x u = f
+//
 // The large coefficient of ∂_xu causes a loss of diagonal dominance in the system matrix.
 //
 // This test case corresponds to Eq. 4.7 in
-//  Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
+//
+//	Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
 func newPDEYang47(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny, one, one, constant(1000), zero, zero, random(rnd))
 	tc.name = fmt.Sprintf("PDE Yang, Eq. 4.7 nx=%v,ny=%v", nx, ny)
@@ -441,11 +457,14 @@ func newPDEYang47(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDEYang48 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  Δu + 1000*∂_y u = f
+//
+//	Δu + 1000*∂_y u = f
+//
 // The large coefficient of ∂_yu causes a loss of diagonal dominance in the system matrix.
 //
 // This test case corresponds to Eq. 4.8 in
-//  Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
+//
+//	Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
 func newPDEYang48(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny, one, one, zero, constant(1000), zero, random(rnd))
 	tc.name = fmt.Sprintf("PDE Yang, Eq. 4.8 nx=%v,ny=%v", nx, ny)
@@ -454,10 +473,12 @@ func newPDEYang48(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDEYang49 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  Δu + 1000*exp(x*y)*(∂_x u - ∂_y u) = f
+//
+//	Δu + 1000*exp(x*y)*(∂_x u - ∂_y u) = f
 //
 // This test case corresponds to Eq. 4.9 in
-//  Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
+//
+//	Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
 func newPDEYang49(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(16, 16,
 		one, one,
@@ -470,10 +491,12 @@ func newPDEYang49(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDEYang410 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  ∂_x (exp(x*y) * ∂_x u) + ∂_y (exp(-x*y) * ∂_y u) - 500*(x + y)*∂_x u - (250*(1 + y) + 1/(1 + x + y))*u = f
+//
+//	∂_x (exp(x*y) * ∂_x u) + ∂_y (exp(-x*y) * ∂_y u) - 500*(x + y)*∂_x u - (250*(1 + y) + 1/(1 + x + y))*u = f
 //
 // This test case corresponds to Eq. 4.10 in
-//  Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
+//
+//	Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
 func newPDEYang410(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny,
 		func(x, y float64) float64 { return math.Exp(x * y) },  // ∂_x (exp(x*y) * ∂_x u)
@@ -488,10 +511,12 @@ func newPDEYang410(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDEYang412 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  Δu - 100000*x^2*(∂_x u + ∂_y u) = f
+//
+//	Δu - 100000*x^2*(∂_x u + ∂_y u) = f
 //
 // This test case corresponds to Eq. 4.12 in
-//  Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
+//
+//	Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
 func newPDEYang412(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny,
 		one, one,
@@ -504,10 +529,12 @@ func newPDEYang412(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDEYang413 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  Δu - 1000*(1 + x^2)*∂_x u + 100*∂_y u = f
+//
+//	Δu - 1000*(1 + x^2)*∂_x u + 100*∂_y u = f
 //
 // This test case corresponds to Eq. 4.13 in
-//  Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
+//
+//	Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
 func newPDEYang413(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny,
 		one, one,
@@ -520,10 +547,12 @@ func newPDEYang413(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDEYang414 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  Δu - 1000*x^2*∂_x u + 1000*u = f
+//
+//	Δu - 1000*x^2*∂_x u + 1000*u = f
 //
 // This test case corresponds to Eq. 4.14 in
-//  Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
+//
+//	Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
 func newPDEYang414(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny,
 		one, one,
@@ -536,10 +565,12 @@ func newPDEYang414(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDEYang415 returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  Δu - 1000*(1 - 2*x)*∂_x u - 1000*(1 - 2*y)*∂_y u = f
+//
+//	Δu - 1000*(1 - 2*x)*∂_x u - 1000*(1 - 2*y)*∂_y u = f
 //
 // This test case corresponds to Eq. 4.15 in
-//  Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
+//
+//	Ulrike Meier Yang (1994), Preconditioned Conjugate Gradient-Like Methods for Nonsymmetric Linear Systems.
 func newPDEYang415(nx, ny int, rnd *rand.Rand) testCase {
 	tc := newPDE(nx, ny,
 		one, one,
@@ -552,7 +583,9 @@ func newPDEYang415(nx, ny int, rnd *rand.Rand) testCase {
 
 // newPDE returns a test case that arises from a finite-difference discretization
 // of the partial differential equation
-//  ∂_x (a ∂_x u) + ∂_y (b ∂_y u) + c ∂_x u + d ∂_y u + e u = f
+//
+//	∂_x (a ∂_x u) + ∂_y (b ∂_y u) + c ∂_x u + d ∂_y u + e u = f
+//
 // on the unit square [0,1]×[0,1] with zero Dirichlet boundary conditions.
 //
 // nx and ny must be positive. If ny is 1, a 1D variant of the equation on [0,1]×{0} will be used,
@@ -624,11 +657,14 @@ type stencil1D struct {
 }
 
 // newStencil1D returns a finite difference stencil that approximates the differential operator
-//  ∂_x (a ∂_x u) + b ∂_x u + c u
+//
+//	∂_x (a ∂_x u) + b ∂_x u + c u
+//
 // at point [(i+1)*h] using the formula
-//    a(i+1/2,0)*(u(i+1) - u(i)) + a(i-1/2,0)*(u(i-1) - u(i))
-//  + (h/2)*b(i,0)*(u(i+1) - u(i-1))
-//  + h^2*c(i,0)*u(i)
+//
+//	  a(i+1/2,0)*(u(i+1) - u(i)) + a(i-1/2,0)*(u(i-1) - u(i))
+//	+ (h/2)*b(i,0)*(u(i+1) - u(i-1))
+//	+ h^2*c(i,0)*u(i)
 func newStencil1D(i int, h float64, a, b, c func(float64, float64) float64) (s stencil1D) {
 	x := float64(i+1) * h
 
@@ -702,12 +738,15 @@ type stencil2D struct {
 }
 
 // newStencil2D returns a finite difference stencil that approximates the differential operator
-//  ∂_x (a ∂_x u) + ∂_y (b ∂_y u) + c ∂_x u + d ∂_y u + e u
+//
+//	∂_x (a ∂_x u) + ∂_y (b ∂_y u) + c ∂_x u + d ∂_y u + e u
+//
 // at point [(i+1)*h,(j+1)*h] using the formula
-//    a(i+1/2,j)*(u(i+1,j) - u(i,j)) + a(i-1/2,j)*(u(i-1,j) - u(i,j))
-//  + b(i,j+1/2)*(u(i,j+1) - u(i,j)) + b(i,j-1/2)*(u(i,j-1) - u(i,j))
-//  + (h/2)*c(i,j)*(u(i+1,j) - u(i-1,j)) + (h/2)*d(i,j)*(u(i,j+1) - u(i,j-1))
-//  + h^2*e(i,j)*u(i,j)
+//
+//	  a(i+1/2,j)*(u(i+1,j) - u(i,j)) + a(i-1/2,j)*(u(i-1,j) - u(i,j))
+//	+ b(i,j+1/2)*(u(i,j+1) - u(i,j)) + b(i,j-1/2)*(u(i,j-1) - u(i,j))
+//	+ (h/2)*c(i,j)*(u(i+1,j) - u(i-1,j)) + (h/2)*d(i,j)*(u(i,j+1) - u(i,j-1))
+//	+ h^2*e(i,j)*u(i,j)
 func newStencil2D(i, j int, h float64, a, b, c, d, e func(float64, float64) float64) (s stencil2D) {
 	x := float64(i+1) * h
 	y := float64(j+1) * h

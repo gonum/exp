@@ -125,12 +125,12 @@ func (a Arcs) Arc() Arc { return a.Base }
 //
 // The behaviour of ArcOf depends on the nil status of loc and f:
 //
-//  - if both loc and f are non-nil, f must have a sub-feature relationship with loc,
-//    and the returned arc will be the arc of f.
-//  - if either of loc or f are nil, then the arc of the non-nil parameter will be
-//    returned.
-//  - if both loc and f are nil, and no nil feature is found in the Arcs, the base arc
-//    will be returned.
+//   - if both loc and f are non-nil, f must have a sub-feature relationship with loc,
+//     and the returned arc will be the arc of f.
+//   - if either of loc or f are nil, then the arc of the non-nil parameter will be
+//     returned.
+//   - if both loc and f are nil, and no nil feature is found in the Arcs, the base arc
+//     will be returned.
 //
 // If no matching feature is found a non-nil error is returned.
 func (a Arcs) ArcOf(loc, f Feature) (Arc, error) {

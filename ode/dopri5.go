@@ -156,7 +156,7 @@ SOLVE:
 // To enable step size adaptivity minimum step size must be set and
 // absolute tolerance must be set. i.e:
 //
-//  NewDormandPrince5(ConfigScalarTolerance(0, 0.1), ConfigStepLimits(1, 1e-3))
+//	NewDormandPrince5(ConfigScalarTolerance(0, 0.1), ConfigStepLimits(1, 1e-3))
 //
 // If a invalid configuration is passed the function panics.
 func NewDormandPrince5(cfg Parameters) *DoPri5 {
