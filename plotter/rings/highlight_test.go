@@ -24,5 +24,5 @@ func TestHighlight(t *testing.T) {
 	p.Add(h)
 	p.HideAxes()
 
-	checkImage(t, p, *regen)
+	checkImage(t, p)
 }

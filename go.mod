@@ -20,4 +20,5 @@ require (
 	golang.org/x/image v0.25.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
+	rsc.io/pdf v0.1.1 // indirect
 )
