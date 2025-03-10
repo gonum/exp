@@ -7,8 +7,7 @@ package linsolve
 import (
 	"fmt"
 	"math"
-
-	"golang.org/x/exp/rand"
+	"math/rand/v2"
 
 	"gonum.org/v1/exp/linsolve/internal/triplet"
 	"gonum.org/v1/gonum/lapack/testlapack"
@@ -331,7 +330,7 @@ func newGreenbaum54(n1, n2 int, rnd *rand.Rand) testCase {
 	// Generate n2 real eigenvalues.
 	for i := 2 * n1; i < n; i++ {
 		r := 9*rnd.Float64() + 1
-		if rnd.Intn(2) == 0 {
+		if rnd.IntN(2) == 0 {
 			r *= -1
 		}
 		d[i*3+1] = r
