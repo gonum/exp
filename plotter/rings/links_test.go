@@ -6,9 +6,8 @@ package rings
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"testing"
-
-	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -18,8 +17,8 @@ import (
 func TestLinks(t *testing.T) {
 	const marks = 16
 
-	rand.Seed(1)
-	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+	rnd := rand.New(rand.NewPCG(1, 1))
+	b, err := NewGappedBlocks(randomFeatures(rnd, 3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
@@ -36,6 +35,7 @@ func TestLinks(t *testing.T) {
 			bezier: &Bezier{Segments: 5,
 				Radius: LengthDist{Length: 2 * 70 / 3, Min: floatPtr(0.95), Max: floatPtr(1.05)},
 				Crest:  &FactorDist{Factor: 2, Min: floatPtr(0.7), Max: floatPtr(1.4)},
+				Src:    rand.NewPCG(1, 1),
 			},
 		},
 		{
@@ -43,15 +43,16 @@ func TestLinks(t *testing.T) {
 			bezier: &Bezier{Segments: 5,
 				Radius: LengthDist{Length: 2 * 70 / 3, Min: floatPtr(0.95), Max: floatPtr(1.05)},
 				Crest:  &FactorDist{Factor: 2, Min: floatPtr(0.7), Max: floatPtr(1.4)},
+				Src:    rand.NewPCG(2, 2),
 			},
 		},
 	} {
 		t.Run(fmt.Sprintf("links-%d", i), func(t *testing.T) {
 			p := plot.New()
 			var m [2][]Feature
-			rand.Seed(2)
+			rnd := rand.New(rand.NewPCG(2, 2))
 			for j := range m {
-				m[j] = randomFeatures(marks/2, test.ends[j].Start(), test.ends[j].End(), true, plotter.DefaultLineStyle)
+				m[j] = randomFeatures(rnd, marks/2, test.ends[j].Start(), test.ends[j].End(), true, plotter.DefaultLineStyle)
 			}
 			mp := make([]Pair, marks/2)
 			for j := range mp {

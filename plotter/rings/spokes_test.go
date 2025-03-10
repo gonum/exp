@@ -5,9 +5,8 @@
 package rings
 
 import (
+	"math/rand/v2"
 	"testing"
-
-	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -15,8 +14,8 @@ import (
 
 func TestSpokes(t *testing.T) {
 	p := plot.New()
-	rand.Seed(1)
-	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+	rnd := rand.New(rand.NewPCG(1, 1))
+	b, err := NewGappedBlocks(randomFeatures(rnd, 3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
@@ -24,7 +23,7 @@ func TestSpokes(t *testing.T) {
 		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
 	}
 
-	m := randomFeatures(10, b.Set[1].Start(), b.Set[1].End(), true, plotter.DefaultLineStyle)
+	m := randomFeatures(rnd, 10, b.Set[1].Start(), b.Set[1].End(), true, plotter.DefaultLineStyle)
 	for _, mf := range m {
 		mf.(*fs).parent = b.Set[1]
 	}

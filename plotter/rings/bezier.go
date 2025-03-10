@@ -6,8 +6,7 @@ package rings
 
 import (
 	"math"
-
-	"golang.org/x/exp/rand"
+	"math/rand/v2"
 
 	"gonum.org/v1/plot/vg"
 )
@@ -72,6 +71,17 @@ type Bezier struct {
 	// If nil, these values are not used.
 	Crest  *FactorDist
 	Purity *FactorDist
+
+	// Src is a source of random numbers.
+	// If nil, the global one is used.
+	Src rand.Source
+}
+
+func (b *Bezier) f64() float64 {
+	if b.Src == nil {
+		return rand.Float64()
+	}
+	return rand.New(b.Src).Float64()
 }
 
 // ControlPoints returns a set of Bézier curve control points defining the path between the points defined
@@ -85,7 +95,7 @@ func (b *Bezier) ControlPoints(a [2]Angle, rad [2]vg.Length) []vg.Point {
 	var radius = b.Radius
 	if b.Purity != nil {
 		bisectRadius := vg.Length(math.Hypot(float64(p[0].X+p[1].X)/2, float64(p[0].Y+p[1].Y)/2))
-		radius.Length += vg.Length(b.Purity.Perturb(rand.Float64())-1) * (radius.Length - bisectRadius)
+		radius.Length += vg.Length(b.Purity.Perturb(b.f64())-1) * (radius.Length - bisectRadius)
 	}
 
 	var bisect Angle
@@ -94,11 +104,11 @@ func (b *Bezier) ControlPoints(a [2]Angle, rad [2]vg.Length) []vg.Point {
 	} else {
 		bisect = (a[1] + a[0]) / 2
 	}
-	mid := Rectangular(bisect, radius.Perturb(rand.Float64()))
+	mid := Rectangular(bisect, radius.Perturb(b.f64()))
 
 	if b.Crest != nil {
 		points := []vg.Point{0: p[0], 2: mid, 4: p[1]}
-		c := b.Crest.Perturb(rand.Float64())
+		c := b.Crest.Perturb(b.f64())
 
 		for i, r := range rad {
 			points[2*i+1] = Rectangular(a[i], r-(r-radius.Length)*vg.Length(c))
