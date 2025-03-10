@@ -113,9 +113,10 @@ func quadTestModel(t *testing.T) *TestModel {
 }
 
 // exponential unidimensional model may be used for future algorithms
-//  y'(t) = -15*y(t)
-//  y(t=0) = 1
-//  solution: y(t) = exp(-15*t)
+//
+//	y'(t) = -15*y(t)
+//	y(t=0) = 1
+//	solution: y(t) = exp(-15*t)
 func exp1DTestModel(t *testing.T) *TestModel {
 	tau := -2.
 	t0 := 0.0

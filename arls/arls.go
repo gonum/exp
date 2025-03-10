@@ -376,21 +376,23 @@ func discrep(b *mat.VecDense, U *mat.Dense, S *mat.DiagDense, V *mat.Dense, ur i
 	return lamb
 }
 
-/*----------------------------------------------------------
-  Arlsvd solves the linear system of equation, Ax = b, for any shape matrix
-  even if the system is very poorly conditioned.
-  The singular value decomposition of A must be provided to this routine.
+/*
+----------------------------------------------------------
 
-  The purpose of this version is to allow the user to solve multiple
-  problems using the same matrix, A, without having to compute the singular
-  value decomposition more than once. Since the cost of the SVD is the
-  main cost of calling Arls(), reusing the svd can greatly decrease the
-  execution time.
+	Arlsvd solves the linear system of equation, Ax = b, for any shape matrix
+	even if the system is very poorly conditioned.
+	The singular value decomposition of A must be provided to this routine.
 
-  Other than that difference the call to Arlsvd (and the results) are
-  identical to those for Arls, described below. Indeed, Arls is just
-  a simple interface to this routine. See the (small) body of Arls() below
-  for how to compute the SVD yourself and call this routine directly.
+	The purpose of this version is to allow the user to solve multiple
+	problems using the same matrix, A, without having to compute the singular
+	value decomposition more than once. Since the cost of the SVD is the
+	main cost of calling Arls(), reusing the svd can greatly decrease the
+	execution time.
+
+	Other than that difference the call to Arlsvd (and the results) are
+	identical to those for Arls, described below. Indeed, Arls is just
+	a simple interface to this routine. See the (small) body of Arls() below
+	for how to compute the SVD yourself and call this routine directly.
 */
 func Arlsvd(svd mat.SVD, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	//extract SVD components
@@ -412,7 +414,7 @@ func Arlsvd(svd mat.SVD, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, l
 	Utb.MulVec(U.T(), b)
 	eps := S.At(0, 0) * float64(mx) * 1.0e-14
 	if eps == 0 {
-		eps = 1.0E-14
+		eps = 1.0e-14
 	}
 	si := 0.0
 	sense := 0.0
@@ -452,128 +454,130 @@ func Arlsvd(svd mat.SVD, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, l
 	return x, nr, ur, sigma, lambda
 }
 
-/*----------------------------------------------------------
-  Arls() solves the linear system of equation, Ax = b, for any shape matrix.
-  The system can be underdetermined, square, or over-determined.
-  That is, A(m,n) can be such that m < n, m = n, or m > n.
-  Argument b(n) is the right-hand-side column.
-  This solver automatically detects whether the system is
-  ill-conditioned or not, and to what degree.
+/*
+----------------------------------------------------------
 
-  Then...
-   -- If the equations are consistent then the solution will usually be
-      exact within round-off error.
-   -- If the equations are inconsistent then the the solution will be
-      by least-squares. That is, it solves ``min ||b - Ax||_2``.
-   -- If the equations are inconsistent and diagnosable as ill-conditioned
-      using the "Discrete Picard Condition" (see references) then the system
-      will be automatically regularized. The residual of the regularized
-      system will usually be larger than the residual of the least-squares
-      solution.
-   -- If either A or b is all zeros then the solution will be all zeros.
+	Arls() solves the linear system of equation, Ax = b, for any shape matrix.
+	The system can be underdetermined, square, or over-determined.
+	That is, A(m,n) can be such that m < n, m = n, or m > n.
+	Argument b(n) is the right-hand-side column.
+	This solver automatically detects whether the system is
+	ill-conditioned or not, and to what degree.
 
-  Parameters
-  ----------
-  A : *mat.Dense
-      Coefficient matrix
-  b : *mat.VecDense
-      Columns of dependent variables.
+	Then...
+	 -- If the equations are consistent then the solution will usually be
+	    exact within round-off error.
+	 -- If the equations are inconsistent then the the solution will be
+	    by least-squares. That is, it solves ``min ||b - Ax||_2``.
+	 -- If the equations are inconsistent and diagnosable as ill-conditioned
+	    using the "Discrete Picard Condition" (see references) then the system
+	    will be automatically regularized. The residual of the regularized
+	    system will usually be larger than the residual of the least-squares
+	    solution.
+	 -- If either A or b is all zeros then the solution will be all zeros.
 
-  Returns
-  -------
-  x : *mat.VecDense
-      The solution.
-  nr : int
-      The traditional numerical rank of A, for information only.
-  ur : int
-      The "Usable Rank".
-      Note that "numerical rank" is an attribute of a matrix
-      but the "usable rank" that Arls computes is an attribute
-      of the whole problem, Ax=b.
-  sigma : float64
-      The estimated right-hand-side root-mean-square error.
-  lambda : float64
-      The estimated Tikhonov regularization parameter.
+	Parameters
+	----------
+	A : *mat.Dense
+	    Coefficient matrix
+	b : *mat.VecDense
+	    Columns of dependent variables.
 
-  Example
-  --------
-  Arls() will behave like any good least-squares solver when the system
-  is well conditioned.
-  Here is a tiny example of an ill-conditioned system as handled by Arls(),
+	Returns
+	-------
+	x : *mat.VecDense
+	    The solution.
+	nr : int
+	    The traditional numerical rank of A, for information only.
+	ur : int
+	    The "Usable Rank".
+	    Note that "numerical rank" is an attribute of a matrix
+	    but the "usable rank" that Arls computes is an attribute
+	    of the whole problem, Ax=b.
+	sigma : float64
+	    The estimated right-hand-side root-mean-square error.
+	lambda : float64
+	    The estimated Tikhonov regularization parameter.
 
-     x + y = 2
-     x + 1.01 y =3
+	Example
+	--------
+	Arls() will behave like any good least-squares solver when the system
+	is well conditioned.
+	Here is a tiny example of an ill-conditioned system as handled by Arls(),
 
-  Then we have these arrays:
-         A          b
-    [ 1., 1.  ]    [2.]
-    [ 1., 1.01]    [3.]
+	   x + y = 2
+	   x + 1.01 y =3
 
-  Then standard solvers will return:
-     x = [-98. , 100.]'
-  (Where "'" means to transpose this row to a column)
+	Then we have these arrays:
+	       A          b
+	  [ 1., 1.  ]    [2.]
+	  [ 1., 1.01]    [3.]
 
-  But Arls() will see the violation of the Picard Condition and return
-     x = [1.122168 , 1.127793]'
+	Then standard solvers will return:
+	   x = [-98. , 100.]'
+	(Where "'" means to transpose this row to a column)
 
-  Notes:
-  -----
-  1. When the system is ill-conditioned, the process works best when the rows
-     of A are scaled so that the elements of b have similar estimated errors.
+	But Arls() will see the violation of the Picard Condition and return
+	   x = [1.122168 , 1.127793]'
 
-  2. As with any linear equation solver, please check whether the solution
-     is reasonable. In particular, you should check the residual vector, A*x - b.
+	Notes:
+	-----
+	1. When the system is ill-conditioned, the process works best when the rows
+	   of A are scaled so that the elements of b have similar estimated errors.
 
-  3. Arls() neither needs nor accepts optional parameters such as iteration
-     limits, error estimates, variable bounds, condition number limits, etc.
-     It also does not return any error flags as there are no error states.
-     As long as the SVD completes (and SVD failure is remarkably rare)
-     then Arls() and Arlsvd() (below) will complete normally.
-     In the case of Arlsnn() (below) the svd factorization is called
-     potentially up to n-1 times, so each of these factorizations will
-     need to complete successfully for Arlsnn() to complete successfully.
-     But each successive call to the svd factorization will be for a further
-     reduced A matrix, so if the first factoriztion works the remainder of
-     the smaller factorizations will probably work well also.
+	2. As with any linear equation solver, please check whether the solution
+	   is reasonable. In particular, you should check the residual vector, A*x - b.
 
-  4. Arls()'s main application is to find a reasonable solution even in the
-     midst of excessive inaccuracy, ill-conditioning, singularities,
-     duplicated data, etc.
-     The only commonly available routine that can handle difficult problems
-     like Arls() is the method called LSMR() which is available for some
-     languages. However, in our tests Arls() is much more consistent and
-     stable in its behavior than LSMR().
-     On the other hand, when LSMR works, it often works very well,
-     and can produce more perfect answers than Arls().
-     In contrast, Arls() tends to produce a slightly overly-smooth solution.
-     (This trait is instrinsic to Arls()'s current algorithm.)
+	3. Arls() neither needs nor accepts optional parameters such as iteration
+	   limits, error estimates, variable bounds, condition number limits, etc.
+	   It also does not return any error flags as there are no error states.
+	   As long as the SVD completes (and SVD failure is remarkably rare)
+	   then Arls() and Arlsvd() (below) will complete normally.
+	   In the case of Arlsnn() (below) the svd factorization is called
+	   potentially up to n-1 times, so each of these factorizations will
+	   need to complete successfully for Arlsnn() to complete successfully.
+	   But each successive call to the svd factorization will be for a further
+	   reduced A matrix, so if the first factoriztion works the remainder of
+	   the smaller factorizations will probably work well also.
 
-  5. In view of note 4, Arls() is not appropriate for situations
-     where the requirements are more for high accuracy rather than
-     robustness. So we assume, when appropriate in the coding, that none
-     of the input data needs to be considered more accurate than
-     about 8 or 9 significant figures.
+	4. Arls()'s main application is to find a reasonable solution even in the
+	   midst of excessive inaccuracy, ill-conditioning, singularities,
+	   duplicated data, etc.
+	   The only commonly available routine that can handle difficult problems
+	   like Arls() is the method called LSMR() which is available for some
+	   languages. However, in our tests Arls() is much more consistent and
+	   stable in its behavior than LSMR().
+	   On the other hand, when LSMR works, it often works very well,
+	   and can produce more perfect answers than Arls().
+	   In contrast, Arls() tends to produce a slightly overly-smooth solution.
+	   (This trait is instrinsic to Arls()'s current algorithm.)
 
-  6. There is one situation where Arls() is not likely to give a good result:
-     when the system A*x = b is ill-conditioned and a majority of the
-     elements of the matrix A are zero.
-     Elimination of less unimportant variables from the problem,
-     if possible, might help produce a useful solution.
-     Multiplication of both sides by the transpose of A might help
-     produce a useful answer if the system is over-determined.
-     Or, you might consider using a Sparse solver.
+	5. In view of note 4, Arls() is not appropriate for situations
+	   where the requirements are more for high accuracy rather than
+	   robustness. So we assume, when appropriate in the coding, that none
+	   of the input data needs to be considered more accurate than
+	   about 8 or 9 significant figures.
 
-  Resources
-  ----------
-  For a short presentation on the Picard Conditionm which is at the heart
-  of this package's algorithms, please see http://www.rejtrix.net/ .
-  For a complete description, see "The Discrete Picard Condition for Discrete
-  Ill-posed Problems", Per Christian Hansen, 1990.
-  See link.springer.com/article/10.1007/BF01933214
+	6. There is one situation where Arls() is not likely to give a good result:
+	   when the system A*x = b is ill-conditioned and a majority of the
+	   elements of the matrix A are zero.
+	   Elimination of less unimportant variables from the problem,
+	   if possible, might help produce a useful solution.
+	   Multiplication of both sides by the transpose of A might help
+	   produce a useful answer if the system is over-determined.
+	   Or, you might consider using a Sparse solver.
 
-  Rondall E. Jones, Ph.D., University of New Mexico, 1985
-  http://www.rejtrix.net/
-  rejones7@msn.com
+	Resources
+	----------
+	For a short presentation on the Picard Conditionm which is at the heart
+	of this package's algorithms, please see http://www.rejtrix.net/ .
+	For a complete description, see "The Discrete Picard Condition for Discrete
+	Ill-posed Problems", Per Christian Hansen, 1990.
+	See link.springer.com/article/10.1007/BF01933214
+
+	Rondall E. Jones, Ph.D., University of New Mexico, 1985
+	http://www.rejtrix.net/
+	rejones7@msn.com
 */
 func Arls(A *mat.Dense, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	_, n := A.Dims()
@@ -588,35 +592,37 @@ func Arls(A *mat.Dense, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, la
 	return Arlsvd(svd, b)
 }
 
-/*----------------------------------------------------------
-  Arlsnn() solves Ax = b in the least squares sense, with the solution
-  constrained to be non-negative.
-  The call to Arlsnn() and the parameters returned are
-  exactly the same as for Arls(). Please see above for details.
-  This version actually deletes variables from the problem rather
-  than zeroing their column.
+/*
+----------------------------------------------------------
 
-  Example
-  -------
-  Suppose we have:
-         A          b
-    [2., 2., 1.]  [3.9]
-    [2., 1., 0.]  [3.0]
-    [1., 1., 0.]  [2.0]
+	Arlsnn() solves Ax = b in the least squares sense, with the solution
+	constrained to be non-negative.
+	The call to Arlsnn() and the parameters returned are
+	exactly the same as for Arls(). Please see above for details.
+	This version actually deletes variables from the problem rather
+	than zeroing their column.
 
-  Then any least-squares solver will produce
-      x =  [1. ,1., -0.1]'
-  (Where "'" meansto transpose this row to a column.)
+	Example
+	-------
+	Suppose we have:
+	       A          b
+	  [2., 2., 1.]  [3.9]
+	  [2., 1., 0.]  [3.0]
+	  [1., 1., 0.]  [2.0]
 
-  But Arlsnn() produces
-      x =  [1.0400, 0.9200, 0.0000]'
+	Then any least-squares solver will produce
+	    x =  [1. ,1., -0.1]'
+	(Where "'" meansto transpose this row to a column.)
 
-  Arlsnn() tries to produce a small residual for the final solution,
-  while being based toward making the fewest changes feasible
-  to the problem. (That is, fewest columns of A set to zero.)
-  Older solvers like the classic NNLS() focus only on minimizing the
-  residual, resulting in extra interference with the user's model.
-  Arlsnn seeks a better balance.
+	But Arlsnn() produces
+	    x =  [1.0400, 0.9200, 0.0000]'
+
+	Arlsnn() tries to produce a small residual for the final solution,
+	while being based toward making the fewest changes feasible
+	to the problem. (That is, fewest columns of A set to zero.)
+	Older solvers like the classic NNLS() focus only on minimizing the
+	residual, resulting in extra interference with the user's model.
+	Arlsnn seeks a better balance.
 */
 func Arlsnn(A *mat.Dense, b *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	m, n := A.Dims()
@@ -876,103 +882,105 @@ func arlspj(A *mat.Dense, b *mat.VecDense, E *mat.Dense, f *mat.VecDense, neglec
 
 // CONSTRAINED SOLVERS
 
-/*----------------------------------------------------------
-  Arlseq() solves the double linear system of equations
-     Ax = b  (least squares)
-     Ex == f  (exact)
+/*
+----------------------------------------------------------
 
-  Both Ax=b and Ex=f system can be underdetermined, square,
-  or over-determined. Arguments b and f must be single columns.
+	Arlseq() solves the double linear system of equations
+	   Ax = b  (least squares)
+	   Ex == f  (exact)
 
-  Ex=f is treated as a set of equality constraints.
-  These constraints are usually few in number and well behaved.
-  But clearly the caller can easily provide equations in Ex=f that
-  are impossible to satisfy as a group. For example, there could be
-  one equation requiring x[0]=0, and another requiring x[0]=1.
-  And, the solver must deal with there being redundant or other
-  pathological situations within the E matrix.
-  So the solution process will either solve each equation in Ex=f exactly
-  (within roundoff) or if that is impossible, arlseq() will discard
-  one or more equations until the remaining equations are solvable
-  exactly (within roundoff).
-  We will refer below to the solution of this reduced system as "xe".
+	Both Ax=b and Ex=f system can be underdetermined, square,
+	or over-determined. Arguments b and f must be single columns.
 
-  After Ex=f is processed as above, the rows of Ax=b will have their
-  projections onto every row of Ex=f subtracted from them.
-  We will call this reduced set of equations A'x = b'.
-  (Thus, the rows of A' will all be orthogonal to the rows of E.)
-  This reduced problem A'x = b', will then be solved with arls().
-  We will refer to the solution of this system as "xt".
+	Ex=f is treated as a set of equality constraints.
+	These constraints are usually few in number and well behaved.
+	But clearly the caller can easily provide equations in Ex=f that
+	are impossible to satisfy as a group. For example, there could be
+	one equation requiring x[0]=0, and another requiring x[0]=1.
+	And, the solver must deal with there being redundant or other
+	pathological situations within the E matrix.
+	So the solution process will either solve each equation in Ex=f exactly
+	(within roundoff) or if that is impossible, arlseq() will discard
+	one or more equations until the remaining equations are solvable
+	exactly (within roundoff).
+	We will refer below to the solution of this reduced system as "xe".
 
-  The final solution will be x = xe + xt.
+	After Ex=f is processed as above, the rows of Ax=b will have their
+	projections onto every row of Ex=f subtracted from them.
+	We will call this reduced set of equations A'x = b'.
+	(Thus, the rows of A' will all be orthogonal to the rows of E.)
+	This reduced problem A'x = b', will then be solved with arls().
+	We will refer to the solution of this system as "xt".
 
-  Parameters
-  ----------
-  A : (m, n)  array_like "Coefficient" matrix, type float.
-  b : (m)     array_like column of dependent variables, type float.
-  E : (me, n) array_like "Coefficient" matrix, type float.
-  f : (me)    array_like column of dependent variables, type float.
+	The final solution will be x = xe + xt.
 
-  Returns
-  -------
-  x : (n) array_like column, type float.
-  nr : int
-      The numerical rank of the matrix, A, after its projection onto the rows
-      of E are subtracted.
-  ur : int
-      The "usable" rank of the "reduced" problem, Ax=b, after its projection
-      onto the rows of Ex=f are subtracted.
-      Note that "numerical rank" is an attribute of a matrix
-      but the "usable rank" that arls computes is an attribute
-      of the problem, Ax=b.
-  sigma : float
-      The estimated right-hand-side root-mean-square error.
-  lambda : float
-      The estimated Tikhonov regularization.
+	Parameters
+	----------
+	A : (m, n)  array_like "Coefficient" matrix, type float.
+	b : (m)     array_like column of dependent variables, type float.
+	E : (me, n) array_like "Coefficient" matrix, type float.
+	f : (me)    array_like column of dependent variables, type float.
 
-  Examples
-  --------
-  Here is a tiny example of a problem which has an "unknown" amount
-  of error in the right hand side, but for which the user knows that the
-  correct SUM of the unknowns must be 3:
+	Returns
+	-------
+	x : (n) array_like column, type float.
+	nr : int
+	    The numerical rank of the matrix, A, after its projection onto the rows
+	    of E are subtracted.
+	ur : int
+	    The "usable" rank of the "reduced" problem, Ax=b, after its projection
+	    onto the rows of Ex=f are subtracted.
+	    Note that "numerical rank" is an attribute of a matrix
+	    but the "usable rank" that arls computes is an attribute
+	    of the problem, Ax=b.
+	sigma : float
+	    The estimated right-hand-side root-mean-square error.
+	lambda : float
+	    The estimated Tikhonov regularization.
 
-       x + 2 y = 5.3   (Least Squares)
-     2 x + 3 y = 7.8
-         x + y = 3     ( Exact )
+	Examples
+	--------
+	Here is a tiny example of a problem which has an "unknown" amount
+	of error in the right hand side, but for which the user knows that the
+	correct SUM of the unknowns must be 3:
 
-  Then we have these arrays:
-          A          b
-      [1., 2.]    [5.3]
-      [2., 3.]    [7.8]
+	     x + 2 y = 5.3   (Least Squares)
+	   2 x + 3 y = 7.8
+	       x + y = 3     ( Exact )
 
-         E          f
-      [1., 1.]    [3.0]
+	Then we have these arrays:
+	        A          b
+	    [1., 2.]    [5.3]
+	    [2., 3.]    [7.8]
 
-  Without using the equality constraint we are given here,
-  standard solvers will return [x,y] = [-.3 , 2.8]'.
-  (Where "'" means to transpose this row to a column.)
-  Even arls() will return the same [x,y] = [-.3 , 2.8]'.
-  The residual for this solution is [0.0 , 0.0]' (within roundoff).
-  But of course x + y = 2.5, not the 3.0 we really want.
+	       E          f
+	    [1., 1.]    [3.0]
 
-  Arlsnn() could help here by disallowing presumably unacceptable
-  negative values, producing [x,y] = [0. , 2.6]'.
-  The residual for this solution is [-0.1 , 0.]' which is of course
-  an increase from zero, but this is natural since we have forced
-  the solution away from being the "exact" result, for good reason.
-  Note that x + y = 2.6, which is a little better.
+	Without using the equality constraint we are given here,
+	standard solvers will return [x,y] = [-.3 , 2.8]'.
+	(Where "'" means to transpose this row to a column.)
+	Even arls() will return the same [x,y] = [-.3 , 2.8]'.
+	The residual for this solution is [0.0 , 0.0]' (within roundoff).
+	But of course x + y = 2.5, not the 3.0 we really want.
 
-  If we solve with arlseq(A,b,E,f) then we get [x,y] = [1.004, 1.996]'.
-  This answer is close to the "correct" answer of [x,y] = [1.0 , 2.0]'
-  if the right hand side had been the correct [5.,8.]' instead of [5.3,7.8]'.
-  The residual for this solution is [-0.3 , 0.2]' which is yet larger.
-  Again, when adding constraints to the problem the residual
-  typically increases, but the solution becomes more acceptable.
-  Note that x + y = 3 exactly.
+	Arlsnn() could help here by disallowing presumably unacceptable
+	negative values, producing [x,y] = [0. , 2.6]'.
+	The residual for this solution is [-0.1 , 0.]' which is of course
+	an increase from zero, but this is natural since we have forced
+	the solution away from being the "exact" result, for good reason.
+	Note that x + y = 2.6, which is a little better.
 
-  Notes:
-  -----
-  See arls() above for notes and references.
+	If we solve with arlseq(A,b,E,f) then we get [x,y] = [1.004, 1.996]'.
+	This answer is close to the "correct" answer of [x,y] = [1.0 , 2.0]'
+	if the right hand side had been the correct [5.,8.]' instead of [5.3,7.8]'.
+	The residual for this solution is [-0.3 , 0.2]' which is yet larger.
+	Again, when adding constraints to the problem the residual
+	typically increases, but the solution becomes more acceptable.
+	Note that x + y = 3 exactly.
+
+	Notes:
+	-----
+	See arls() above for notes and references.
 */
 func Arlseq(A *mat.Dense, b *mat.VecDense, E *mat.Dense, f *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	ma, na := A.Dims()
@@ -1000,7 +1008,7 @@ func Arlseq(A *mat.Dense, b *mat.VecDense, E *mat.Dense, f *mat.VecDense) (x *ma
 	return xt, nr, ur, sigma, lambdah
 }
 
-//  Find the most violated inequality constraint
+// Find the most violated inequality constraint
 func get_worst(GG *mat.Dense, hh, x *mat.VecDense) int {
 	p := -1
 	m, _ := GG.Dims()
@@ -1024,95 +1032,97 @@ func get_worst(GG *mat.Dense, hh, x *mat.VecDense) int {
 	return p
 }
 
-/*----------------------------------------------------------
-   Arlsall() solves the triple linear system of equations
-      Ax =  b  (least squares)
-      Ex == f  (exact)
-      Gx >= h  ("greater than" inequality constraints)
+/*
+----------------------------------------------------------
 
-   Each of the three systems an be underdetermined, square, or
-   over-determined. However, generally E should have very few rows
-   compared to A. Arguments b, f, and h must be single columns.
+	 Arlsall() solves the triple linear system of equations
+	    Ax =  b  (least squares)
+	    Ex == f  (exact)
+	    Gx >= h  ("greater than" inequality constraints)
 
-   Arlsall() uses Arlseq(), above, as the core solver, and iteratively selects
-   rows of Gx>=h to addto Ex==f, choosing first whatever remaining equation
-   in Gx>=h most violates its requirement.
+	 Each of the three systems an be underdetermined, square, or
+	 over-determined. However, generally E should have very few rows
+	 compared to A. Arguments b, f, and h must be single columns.
 
-   Note that "less than" equations can be included by negating
-   both sides of the equation, thus turning it into a "greater than".
+	 Arlsall() uses Arlseq(), above, as the core solver, and iteratively selects
+	 rows of Gx>=h to addto Ex==f, choosing first whatever remaining equation
+	 in Gx>=h most violates its requirement.
 
-   If either A or b is all zeros then the solution will be all zeros.
+	 Note that "less than" equations can be included by negating
+	 both sides of the equation, thus turning it into a "greater than".
 
-   Parameters
-   ----------
-   A : (m, n)  array_like "Coefficient" matrix, type float.
-   b : (m)     array_like column of dependent variables, type float.
-   E : (me, n) array_like "Coefficient" matrix, type float.
-   f : (me)    array_like column of dependent variables, type float.
-   G : (mg, n) array_like "Coefficient" matrix, type float.
-   b : (mg)    array_like column of dependent variables, type float.
+	 If either A or b is all zeros then the solution will be all zeros.
 
-   Returns
-   -------
-   x : (n) array_like column, type float.
-   nr : int
-       The numerical rank of the matrix, A.
-   ur : int
-       The usable rank of the problem, Ax=b.
-       Note that "numerical rank" is an attribute of a matrix
-       but the "usable rank" that arls computes is an attribute
-       of the problem, Ax=b.
-   sigma : float
-       The estimated right-hand-side root-mean-square error.
-   lambda : float
-       The estimated Tikhonov regularization.
+	 Parameters
+	 ----------
+	 A : (m, n)  array_like "Coefficient" matrix, type float.
+	 b : (m)     array_like column of dependent variables, type float.
+	 E : (me, n) array_like "Coefficient" matrix, type float.
+	 f : (me)    array_like column of dependent variables, type float.
+	 G : (mg, n) array_like "Coefficient" matrix, type float.
+	 b : (mg)    array_like column of dependent variables, type float.
 
-   Example
-   -------
-  Let A and b be:
-        A           b
-    [1.,1.,1.]    [5.9]
-    [0.,1.,1.]    [5.0]
-    [1.,0.,1.]    [3.9]
+	 Returns
+	 -------
+	 x : (n) array_like column, type float.
+	 nr : int
+	     The numerical rank of the matrix, A.
+	 ur : int
+	     The usable rank of the problem, Ax=b.
+	     Note that "numerical rank" is an attribute of a matrix
+	     but the "usable rank" that arls computes is an attribute
+	     of the problem, Ax=b.
+	 sigma : float
+	     The estimated right-hand-side root-mean-square error.
+	 lambda : float
+	     The estimated Tikhonov regularization.
 
-   Then any least-squares solver would produce x = [0.9, 2., 3.]'.
-   (Where "'" means to transpose this row to a column.)
-   The residual for this solution is zero within roundoff.
+	 Example
+	 -------
+	Let A and b be:
+	      A           b
+	  [1.,1.,1.]    [5.9]
+	  [0.,1.,1.]    [5.0]
+	  [1.,0.,1.]    [3.9]
 
-   But if we happen to know that all the answers should be at least 1.0
-   then we can add inequalites to insure that:
-       x[0] >= 1
-       x[1] >= 1
-       x[2] >= 1
+	 Then any least-squares solver would produce x = [0.9, 2., 3.]'.
+	 (Where "'" means to transpose this row to a column.)
+	 The residual for this solution is zero within roundoff.
 
-   This can be expressed in the matrix equation Gx>=h where we have these arrays"
-          G       h
-       [1,0,0]   [1]
-       [0,1,0]   [1]
-       [0,0,1]   [1]
+	 But if we happen to know that all the answers should be at least 1.0
+	 then we can add inequalites to insure that:
+	     x[0] >= 1
+	     x[1] >= 1
+	     x[2] >= 1
 
-   Let's let E and f be zeros at this point.
-   Then arlsall(A,b,E,f,G,h) produces x = [1., 2.013, 2.872]'.
-   The residual vector and its norm are then:
-      res = [-0.015, -0.115, 0.028]'
-      norm(res) = 0.119
-   So the price of adding this constraint is that the residual is no
-   longer zero. This is normal behavior.
+	 This can be expressed in the matrix equation Gx>=h where we have these arrays"
+	        G       h
+	     [1,0,0]   [1]
+	     [0,1,0]   [1]
+	     [0,0,1]   [1]
 
-   Let's say that we have discovered that x[2] should be exactly 3.0.
-   We can add that constraint using the Ex==f system:
-         E         f
-     [0.,0.,1.]   [3.]
+	 Let's let E and f be zeros at this point.
+	 Then arlsall(A,b,E,f,G,h) produces x = [1., 2.013, 2.872]'.
+	 The residual vector and its norm are then:
+	    res = [-0.015, -0.115, 0.028]'
+	    norm(res) = 0.119
+	 So the price of adding this constraint is that the residual is no
+	 longer zero. This is normal behavior.
 
-   Calling arlsall(A,b,E,f,G,h) produces x = [1., 1.9, 3.0]'.
-   The residual vector and its norm are then:
-      res = [0.0, -0.1, 0.1]'
-      norm(res) = 0.141
-   So again, as we add constraints to force the solution to what we know
-   it must be, the residual will usually increase steadily from what the
-   least-squares equations left alone will produce.
-   But it would be a mistake to accept an answer that did not meet
-   the facts that we know.
+	 Let's say that we have discovered that x[2] should be exactly 3.0.
+	 We can add that constraint using the Ex==f system:
+	       E         f
+	   [0.,0.,1.]   [3.]
+
+	 Calling arlsall(A,b,E,f,G,h) produces x = [1., 1.9, 3.0]'.
+	 The residual vector and its norm are then:
+	    res = [0.0, -0.1, 0.1]'
+	    norm(res) = 0.141
+	 So again, as we add constraints to force the solution to what we know
+	 it must be, the residual will usually increase steadily from what the
+	 least-squares equations left alone will produce.
+	 But it would be a mistake to accept an answer that did not meet
+	 the facts that we know.
 */
 func Arlsall(A *mat.Dense, b *mat.VecDense, E *mat.Dense, f *mat.VecDense, G *mat.Dense, h *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	ma, na := A.Dims()
@@ -1168,9 +1178,11 @@ func Arlsall(A *mat.Dense, b *mat.VecDense, E *mat.Dense, f *mat.VecDense, G *ma
 	return x, nr, ur, sigma, lambdah
 }
 
-/*----------------------------------------------------------
-  Arlsgt() is the same as Arlsall except that equality constraints
-  are not used.
+/*
+----------------------------------------------------------
+
+	Arlsgt() is the same as Arlsall except that equality constraints
+	are not used.
 */
 func Arlsgt(A *mat.Dense, b *mat.VecDense, G *mat.Dense, h *mat.VecDense) (x *mat.VecDense, nr, ur int, sigma, lambda float64) {
 	_, n := A.Dims()

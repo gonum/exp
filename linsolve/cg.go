@@ -10,20 +10,22 @@ import (
 
 // CG implements the Conjugate Gradient iterative method with preconditioning
 // for solving systems of linear equations
-//  A * x = b,
+//
+//	A * x = b,
+//
 // where A is a symmetric positive definite matrix. It requires minimal memory
 // storage and is a good choice for symmetric positive definite problems.
 //
 // References:
-//  - Barrett, Richard et al. (1994). Section 2.3.1 Conjugate Gradient Method (CG).
-//    In Templates for the Solution of Linear Systems: Building Blocks for
-//    Iterative Methods (2nd ed.) (pp. 12-15). Philadelphia, PA: SIAM.
-//    Retrieved from http://www.netlib.org/templates/templates.pdf
-//  - Hestenes, M., and Stiefel, E. (1952). Methods of conjugate gradients for
-//    solving linear systems. Journal of Research of the National Bureau of
-//    Standards, 49(6), 409. doi:10.6028/jres.049.044
-//  - Málek, J. and Strakoš, Z. (2015). Preconditioning and the Conjugate Gradient
-//    Method in the Context of Solving PDEs. Philadelphia, PA: SIAM.
+//   - Barrett, Richard et al. (1994). Section 2.3.1 Conjugate Gradient Method (CG).
+//     In Templates for the Solution of Linear Systems: Building Blocks for
+//     Iterative Methods (2nd ed.) (pp. 12-15). Philadelphia, PA: SIAM.
+//     Retrieved from http://www.netlib.org/templates/templates.pdf
+//   - Hestenes, M., and Stiefel, E. (1952). Methods of conjugate gradients for
+//     solving linear systems. Journal of Research of the National Bureau of
+//     Standards, 49(6), 409. doi:10.6028/jres.049.044
+//   - Málek, J. and Strakoš, Z. (2015). Preconditioning and the Conjugate Gradient
+//     Method in the Context of Solving PDEs. Philadelphia, PA: SIAM.
 type CG struct {
 	x mat.VecDense
 	r mat.VecDense
@@ -55,10 +57,11 @@ func (cg *CG) Init(x, residual *mat.VecDense) {
 // Iterate performs an iteration of the linear solve. See the Method interface for more details.
 //
 // CG will command the following operations:
-//  MulVec
-//  PreconSolve
-//  CheckResidualNorm
-//  MajorIteration
+//
+//	MulVec
+//	PreconSolve
+//	CheckResidualNorm
+//	MajorIteration
 func (cg *CG) Iterate(ctx *Context) (Operation, error) {
 	switch cg.resume {
 	case 1:

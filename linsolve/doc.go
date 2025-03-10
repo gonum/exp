@@ -5,11 +5,11 @@
 /*
 Package linsolve provides iterative methods for solving linear systems.
 
-Background
+# Background
 
 A system of linear equations can be written as
 
- A * x = b,
+	A * x = b,
 
 where A is a given n×n non-singular matrix, b is a given n-vector (the
 right-hand side), and x is an unknown n-vector.
@@ -38,19 +38,19 @@ using a small number of iterations and taking advantage of matrix structure.
 
 Iterative methods are most often useful in the following situations:
 
- - The system matrix A is sparse, blocked or has other special structure,
- - The problem size is sufficiently large that a dense factorization of A is
-   costly in terms of compute time and/or memory storage,
- - Computing the product of A (or A^T, if necessary) with a vector can be done
-   efficiently,
- - An approximate solution is all that is required.
+  - The system matrix A is sparse, blocked or has other special structure,
+  - The problem size is sufficiently large that a dense factorization of A is
+    costly in terms of compute time and/or memory storage,
+  - Computing the product of A (or A^T, if necessary) with a vector can be done
+    efficiently,
+  - An approximate solution is all that is required.
 
-Using linsolve
+# Using linsolve
 
 The two most important elements of the API are the MulVecToer interface and the
 Iterative function.
 
-MulVecToer interface
+# MulVecToer interface
 
 The MulVecToer interface represents the system matrix A. This abstracts the
 details of any particular matrix storage, and allows the user to exploit the
@@ -62,7 +62,7 @@ the provided MulVecToer represents a matrix that satisfies all assumptions made
 by the chosen Method, for example if the matrix is actually symmetric positive
 definite.
 
-Iterative function
+# Iterative function
 
 The Iterative function is the entry point to the functionality provided by this
 package. It takes as parameters the matrix A (via the MulVecToer interface as
@@ -70,7 +70,7 @@ discussed above), the right-hand side vector b, the iterative method and
 settings that control the iterative process and provide a way for reusing
 memory.
 
-Choosing an iterative method
+# Choosing an iterative method
 
 The choice of an iterative method is typically guided by the properties of the
 matrix A including symmetry, definiteness, sparsity, conditioning, and block
@@ -80,7 +80,7 @@ point. Non-symmetric matrices are much more difficult to assess, where any
 suggestion of a 'best' method is usually accompanied by a recommendation to use
 trial-and-error.
 
-Preconditioning
+# Preconditioning
 
 Preconditioning is a family of techniques that attempt to transform the linear
 system into one that has the same solution but more favorable eigenspectrum. The
@@ -90,7 +90,7 @@ reduce the number of iterations needed to find a good approximate solution
 some cases preconditioning is necessary to get any kind of convergence. In
 linsolve a preconditioner is specified by Settings.PreconSolve.
 
-Implementing Method interface
+# Implementing Method interface
 
 This package allows external implementations of iterative solvers by means of
 the Method interface. It uses a reverse-communication style of API to
@@ -101,18 +101,18 @@ side b are not directly available to Methods which encourages their cleaner
 implementation. See the documentation for Method, Operation, and Context for
 more information.
 
-References
+# References
 
 Further details about computational practice and mathematical theory of
 iterative methods can be found in the following references:
 
- - Barrett, Richard et al. (1994). Templates for the Solution of Linear Systems:
-   Building Blocks for Iterative Methods (2nd ed.). Philadelphia, PA: SIAM.
-   Retrieved from http://www.netlib.org/templates/templates.pdf
- - Saad, Yousef (2003). Iterative methods for sparse linear systems (2nd ed.).
-   Philadelphia, PA: SIAM. Retrieved from
-   http://www-users.cs.umn.edu/~saad/IterMethBook_2ndEd.pdf
- - Greenbaum, A. (1997). Iterative methods for solving linear systems.
-   Philadelphia, PA: SIAM.
+  - Barrett, Richard et al. (1994). Templates for the Solution of Linear Systems:
+    Building Blocks for Iterative Methods (2nd ed.). Philadelphia, PA: SIAM.
+    Retrieved from http://www.netlib.org/templates/templates.pdf
+  - Saad, Yousef (2003). Iterative methods for sparse linear systems (2nd ed.).
+    Philadelphia, PA: SIAM. Retrieved from
+    http://www-users.cs.umn.edu/~saad/IterMethBook_2ndEd.pdf
+  - Greenbaum, A. (1997). Iterative methods for solving linear systems.
+    Philadelphia, PA: SIAM.
 */
 package linsolve
