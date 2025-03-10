@@ -4,8 +4,8 @@ go 1.23.0
 
 require (
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
-	gonum.org/v1/gonum v0.15.1
-	gonum.org/v1/plot v0.15.1
+	gonum.org/v1/gonum v0.16.0
+	gonum.org/v1/plot v0.16.0
 )
 
 require (
