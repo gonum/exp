@@ -290,11 +290,7 @@ func TestScores(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("scores-%d", i), func(t *testing.T) {
-			p, err := plot.New()
-			if err != nil {
-				t.Fatalf("unexpected error for plot.New: %v", err)
-			}
-
+			p := plot.New()
 			b.Set[1].(*fs).orient = test.orient
 			b.Base = NewGappedArcs(b.Base, b.Set, 0.01)
 			r, err := NewScores(test.scores, b, 40, 75, test.renderer)

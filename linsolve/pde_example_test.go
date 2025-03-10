@@ -192,11 +192,7 @@ func (ac *AllenCahnFD) Solution() *mat.VecDense {
 }
 
 func output(u mat.Vector, L float64, step int) error {
-	p, err := plot.New()
-	if err != nil {
-		return err
-	}
-
+	p := plot.New()
 	p.Title.Text = fmt.Sprintf("Step %d", step)
 	p.X.Label.Text = "x"
 	p.X.Min = 0
@@ -211,7 +207,7 @@ func output(u mat.Vector, L float64, step int) error {
 		pts[i].X = float64(i) * h
 		pts[i].Y = u.AtVec(i)
 	}
-	err = plotutil.AddLines(p, "u", pts)
+	err := plotutil.AddLines(p, "u", pts)
 	if err != nil {
 		return err
 	}

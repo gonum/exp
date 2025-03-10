@@ -159,11 +159,7 @@ func TestSail(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("sail-%d", i), func(t *testing.T) {
-			p, err := plot.New()
-			if err != nil {
-				t.Fatalf("unexpected error for plot.New: %v", err)
-			}
-
+			p := plot.New()
 			for j, o := range test.orient {
 				b.Set[j].(*fs).orient = o
 			}

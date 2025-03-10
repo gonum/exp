@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build ignore
 // +build ignore
 
 package main
@@ -16,6 +17,8 @@ import (
 
 	"gonum.org/v1/exp/plotter/rings"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
+	"gonum.org/v1/plot/font/liberation"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
@@ -42,11 +45,7 @@ func floatPtr(f float64) *float64 { return &f }
 func main() {
 	rand.Seed(0)
 
-	p, err := plot.New()
-	if err != nil {
-		panic(err)
-	}
-
+	p := plot.New()
 	sty := plotter.DefaultLineStyle
 	sty.Width /= 5
 
@@ -77,15 +76,14 @@ func main() {
 	g += 60
 	p.Add(bs)
 
-	font, err := vg.MakeFont("Helvetica", 10)
-	if err != nil {
-		panic(err)
-	}
+	cache := font.NewCache(liberation.Collection())
+	fnt := cache.Lookup(font.Font{Typeface: "Liberation", Variant: "Sans"}, 10)
+
 	lb, err := rings.NewLabels(bs, 110, rings.NameLabels(bs.Set)...)
 	if err != nil {
 		panic(err)
 	}
-	lb.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+	lb.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font}
 	p.Add(lb)
 
 	m := randomFeatures(400, bs.Set[1].Start(), bs.Set[1].End(), true, sty)
