@@ -12,8 +12,9 @@ import (
 	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
+	"gonum.org/v1/plot/font/liberation"
 	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
 
@@ -26,10 +27,8 @@ func TestLabelsBlocks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
 	}
-	font, err := vg.MakeFont("Helvetica", 10)
-	if err != nil {
-		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
-	}
+	cache := font.NewCache(liberation.Collection())
+	fnt := cache.Lookup(font.Font{Typeface: "Liberation", Variant: "Sans"}, 10)
 
 	for i, test := range []struct {
 		feats     []Feature
@@ -57,16 +56,12 @@ func TestLabelsBlocks(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("labels-%d", i), func(t *testing.T) {
-			p, err := plot.New()
-			if err != nil {
-				t.Fatalf("unexpected error for plot.New: %v", err)
-			}
-
+			p := plot.New()
 			l, err := NewLabels(b, 110, NameLabels(test.feats)...)
 			if err != nil {
 				t.Fatalf("unexpected error for NewLabels: %v", err)
 			}
-			l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+			l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font}
 			l.Placement = test.placement
 
 			p.Add(l)
@@ -87,10 +82,8 @@ func TestLabelsArcs(t *testing.T) {
 	)
 	h.LineStyle = plotter.DefaultLineStyle
 
-	font, err := vg.MakeFont("Helvetica", 10)
-	if err != nil {
-		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
-	}
+	cache := font.NewCache(liberation.Collection())
+	fnt := cache.Lookup(font.Font{Typeface: "Liberation", Variant: "Sans"}, 10)
 
 	for i, test := range []struct {
 		arc       Arcer
@@ -124,16 +117,12 @@ func TestLabelsArcs(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("labelsarcs-%d", i), func(t *testing.T) {
-			p, err := plot.New()
-			if err != nil {
-				t.Fatalf("unexpected error for plot.New: %v", err)
-			}
-
+			p := plot.New()
 			l, err := NewLabels(test.arc, 110, test.label)
 			if err != nil {
 				t.Fatalf("unexpected error for NewLabels: %v", err)
 			}
-			l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+			l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font}
 			l.Placement = test.placement
 
 			p.Add(l)
@@ -146,11 +135,7 @@ func TestLabelsArcs(t *testing.T) {
 }
 
 func TestLabelSpokes(t *testing.T) {
-	p, err := plot.New()
-	if err != nil {
-		t.Fatalf("unexpected error for plot.New: %v", err)
-	}
-
+	p := plot.New()
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
@@ -170,16 +155,14 @@ func TestLabelSpokes(t *testing.T) {
 	}
 	ms.LineStyle = plotter.DefaultLineStyle
 
-	font, err := vg.MakeFont("Helvetica", 10)
-	if err != nil {
-		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
-	}
+	cache := font.NewCache(liberation.Collection())
+	fnt := cache.Lookup(font.Font{Typeface: "Liberation", Variant: "Sans"}, 10)
 
 	l, err := NewLabels(ms, 125, NameLabels([]Feature{m[1], m[5], m[9]})...)
 	if err != nil {
 		t.Fatalf("unexpected error for NewLabels: %v", err)
 	}
-	l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+	l.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font}
 	l.Placement = Radial
 
 	p.Add(l)

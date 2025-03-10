@@ -124,6 +124,9 @@ func NewLabels(base Arcer, r vg.Length, ls ...Labeler) (*Labels, error) {
 // DrawAt renders the text of a Labels at cen in the specified drawing area,
 // according to the Labels configuration.
 func (r *Labels) DrawAt(ca draw.Canvas, cen vg.Point) {
+	if r.TextStyle.Handler == nil {
+		r.TextStyle.Handler = plot.DefaultTextHandler
+	}
 	for _, l := range r.Labels {
 		var sty draw.TextStyle
 		if ts, ok := l.(TextStyler); ok {

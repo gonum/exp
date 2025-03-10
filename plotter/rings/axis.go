@@ -73,6 +73,13 @@ func (r *Axis) drawAt(ca draw.Canvas, cen vg.Point, fs []Scorer, base ArcOfer, i
 	var marks []plot.Tick
 	scale := (outer - inner) / vg.Length(max-min)
 
+	if r.Label.TextStyle.Handler == nil {
+		r.Label.TextStyle.Handler = plot.DefaultTextHandler
+	}
+	if r.Tick.Label.Handler == nil {
+		r.Tick.Label.Handler = plot.DefaultTextHandler
+	}
+
 	locMap := make(map[Feature]struct{})
 	for _, f := range fs {
 		locMap[f.Parent()] = struct{}{}

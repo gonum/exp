@@ -14,11 +14,7 @@ import (
 )
 
 func TestSpokes(t *testing.T) {
-	p, err := plot.New()
-	if err != nil {
-		t.Fatalf("unexpected error for plot.New: %v", err)
-	}
-
+	p := plot.New()
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},

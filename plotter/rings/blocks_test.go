@@ -12,17 +12,15 @@ import (
 	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
+	"gonum.org/v1/plot/font/liberation"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
 
 func TestBlocks(t *testing.T) {
-	p, err := plot.New()
-	if err != nil {
-		t.Fatalf("unexpected error for plot.New: %v", err)
-	}
-
+	p := plot.New()
 	rand.Seed(1)
 	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
@@ -49,10 +47,8 @@ func TestBlocksScale(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error for plot.New: %v", err)
 	}
-	font, err := vg.MakeFont("Helvetica", 5)
-	if err != nil {
-		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
-	}
+	cache := font.NewCache(liberation.Collection())
+	fnt := cache.Lookup(font.Font{Typeface: "Liberation", Variant: "Sans"}, 5)
 
 	for i, test := range []struct {
 		feats []Feature
@@ -71,10 +67,7 @@ func TestBlocksScale(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("scale-%d", i), func(t *testing.T) {
-			p, err := plot.New()
-			if err != nil {
-				t.Fatalf("unexpected error for plot.New: %v", err)
-			}
+			p := plot.New()
 
 			s, err := NewScale(test.feats, b, 110)
 			if err != nil {
@@ -83,7 +76,7 @@ func TestBlocksScale(t *testing.T) {
 			s.LineStyle = plotter.DefaultLineStyle
 			s.Tick.Length = 3
 			s.Tick.LineStyle = plotter.DefaultLineStyle
-			s.Tick.Label = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+			s.Tick.Label = draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font}
 			s.Grid.LineStyle = test.grid
 			s.Grid.Inner = test.inner
 			s.Grid.Outer = test.outer
