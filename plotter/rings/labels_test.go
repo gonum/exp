@@ -68,7 +68,7 @@ func TestLabelsBlocks(t *testing.T) {
 			p.HideAxes()
 			p.Add(b)
 
-			checkImage(t, p, *regen)
+			checkImage(t, p)
 		})
 	}
 }
@@ -129,7 +129,7 @@ func TestLabelsArcs(t *testing.T) {
 			p.HideAxes()
 			p.Add(h)
 
-			checkImage(t, p, *regen)
+			checkImage(t, p)
 		})
 	}
 }
@@ -168,5 +168,5 @@ func TestLabelSpokes(t *testing.T) {
 	p.Add(l)
 	p.HideAxes()
 
-	checkImage(t, p, *regen)
+	checkImage(t, p)
 }
