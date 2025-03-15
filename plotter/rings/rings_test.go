@@ -7,10 +7,9 @@ package rings
 import (
 	"fmt"
 	"image/color"
+	"math/rand/v2"
 	"path/filepath"
 	"testing"
-
-	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/cmpimg"
@@ -55,15 +54,15 @@ func (p fp) LineStyle() draw.LineStyle {
 	return p.sty
 }
 
-func randomFeatures(n int, min, max float64, single bool, sty draw.LineStyle) []Feature {
+func randomFeatures(rnd *rand.Rand, n int, min, max float64, single bool, sty draw.LineStyle) []Feature {
 	data := make([]Feature, n)
 	for i := range data {
-		// Intn is used here to avoid drastic random
+		// IntN is used here to avoid drastic random
 		// sequence changes at this stage.
-		start := float64(rand.Intn(int(max-min))) + min
+		start := float64(rnd.IntN(int(max-min))) + min
 		var end float64
 		if !single {
-			end = float64(rand.Intn(int(max - start)))
+			end = float64(rnd.IntN(int(max - start)))
 		}
 		data[i] = &fs{
 			start: start,

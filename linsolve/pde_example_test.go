@@ -7,8 +7,7 @@ package linsolve_test
 import (
 	"fmt"
 	"log"
-
-	"golang.org/x/exp/rand"
+	"math/rand/v2"
 
 	"gonum.org/v1/exp/linsolve"
 	"gonum.org/v1/gonum/mat"
@@ -230,7 +229,7 @@ func ExampleIterative_evolutionPDE() {
 		tau = 0.1 * L / nx
 		xi  = 6.0 * L / nx
 	)
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 	ac := AllenCahnFD{
 		Xi: xi,
 		InitCond: func(x float64) float64 {
