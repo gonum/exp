@@ -41,7 +41,7 @@ func Brent(f func(float64) float64, a, b, tol float64) (float64, error) {
 		}
 
 		// Convergence check.
-		tol1 := 2*eps*math.Abs(b) + 0.5*tol
+		var tol1 float64 = 2*eps*math.Abs(b) + 0.5*tol
 		xm = 0.5 * (c - b)
 		if math.Abs(xm) < tol1 || fb == 0 {
 			return b, nil

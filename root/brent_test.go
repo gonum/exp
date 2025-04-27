@@ -28,7 +28,7 @@ func TestBrent(t *testing.T) {
 	}
 	var tests []testcase
 	for _, f := range tstutilsFns {
-		tests = append(tests, testcase{name: f.name, f: f.f, a: .5, b: math.Sqrt(3), tol: 4 * eps, want: 1})
+		tests = append(tests, testcase{name: f.name, f: f.f, a: 0.5, b: math.Sqrt(3), tol: 4 * eps, want: 1})
 	}
 	for _, tc := range aps {
 		tests = append(tests, testcase{name: tc.name, f: tc.f, a: tc.a, b: tc.b, tol: 4 * eps, want: tc.root})
@@ -56,14 +56,15 @@ func TestScipyIssue5557(t *testing.T) {
 		}
 		return x - 0.6
 	}
+	var a, b float64 = 0, 1
 	tol := 4 * eps
-	got, err := root.Brent(f, 0., 1., tol)
+	got, err := root.Brent(f, a, b, tol)
 	if err != nil {
-		t.Fatalf("Brent(%f, %f, %f): %s", 0., 1., tol, err)
+		t.Fatalf("Brent(%f, %f, %f): %s", a, b, tol, err)
 	}
 	const want = 0.6
 	if !scalar.EqualWithinRel(got, want, tol) {
-		t.Fatalf("Brent(%f, %f, %f): got %f want %f", 0., 1., tol, got, want)
+		t.Fatalf("Brent(%f, %f, %f): got %f want %f", a, b, tol, got, want)
 	}
 }
 
@@ -120,7 +121,7 @@ func TestScipyIssue5584(t *testing.T) {
 	}
 
 	// Solve successfully when one side is negative zero.
-	a, b = -0.5, -0.
+	a, b = -0.5, math.Copysign(0, -1)
 	x0, err = root.Brent(f, a, b, tol)
 	if err != nil {
 		t.Fatalf("Brent(%f, %f, %f): %s", a, b, tol, err)
@@ -155,7 +156,7 @@ var tstutilsFns = []function{
 	// f5 is a hyperbola with a pole at x=1, but pole replaced with 0. Not continuous at root.
 	{name: "f5", f: func(x float64) float64 {
 		if x != 1 {
-			return 1. / (1 - x)
+			return 1 / (1 - x)
 		}
 		return 0
 	}},
@@ -222,7 +223,7 @@ func aps11(x, n float64) float64 {
 
 // aps12 is nth root of x, with a zero at x=n.
 func aps12(x, n float64) float64 {
-	return math.Pow(x, 1.0/n) - math.Pow(n, 1.0/n)
+	return math.Pow(x, 1/n) - math.Pow(n, 1/n)
 }
 
 // aps14 returns 0 for negative x-values, trigonometric+linear for x positive.
@@ -230,7 +231,7 @@ func aps14(x, n float64) float64 {
 	if x <= 0 {
 		return -n / 20
 	}
-	return n / 20.0 * (x/1.5 + math.Sin(x) - 1)
+	return n / 20 * (x/1.5 + math.Sin(x) - 1)
 }
 
 // aps15 is piecewise linear, constant outside of [0, 0.002/(1+n)].
