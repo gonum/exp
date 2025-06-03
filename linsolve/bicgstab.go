@@ -12,16 +12,18 @@ import (
 
 // BiCGStab implements the BiConjugate Gradient Stabilized method with
 // preconditioning for solving systems of linear equations
-//  A * x = b,
+//
+//	A * x = b,
+//
 // where A is a nonsymmetric, nonsingular matrix. The method is a variant of
 // BiCG but offers a smoother convergence and does not require multiplication
 // with Aᵀ.
 //
 // References:
-//  - Barrett, R. et al. (1994). Section 2.3.8 BiConjugate Gradient Stabilized (Bi-CGSTAB).
-//    In Templates for the Solution of Linear Systems: Building Blocks
-//    for Iterative Methods (2nd ed.) (pp. 24-25). Philadelphia, PA: SIAM.
-//    Retrieved from http://www.netlib.org/templates/templates.pdf
+//   - Barrett, R. et al. (1994). Section 2.3.8 BiConjugate Gradient Stabilized (Bi-CGSTAB).
+//     In Templates for the Solution of Linear Systems: Building Blocks
+//     for Iterative Methods (2nd ed.) (pp. 24-25). Philadelphia, PA: SIAM.
+//     Retrieved from http://www.netlib.org/templates/templates.pdf
 type BiCGStab struct {
 	x     mat.VecDense
 	r, rt mat.VecDense
@@ -70,11 +72,12 @@ func (b *BiCGStab) Init(x, residual *mat.VecDense) {
 // Iterate performs an iteration of the linear solve. See the Method interface for more details.
 //
 // BiCGStab will command the following operations:
-//  MulVec
-//  PreconSolve
-//  CheckResidualNorm
-//  MajorIteration
-//  NoOperation
+//
+//	MulVec
+//	PreconSolve
+//	CheckResidualNorm
+//	MajorIteration
+//	NoOperation
 func (b *BiCGStab) Iterate(ctx *Context) (Operation, error) {
 	switch b.resume {
 	case 1:

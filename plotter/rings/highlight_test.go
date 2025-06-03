@@ -13,11 +13,7 @@ import (
 )
 
 func TestHighlight(t *testing.T) {
-	p, err := plot.New()
-	if err != nil {
-		t.Fatalf("unexpected error for plot.New: %v", err)
-	}
-
+	p := plot.New()
 	h := NewHighlight(
 		color.NRGBA{R: 0xf3, G: 0xf3, B: 0x15, A: 0xff},
 		Arc{0, Complete / 2 * Clockwise},
@@ -28,5 +24,5 @@ func TestHighlight(t *testing.T) {
 	p.Add(h)
 	p.HideAxes()
 
-	checkImage(t, p, *regen)
+	checkImage(t, p)
 }

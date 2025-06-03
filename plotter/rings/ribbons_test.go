@@ -221,11 +221,7 @@ func TestRibbons(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("ribbons-%d", i), func(t *testing.T) {
-			p, err := plot.New()
-			if err != nil {
-				t.Fatalf("unexpected error for plot.New: %v", err)
-			}
-
+			p := plot.New()
 			for j, o := range test.orient {
 				b.Set[j].(*fs).orient = o
 			}
@@ -244,7 +240,7 @@ func TestRibbons(t *testing.T) {
 			p.HideAxes()
 			p.Add(b)
 
-			checkImage(t, p, *regen)
+			checkImage(t, p)
 		})
 	}
 }

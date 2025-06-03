@@ -67,6 +67,7 @@ func NewScale(fs []Feature, base ArcOfer, r vg.Length) (*Scale, error) {
 		Radius: r,
 	}
 	s.Tick.Marker = plot.DefaultTicks{}
+	s.Tick.Label.Handler = plot.DefaultTextHandler
 
 	return s, nil
 }
@@ -76,6 +77,10 @@ func NewScale(fs []Feature, base ArcOfer, r vg.Length) (*Scale, error) {
 func (r *Scale) DrawAt(ca draw.Canvas, cen vg.Point) {
 	if len(r.Set) == 0 {
 		return
+	}
+
+	if r.Tick.Label.Handler == nil {
+		r.Tick.Label.Handler = plot.DefaultTextHandler
 	}
 
 	var pa vg.Path
@@ -160,7 +165,7 @@ func (r *Scale) DrawAt(ca draw.Canvas, cen vg.Point) {
 				}
 
 				angle := Angle(iv-min)*scale + arc.Theta
-				pt := cen.Add(Rectangular(angle, r.Radius+r.Tick.Length+r.Tick.Label.Font.Extents().Height))
+				pt := cen.Add(Rectangular(angle, r.Radius+r.Tick.Length+r.Tick.Label.FontExtents().Height))
 				var (
 					rot            Angle
 					xalign, yalign float64
@@ -188,9 +193,13 @@ func (r *Scale) Plot(ca draw.Canvas, plt *plot.Plot) {
 
 // GlyphBoxes returns a liberal glyphbox for the label rendering.
 func (r *Scale) GlyphBoxes(plt *plot.Plot) []plot.GlyphBox {
+	if r.Tick.Label.Handler == nil {
+		r.Tick.Label.Handler = plot.DefaultTextHandler
+	}
+
 	grid := math.Max(float64(r.Grid.Inner), float64(r.Grid.Outer))
 	radius := math.Max(float64(r.Radius+r.Tick.Length), grid)
-	radius = math.Max(radius, float64(r.Tick.Label.Font.Extents().Height*2))
+	radius = math.Max(radius, float64(r.Tick.Label.FontExtents().Height*2))
 	return []plot.GlyphBox{{
 		X: plt.X.Norm(r.X),
 		Y: plt.Y.Norm(r.Y),

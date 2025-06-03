@@ -35,7 +35,8 @@ func Rectangular(theta Angle, r vg.Length) vg.Point {
 	if r == 0 {
 		return vg.Point{0, 0}
 	}
-	return vg.Point{X: vg.Length(math.Cos(float64(theta)) * float64(r)), Y: vg.Length(math.Sin(float64(theta)) * float64(r))}
+	sin, cos := math.Sincos(float64(theta))
+	return vg.Point{X: vg.Length(cos * float64(r)), Y: vg.Length(sin * float64(r))}
 }
 
 // Polar returns the polar coordinates of a point.
@@ -124,12 +125,12 @@ func (a Arcs) Arc() Arc { return a.Base }
 //
 // The behaviour of ArcOf depends on the nil status of loc and f:
 //
-//  - if both loc and f are non-nil, f must have a sub-feature relationship with loc,
-//    and the returned arc will be the arc of f.
-//  - if either of loc or f are nil, then the arc of the non-nil parameter will be
-//    returned.
-//  - if both loc and f are nil, and no nil feature is found in the Arcs, the base arc
-//    will be returned.
+//   - if both loc and f are non-nil, f must have a sub-feature relationship with loc,
+//     and the returned arc will be the arc of f.
+//   - if either of loc or f are nil, then the arc of the non-nil parameter will be
+//     returned.
+//   - if both loc and f are nil, and no nil feature is found in the Arcs, the base arc
+//     will be returned.
 //
 // If no matching feature is found a non-nil error is returned.
 func (a Arcs) ArcOf(loc, f Feature) (Arc, error) {

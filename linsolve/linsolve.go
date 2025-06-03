@@ -22,7 +22,9 @@ func (e *BreakdownError) Error() string {
 
 // Method is an iterative method that produces a sequence of vectors that
 // converge to the solution of the system of linear equations
-//  A * x = b,
+//
+//	A * x = b,
+//
 // where A is non-singular n×n matrix, and x and b are vectors of dimension n.
 //
 // Method uses a reverse-communication interface between the iterative algorithm

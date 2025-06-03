@@ -47,11 +47,7 @@ func TestLinks(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("links-%d", i), func(t *testing.T) {
-			p, err := plot.New()
-			if err != nil {
-				t.Fatalf("unexpected error for plot.New: %v", err)
-			}
-
+			p := plot.New()
 			var m [2][]Feature
 			rand.Seed(2)
 			for j := range m {
@@ -74,7 +70,7 @@ func TestLinks(t *testing.T) {
 			p.HideAxes()
 			p.Add(b)
 
-			checkImage(t, p, *regen)
+			checkImage(t, p)
 		})
 	}
 }

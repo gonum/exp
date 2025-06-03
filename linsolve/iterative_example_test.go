@@ -14,7 +14,8 @@ import (
 )
 
 // System represents a linear system with a symmetric band matrix
-//  A*x = b
+//
+//	A*x = b
 type System struct {
 	A *mat.SymBandDense
 	B *mat.VecDense
@@ -24,10 +25,10 @@ type System struct {
 // into the space of piecewise linear functions defined on the given grid.
 //
 // References:
-//  - M. Larson, F. Bengzon, The Finite Element Method: Theory,
-//    Implementations, and Applications. Springer (2013), Section 1.3, also
-//    available at:
-//    http://www.springer.com/cda/content/document/cda_downloaddocument/9783642332869-c1.pdf
+//   - M. Larson, F. Bengzon, The Finite Element Method: Theory,
+//     Implementations, and Applications. Springer (2013), Section 1.3, also
+//     available at:
+//     http://www.springer.com/cda/content/document/cda_downloaddocument/9783642332869-c1.pdf
 func L2Projection(grid []float64, f func(float64) float64) System {
 	n := len(grid)
 

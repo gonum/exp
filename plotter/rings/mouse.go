@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+//go:build ignore
 // +build ignore
 
 // mouse.go renders a rings plot of the mouse mm10 karyotype. It depends on
@@ -20,16 +21,14 @@ import (
 
 	"gonum.org/v1/exp/plotter/rings"
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
+	"gonum.org/v1/plot/font/liberation"
 	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
 
 func main() {
-	p, err := plot.New()
-	if err != nil {
-		panic(err)
-	}
+	p := plot.New()
 
 	sty := plotter.DefaultLineStyle
 	sty.Width /= 2
@@ -66,15 +65,14 @@ func main() {
 	}
 	p.Add(c)
 
-	font, err := vg.MakeFont("Helvetica", 7)
-	if err != nil {
-		panic(err)
-	}
+	cache := font.NewCache(liberation.Collection())
+	fnt := cache.Lookup(font.Font{Typeface: "Liberation", Variant: "Sans"}, 7)
+
 	lb, err := rings.NewLabels(mm, 117, rings.NameLabels(mm.Set)...)
 	if err != nil {
 		panic(err)
 	}
-	lb.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: font}
+	lb.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font}
 	p.Add(lb)
 
 	p.HideAxes()

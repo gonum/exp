@@ -5,25 +5,18 @@
 package rings
 
 import (
-	"bytes"
-	"flag"
 	"fmt"
-	"image"
 	"image/color"
-	"io/ioutil"
-	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 
 	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/cmpimg"
 	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
-
-var regen = flag.Bool("regen", false, "Uses the current state to regenerate the test data.")
 
 // fs is a Feature implementation for testing.
 type fs struct {
@@ -104,57 +97,14 @@ func makeScorers(f *fs, n, m int, fn func(i, j int) float64) []Scorer {
 }
 
 // checkImage compares the plot in p to the image in testdata/name_golden.png.
-// If regen is true the plot in p is first saved to testdata/name_golden.png.
-func checkImage(t *testing.T, p *plot.Plot, regen bool) {
+func checkImage(t *testing.T, p *plot.Plot) {
 	name := filepath.FromSlash(t.Name())
-	path := filepath.Join("testdata", name+"_golden.png")
-	w, err := p.WriterTo(vg.Length(300), vg.Length(300), "png")
-	var buf bytes.Buffer
-	_, err = w.WriteTo(&buf)
-	if err != nil {
-		t.Fatalf("unexpected error writing plot: %v", err)
-	}
-	got := buf.Bytes()
-	if regen {
-		err = os.Mkdir(filepath.Dir(path), 0775)
-		if err != nil && !os.IsExist(err) {
-			t.Fatalf("failed to created testdata subdir: %v", err)
-			return
-		}
-		err = ioutil.WriteFile(path, got, 0664)
+	fct := func() {
+		err := p.Save(vg.Length(300), vg.Length(300), filepath.Join("testdata", name+".png"))
 		if err != nil {
-			t.Fatalf("unexpected error writing golden file: %v", err)
-		}
-		// Fallthrough rather than returning just
-		// to confirm we have written correctly.
-	}
-	gold, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatalf("unexpected error reading golden file: %v", err)
-	}
-	ok, err := equalImage(got, gold)
-	if err != nil {
-		t.Errorf("failed to compare image for %s: %v", path, err)
-	}
-	if !ok {
-		t.Errorf("image mismatch for %q", name)
-		// TODO(kortschak): Add image diffing.
-		err = ioutil.WriteFile(filepath.Join("testdata", name+"_failed.png"), got, 0664)
-		if err != nil {
-			t.Fatalf("unexpected error writing failed file: %v", err)
+			t.Fatalf("could not generate plot for %q: %v", name, err)
 		}
 	}
-}
 
-// TODO(kortschak): Use cmpimg when rings lives in plot.
-func equalImage(raw1, raw2 []byte) (bool, error) {
-	v1, _, err := image.Decode(bytes.NewReader(raw1))
-	if err != nil {
-		return false, err
-	}
-	v2, _, err := image.Decode(bytes.NewReader(raw2))
-	if err != nil {
-		return false, err
-	}
-	return reflect.DeepEqual(v1, v2), nil
+	cmpimg.CheckPlotApprox(fct, t, 0.01, name+".png")
 }

@@ -112,7 +112,7 @@ func Diffrms(x, y *mat.VecDense) float64 {
 	mx := x.Len()
 	my := y.Len()
 	if mx != my {
-		return 1.0E9
+		return 1.0e9
 	}
 	sum := 0.0
 	for i := 0; i < mx; i++ {
@@ -126,7 +126,7 @@ func DiffABrms(A, B *mat.Dense) float64 {
 	m, n := A.Dims()
 	mb, nb := B.Dims()
 	if m != mb || n != nb {
-		return 1.0E9
+		return 1.0e9
 	}
 	sum := 0.0
 	for i := 0; i < m; i++ {
@@ -200,12 +200,12 @@ func MyMatRms(A *mat.Dense) float64 {
 }
 
 func IsNear(x, y float64) bool {
-	tol := 1.0E-8*(Myabs(x)+Myabs(y)) + 1.0E-12
+	tol := 1.0e-8*(Myabs(x)+Myabs(y)) + 1.0e-12
 	return (Myabs(x-y) < tol)
 }
 
 func IsAbout(x, y float64) bool {
-	tol := 1.0E-3*(Myabs(x)+Myabs(y)) + 1.0E-12
+	tol := 1.0e-3*(Myabs(x)+Myabs(y)) + 1.0e-12
 	return (Myabs(x-y) < tol)
 }
 
@@ -251,7 +251,7 @@ func TestDeletes(t *testing.T) {
 	}
 }
 
-//return number of non-zero elements in A and their sum
+// return number of non-zero elements in A and their sum
 func GetStats(A *mat.Dense) (int, float64) {
 	m, n := A.Dims()
 	k := 0
@@ -498,10 +498,10 @@ func TestArls(t *testing.T) {
 	x, _, _, _, _ = Arls(A, b)
 	bb = mat.NewVecDense(m, nil)
 	bb.MulVec(A, x)
-	if Diffrms(x, ans) > 2.0E-9 {
+	if Diffrms(x, ans) > 2.0e-9 {
 		FailMe(t, "TestArls(6A) failed.")
 	}
-	if Diffrms(b, bb) > 1.0E-12 {
+	if Diffrms(b, bb) > 1.0e-12 {
 		FailMe(t, "TestArls(6B) failed.")
 	}
 
@@ -519,7 +519,7 @@ func TestArls(t *testing.T) {
 	if Diffrms(x, ans) > 0.01 {
 		FailMe(t, "TestArls(7A) failed.")
 	}
-	if Diffrms(b, bb) > 1.0E-12 {
+	if Diffrms(b, bb) > 1.0e-12 {
 		FailMe(t, "TestArls(7B) failed.")
 	}
 
@@ -537,7 +537,7 @@ func TestArls(t *testing.T) {
 	if Diffrms(x, ans) > 0.3 {
 		FailMe(t, "TestArls(8A) failed.")
 	}
-	if Diffrms(b, bb) > 1.0E-12 {
+	if Diffrms(b, bb) > 1.0e-12 {
 		FailMe(t, "TestArls(8B) failed.")
 	}
 
@@ -552,7 +552,7 @@ func TestArls(t *testing.T) {
 	if Diffrms(x, ans) > 0.02 {
 		FailMe(t, "TestArls(9A) failed.")
 	}
-	if Diffrms(b, bb) > 1.0E-12 {
+	if Diffrms(b, bb) > 1.0e-12 {
 		FailMe(t, "TestArls(9B) failed.")
 	}
 
@@ -573,7 +573,7 @@ func TestArls(t *testing.T) {
 	if Diffrms(x, ans) > 0.25 {
 		FailMe(t, "TestArls(10A) failed.")
 	}
-	if Diffrms(b, bb) > 5.0E-5 {
+	if Diffrms(b, bb) > 5.0e-5 {
 		FailMe(t, "TestArls(10B) failed.")
 	}
 
@@ -622,7 +622,7 @@ func TestArlsnn(t *testing.T) {
 	if res > 1.8 {
 		FailMe(t, "TestArlsnn(2) failed.")
 	}
-	if mat.Norm(x, 2) > 1.0E-8 {
+	if mat.Norm(x, 2) > 1.0e-8 {
 		FailMe(t, "TestArlsnn(3) failed.")
 	}
 
@@ -714,7 +714,7 @@ func TestArlspj(t *testing.T) {
 	f := mat.NewVecDense(5, nil)
 	f.MulVec(E, x)
 
-	AA, bb := arlspj(A, b, E, f, 1.0E-9)
+	AA, bb := arlspj(A, b, E, f, 1.0e-9)
 	m, _ := AA.Dims()
 	r := mat.NewVecDense(m, nil)
 	r.MulVec(AA, x)
@@ -823,7 +823,7 @@ func TestArlsall(t *testing.T) {
 	if res > 0.002 {
 		FailMe(t, "TestArlsAll(3A) failed.")
 	}
-	if vecMin(x) < -1.0E-9 {
+	if vecMin(x) < -1.0e-9 {
 		FailMe(t, "TestArlsAll(3B) failed.")
 	}
 
@@ -840,7 +840,7 @@ func TestArlsall(t *testing.T) {
 	if math.Abs(x.AtVec(0)-5.0) > 0.000001 {
 		FailMe(t, "TestArlsAll(4C) failed.")
 	}
-	if vecMin(x) < -1.0E-9 {
+	if vecMin(x) < -1.0e-9 {
 		FailMe(t, "TestArlsAll(4D) failed.")
 	}
 
@@ -851,7 +851,7 @@ func TestArlsall(t *testing.T) {
 	if res > 0.002 {
 		FailMe(t, "TestArlsAll(5A) failed: residual.")
 	}
-	if vecMin(x) < -1.0E-9 {
+	if vecMin(x) < -1.0e-9 {
 		FailMe(t, "TestArlsAll(5B) failed.")
 	}
 }

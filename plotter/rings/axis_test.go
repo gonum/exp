@@ -12,8 +12,9 @@ import (
 	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
+	"gonum.org/v1/plot/font"
+	"gonum.org/v1/plot/font/liberation"
 	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/vg"
 	"gonum.org/v1/plot/vg/draw"
 )
 
@@ -26,10 +27,8 @@ func TestScoresAxis(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error for NewGappedBlocks: %v", err)
 	}
-	font, err := vg.MakeFont("Helvetica", 5)
-	if err != nil {
-		t.Fatalf("unexpected error for vg.MakeFont: %v", err)
-	}
+	cache := font.NewCache(liberation.Collection())
+	fnt := cache.Lookup(font.Font{Typeface: "Liberation", Variant: "Sans"}, 5)
 
 	for i, test := range []struct {
 		orient   Orientation
@@ -55,13 +54,13 @@ func TestScoresAxis(t *testing.T) {
 						LineStyle: plotter.DefaultLineStyle,
 						Label: AxisLabel{
 							Text:      "Test",
-							TextStyle: draw.TextStyle{Color: color.Gray16{0}, Font: font},
+							TextStyle: draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font},
 						},
 						Tick: TickConfig{
 							Marker:    plot.DefaultTicks{},
 							LineStyle: plotter.DefaultLineStyle,
 							Length:    -2,
-							Label:     draw.TextStyle{Color: color.Gray16{0}, Font: font},
+							Label:     draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font},
 						},
 					}
 				}(),
@@ -69,11 +68,7 @@ func TestScoresAxis(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("axis-%d", i), func(t *testing.T) {
-			p, err := plot.New()
-			if err != nil {
-				t.Fatalf("unexpected error for plot.New: %v", err)
-			}
-
+			p := plot.New()
 			b.Set[1].(*fs).orient = test.orient
 
 			r, err := NewScores(test.scores, b, 40, 75, test.renderer)
@@ -85,7 +80,7 @@ func TestScoresAxis(t *testing.T) {
 			p.HideAxes()
 			p.Add(b)
 
-			checkImage(t, p, *regen)
+			checkImage(t, p)
 		})
 	}
 }
