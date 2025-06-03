@@ -9,9 +9,15 @@ import (
 	"math"
 )
 
+var (
+	ErrInterval        = errors.New("root: invalid root bracket")
+	ErrMaxIterExceeded = errors.New("maximum iterations exceeded")
+)
+
 // Brent finds the root of a function using Brent's method.
 // The root to be found should lie between [a, b], and will be refined until its accuracy is tol.
-// This implementation is based on page 352, Section 9.3, Vol 1: Numerical Recipes in Fortran 77 2nd Ed., William H. Press, Saul A. Teukolsky, William T. Vetterling, Brian P. Flannery.
+// This implementation is based on:
+// Numerical Recipes in Fortran 77 2nd Ed., William H. Press, Saul A. Teukolsky, William T. Vetterling, Brian P. Flannery, Vol 1, Section 9.3, page 352.
 // https://s3.amazonaws.com/nrbook.com/book_F210.html
 //
 // See https://en.wikipedia.org/wiki/Brent%27s_method for more details.
@@ -23,7 +29,7 @@ func Brent(f func(float64) float64, a, b, tol float64) (float64, error) {
 
 	fa, fb := f(a), f(b)
 	if (fa > 0 && fb > 0) || (fa < 0 && fb < 0) {
-		return math.NaN(), errors.New("root must be bracketed")
+		return 0, ErrInterval
 	}
 
 	c, fc := b, fb
@@ -91,5 +97,5 @@ func Brent(f func(float64) float64, a, b, tol float64) (float64, error) {
 		}
 		fb = f(b)
 	}
-	return b, errors.New("maximum iterations exceeded")
+	return b, ErrMaxIterExceeded
 }

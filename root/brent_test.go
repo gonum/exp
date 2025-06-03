@@ -71,7 +71,7 @@ func TestScipyIssue5557(t *testing.T) {
 func TestScipyIssue13737(t *testing.T) {
 	t.Parallel()
 
-	// Constants based on https://github.com/scipy/scipy/blob/main/scipy/optimize/tests/test_zeros.py
+	// Constants based on https://github.com/scipy/scipy/blob/v1.15.3/scipy/optimize/tests/test_zeros.py
 	tests := []struct {
 		a    float64
 		b    float64
@@ -105,7 +105,7 @@ func TestScipyIssue5584(t *testing.T) {
 	a, b := -0.5, -0.4
 	tol := eps
 	x0, err := root.Brent(f, a, b, tol)
-	if err == nil {
+	if err != root.ErrInterval {
 		t.Fatalf("Brent(%f, %f, %f) should error", a, b, tol)
 	}
 
@@ -115,9 +115,8 @@ func TestScipyIssue5584(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Brent(%f, %f, %f): %s", a, b, tol, err)
 	}
-	const want = 0.
-	if !scalar.EqualWithinRel(x0, want, tol) {
-		t.Fatalf("Brent(%f, %f, %f): got %f want %f", a, b, tol, x0, want)
+	if got, want := x0, 0.0; !scalar.EqualWithinRel(got, want, tol) {
+		t.Fatalf("Brent(%f, %f, %f): got %f want %f", a, b, tol, got, want)
 	}
 
 	// Solve successfully when one side is negative zero.
@@ -126,8 +125,8 @@ func TestScipyIssue5584(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Brent(%f, %f, %f): %s", a, b, tol, err)
 	}
-	if !scalar.EqualWithinRel(x0, want, tol) {
-		t.Fatalf("Brent(%f, %f, %f): got %f want %f", a, b, tol, x0, want)
+	if got, want := x0, 0.0; !scalar.EqualWithinRel(got, want, tol) {
+		t.Fatalf("Brent(%f, %f, %f): got %f want %f", a, b, tol, got, want)
 	}
 }
 
@@ -136,7 +135,7 @@ type function struct {
 	f    func(float64) float64
 }
 
-// Based on https://github.com/scipy/scipy/blob/main/scipy/optimize/_tstutils.py
+// Based on Based on https://github.com/scipy/scipy/blob/v1.15.3/scipy/optimize/_tstutils.py
 var tstutilsFns = []function{
 	// f2 is a symmetric parabola.
 	{name: "f2", f: func(x float64) float64 { return math.Pow(x, 2) - 1 }},
