@@ -5,6 +5,7 @@
 package root_test
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"testing"
@@ -105,8 +106,8 @@ func TestScipyIssue5584(t *testing.T) {
 	a, b := -0.5, -0.4
 	tol := eps
 	x0, err := root.Brent(f, a, b, tol)
-	if err != root.ErrInterval {
-		t.Fatalf("Brent(%f, %f, %f) should error", a, b, tol)
+	if got, want := err, root.ErrInterval; !errors.Is(got, want) {
+		t.Fatalf("Brent(%f, %f, %f) should error: got=%q, want=%q", a, b, tol, got, want)
 	}
 
 	// Solve successfully when signs are different.

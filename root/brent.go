@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	ErrInterval        = errors.New("root: invalid root bracket")
-	ErrMaxIterExceeded = errors.New("maximum iterations exceeded")
+	ErrInterval = errors.New("root: invalid root bracket")
+	ErrMaxIter  = errors.New("root: maximum iterations exceeded")
 )
 
 // Brent finds the root of a function using Brent's method.
@@ -97,5 +97,5 @@ func Brent(f func(float64) float64, a, b, tol float64) (float64, error) {
 		}
 		fb = f(b)
 	}
-	return b, ErrMaxIterExceeded
+	return b, ErrMaxIter
 }
