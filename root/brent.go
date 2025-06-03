@@ -33,7 +33,7 @@ func Brent(f func(float64) float64, a, b, tol float64) (float64, error) {
 	}
 
 	c, fc := b, fb
-	for iter := 0; iter < itmax; iter++ {
+	for range itmax {
 		if (fb > 0 && fc > 0) || (fb < 0 && fc < 0) {
 			// Rename a, b, c and adjust bounding interval d.
 			c, fc = a, fa
