@@ -7,9 +7,8 @@ package rings
 import (
 	"fmt"
 	"image/color"
+	"math/rand/v2"
 	"testing"
-
-	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
@@ -17,8 +16,8 @@ import (
 )
 
 func TestRibbons(t *testing.T) {
-	rand.Seed(1)
-	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+	rnd := rand.New(rand.NewPCG(1, 1))
+	b, err := NewGappedBlocks(randomFeatures(rnd, 3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)

@@ -6,16 +6,15 @@ package linsolve
 
 import (
 	"math"
+	"math/rand/v2"
 	"testing"
-
-	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/gonum/floats"
 	"gonum.org/v1/gonum/mat"
 )
 
 func TestDefaultMethodDefaultSettings(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	testCases = append(testCases,
@@ -44,7 +43,7 @@ func TestDefaultMethodDefaultSettings(t *testing.T) {
 }
 
 func TestCG(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	for _, tc := range testCases {
@@ -54,7 +53,7 @@ func TestCG(t *testing.T) {
 }
 
 func TestCGDefaultSettings(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	for _, tc := range testCases {
@@ -63,7 +62,7 @@ func TestCGDefaultSettings(t *testing.T) {
 }
 
 func TestBiCG(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	testCases = append(testCases,
@@ -91,7 +90,7 @@ func TestBiCG(t *testing.T) {
 }
 
 func TestBiCGDefaultSettings(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	testCases = append(testCases,
@@ -118,7 +117,7 @@ func TestBiCGDefaultSettings(t *testing.T) {
 }
 
 func TestBiCGStab(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	testCases = append(testCases,
@@ -139,7 +138,7 @@ func TestBiCGStab(t *testing.T) {
 }
 
 func TestBiCGStabDefaultSettings(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	testCases = append(testCases,
@@ -159,7 +158,7 @@ func TestBiCGStabDefaultSettings(t *testing.T) {
 }
 
 func TestGMRES(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	testCases = append(testCases,
@@ -189,7 +188,7 @@ func TestGMRES(t *testing.T) {
 }
 
 func TestGMRESDefaultSettings(t *testing.T) {
-	rnd := rand.New(rand.NewSource(1))
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	testCases := spdTestCases(rnd)
 	testCases = append(testCases,
