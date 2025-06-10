@@ -17,7 +17,8 @@ func FindBracketMono(f func(float64) float64, guess float64) (a, b float64) {
 
 	// r is the rate in which we adjust the interval.
 	var r float64
-	a, fa := guess, f(guess)
+	a = guess
+	fa := f(a)
 	if (a > 0) == (fa < 0) {
 		r = 2
 	} else {

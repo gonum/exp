@@ -42,25 +42,15 @@ func TestFindBracketMono(t *testing.T) {
 	}
 }
 
-func TestFindBracketMonoSpecialCases(t *testing.T) {
-	// Bracket to positive infinity.
-	f := func(x float64) float64 { return math.Atan(x) - 2 }
-	var guess float64 = 3
-	a, b := root.FindBracketMono(f, guess)
-	if !(a > 0 && math.IsInf(b, 1)) {
-		t.Errorf("FindBracketMono(Atan-2, %f): got (%f, %f) want (+a, +Inf)", guess, a, b)
-	}
-
-	// Bracket to negative infinity.
-	f = func(x float64) float64 { return math.Atan(x) + 2 }
-	guess = 3
-	a, b = root.FindBracketMono(f, guess)
-	if !(a < 0 && math.IsInf(b, -1)) {
-		t.Errorf("FindBracketMono(Atan+2, %f): got (%f, %f) want (-a, -Inf)", guess, a, b)
-	}
-
-	// Root is a tiny positive value.
-	f = func(x float64) float64 {
+var findBracketMonoSpecials = []struct {
+	name     string
+	f        func(float64) float64
+	guess    float64
+	criteria func(a, b float64) bool
+}{
+	{name: "+Inf", f: func(x float64) float64 { return math.Atan(x) - 2 }, guess: 3, criteria: func(a, b float64) bool { return a > 0 && math.IsInf(b, 1) }},
+	{name: "-Inf", f: func(x float64) float64 { return math.Atan(x) + 2 }, guess: 3, criteria: func(a, b float64) bool { return a < 0 && math.IsInf(b, -1) }},
+	{name: "tiny positive", f: func(x float64) float64 {
 		rt := math.SmallestNonzeroFloat64
 		switch {
 		case x > rt:
@@ -70,15 +60,8 @@ func TestFindBracketMonoSpecialCases(t *testing.T) {
 		default:
 			return 0
 		}
-	}
-	guess = 3
-	a, b = root.FindBracketMono(f, guess)
-	if !(a > 0 && b == 0) {
-		t.Errorf("FindBracketMono(f, %f): got (%g, %g) want (+a, 0)", guess, a, b)
-	}
-
-	// Root is a tiny negative value.
-	f = func(x float64) float64 {
+	}, guess: 3, criteria: func(a, b float64) bool { return a > 0 && b == 0 }},
+	{name: "tiny negative", f: func(x float64) float64 {
 		rt := -math.SmallestNonzeroFloat64
 		switch {
 		case x > rt:
@@ -88,10 +71,16 @@ func TestFindBracketMonoSpecialCases(t *testing.T) {
 		default:
 			return 0
 		}
-	}
-	guess = -3
-	a, b = root.FindBracketMono(f, guess)
-	if !(a < 0 && b == 0) {
-		t.Errorf("FindBracketMono(f, %f): got (%g, %g) want (-a, 0)", guess, a, b)
+	}, guess: -3, criteria: func(a, b float64) bool { return a < 0 && b == 0 }},
+}
+
+func TestFindBracketMonoSpecialCases(t *testing.T) {
+	for _, tc := range findBracketMonoSpecials {
+		t.Run(tc.name, func(t *testing.T) {
+			a, b := root.FindBracketMono(tc.f, tc.guess)
+			if !tc.criteria(a, b) {
+				t.Fatalf("%s: wrong bracket (%g, %g)", tc.name, a, b)
+			}
+		})
 	}
 }
