@@ -8,6 +8,7 @@ import "math"
 
 // FindBracketMono finds a bracket interval [a, b] where f(a)f(b) < 0.
 // f must be a monotonically increasing function.
+// guess is the initial guess of the bracket search.
 func FindBracketMono(f func(float64) float64, guess float64) (a, b float64) {
 	// Make sure initial guess has the same sign as the root.
 	f0 := f(0)
@@ -43,9 +44,16 @@ func FindBracketMono(f func(float64) float64, guess float64) (a, b float64) {
 	// If unable to cross x-axis, return the largest possible bracket.
 	if !crossed {
 		if r > 1 {
-			return a, math.Inf(int(math.Copysign(1, b)))
+			b = math.Inf(int(math.Copysign(1, b)))
+		} else {
+			b = 0
 		}
-		return a, 0
 	}
+
+	// Ensure a <= b
+	if a > b {
+		a, b = b, a
+	}
+
 	return a, b
 }
