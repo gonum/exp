@@ -11,9 +11,8 @@ import (
 	"flag"
 	"fmt"
 	"image/color"
+	"math/rand/v2"
 	"os"
-
-	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/exp/plotter/rings"
 	"gonum.org/v1/plot"
@@ -43,7 +42,7 @@ func init() {
 func floatPtr(f float64) *float64 { return &f }
 
 func main() {
-	rand.Seed(0)
+	rnd := rand.New(rand.NewPCG(1, 1))
 
 	p := plot.New()
 	sty := plotter.DefaultLineStyle
@@ -55,7 +54,7 @@ func main() {
 
 	g := byte(0)
 	for i := vg.Length(0); i < 3; i++ {
-		bs, err := rings.NewGappedBlocks(randomFeatures(rand.Intn(10), 1000, 1000000, false, sty), rings.Arc{0, rings.Complete * rings.Clockwise}, 50+i*8, 55+i*8, 0.005)
+		bs, err := rings.NewGappedBlocks(randomFeatures(rnd, rnd.IntN(10), 1000, 1000000, false, sty), rings.Arc{0, rings.Complete * rings.Clockwise}, 50+i*8, 55+i*8, 0.005)
 		if err != nil {
 			panic(err)
 		}
@@ -64,7 +63,7 @@ func main() {
 		p.Add(bs)
 	}
 
-	bs, err := rings.NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, sty), rings.Arc{0, rings.Complete * rings.Clockwise}, 80, 100, 0.01)
+	bs, err := rings.NewGappedBlocks(randomFeatures(rnd, 3, 100000, 1000000, false, sty), rings.Arc{0, rings.Complete * rings.Clockwise}, 80, 100, 0.01)
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +85,7 @@ func main() {
 	lb.TextStyle = draw.TextStyle{Color: color.Gray16{0}, Font: fnt.Font}
 	p.Add(lb)
 
-	m := randomFeatures(400, bs.Set[1].Start(), bs.Set[1].End(), true, sty)
+	m := randomFeatures(rnd, 400, bs.Set[1].Start(), bs.Set[1].End(), true, sty)
 	for _, mf := range m {
 		mf.(*fs).parent = bs.Set[1]
 	}
@@ -221,15 +220,15 @@ func lengthOf(f rings.Feature) float64 {
 	return f.End() - f.Start()
 }
 
-func randomFeatures(n int, min, max float64, single bool, sty draw.LineStyle) []rings.Feature {
+func randomFeatures(rnd *rand.Rand, n int, min, max float64, single bool, sty draw.LineStyle) []rings.Feature {
 	data := make([]rings.Feature, n)
 	for i := range data {
-		// Intn is used here to avoid drastic random
+		// IntN is used here to avoid drastic random
 		// sequence changes at this stage.
-		start := float64(rand.Intn(int(max-min))) + min
+		start := float64(rnd.IntN(int(max-min))) + min
 		var end float64
 		if !single {
-			end = float64(rand.Intn(int(max - start)))
+			end = float64(rnd.IntN(int(max - start)))
 		}
 		data[i] = &fs{
 			start: start,

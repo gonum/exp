@@ -7,9 +7,8 @@ package rings
 import (
 	"fmt"
 	"image/color"
+	"math/rand/v2"
 	"testing"
-
-	"golang.org/x/exp/rand"
 
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/palette"
@@ -18,8 +17,8 @@ import (
 )
 
 func TestScores(t *testing.T) {
-	rand.Seed(1)
-	b, err := NewGappedBlocks(randomFeatures(3, 100000, 1000000, false, plotter.DefaultLineStyle),
+	rnd := rand.New(rand.NewPCG(1, 1))
+	b, err := NewGappedBlocks(randomFeatures(rnd, 3, 100000, 1000000, false, plotter.DefaultLineStyle),
 		Arc{0, Complete * Clockwise},
 		80, 100, 0.01,
 	)
@@ -37,7 +36,7 @@ func TestScores(t *testing.T) {
 			renderer: &Heat{Palette: palette.Radial(10, palette.Cyan, palette.Magenta, 1).Colors()},
 		},
 		{
-			scores:   makeScorers(b.Set[1].(*fs), 10, 5, func(_, _ int) float64 { return rand.NormFloat64() }),
+			scores:   makeScorers(b.Set[1].(*fs), 10, 5, func(_, _ int) float64 { return rnd.NormFloat64() }),
 			renderer: &Heat{Palette: palette.Radial(10, palette.Cyan, palette.Magenta, 1).Colors()},
 		},
 		{
@@ -266,7 +265,7 @@ func TestScores(t *testing.T) {
 			},
 		},
 		{
-			scores: makeScorers(b.Set[1].(*fs), 10, 2, func(_, _ int) float64 { return rand.NormFloat64() }),
+			scores: makeScorers(b.Set[1].(*fs), 10, 2, func(_, _ int) float64 { return rnd.NormFloat64() }),
 			renderer: &Trace{
 				LineStyles: func() []draw.LineStyle {
 					sty := []draw.LineStyle{plotter.DefaultLineStyle, plotter.DefaultLineStyle}
@@ -277,7 +276,7 @@ func TestScores(t *testing.T) {
 			},
 		},
 		{
-			scores: makeScorers(b.Set[1].(*fs), 10, 2, func(_, _ int) float64 { return rand.NormFloat64() }),
+			scores: makeScorers(b.Set[1].(*fs), 10, 2, func(_, _ int) float64 { return rnd.NormFloat64() }),
 			renderer: &Trace{
 				LineStyles: func() []draw.LineStyle {
 					sty := []draw.LineStyle{plotter.DefaultLineStyle, plotter.DefaultLineStyle}
