@@ -11,6 +11,8 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+var errNegativeStepSize = errors.New("ode: got zero or negative step size from Integrator")
+
 // Integrator can integrate an initial-value problem (IVP) for a first-order
 // system of ordinary differential equations (ODEs).
 type Integrator interface {
@@ -46,10 +48,12 @@ func SolveIVP(p IVP, solver Integrator, stepsize, tend float64) (results []State
 	if nx == 0 {
 		return nil, errors.New("state vector length can not be equal to zero. Has ivp been set?")
 	}
+	solver.Init(p)
 	// calculate expected size of results, these may differ
 	domainLength := tend - t0
 	expectedLength := int(domainLength/stepsize) + 1
 	results = make([]State, 0, expectedLength)
+	results = append(results, State{T: t0, Y: x0}) // append initial condition.
 
 	// t stores current domain
 	t := t0
@@ -64,7 +68,7 @@ func SolveIVP(p IVP, solver Integrator, stepsize, tend float64) (results []State
 			return results, err
 		}
 		if stepsize <= 0 {
-			return results, errors.New("got zero or negative step size from Integrator")
+			return results, errNegativeStepSize
 		}
 		solver.State(&res)
 		t += stepsize
